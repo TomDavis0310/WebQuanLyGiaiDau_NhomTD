@@ -1,0 +1,12 @@
+# Ignore Visual Studio related files
+.vs/
+*.user
+*.suo
+
+# Build results
+bin/
+obj/
+
+# Others
+*.log
+.env
