@@ -1,0 +1,35 @@
+@model WebQuanLyGiaiDau_NhomTD.Models.Tournament
+
+@{
+    ViewData["Title"] = "Chi Ti?t Gi?i ??u";
+}
+
+<h1 class="text-center text-primary mt-4">?? Chi Ti?t Gi?i ??u</h1>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 shadow p-4 rounded bg-light">
+        <dl class="row">
+            <dt class="col-sm-3 fw-bold">Tên Gi?i</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Name)</dd>
+
+            <dt class="col-sm-3 fw-bold">Mô T?</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Description)</dd>
+
+            <dt class="col-sm-3 fw-bold">Ngày B?t ??u</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.StartDate)</dd>
+
+            <dt class="col-sm-3 fw-bold">Ngày K?t Thúc</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.EndDate)</dd>
+
+            <dt class="col-sm-3 fw-bold">Hình ?nh</dt>
+            <dd class="col-sm-9">
+                <img src="@Model.ImageUrl" alt="?nh Gi?i ??u" class="img-fluid rounded border" style="max-height: 250px;" />
+            </dd>
+        </dl>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a asp-action="Index" class="btn btn-secondary">?? Quay L?i</a>
+            <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-warning">?? Ch?nh S?a</a>
+        </div>
+    </div>
+</div>

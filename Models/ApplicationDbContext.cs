@@ -1,6 +1,7 @@
 ﻿namespace WebQuanLyGiaiDau_NhomTD.Models
 {
     using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+    using Microsoft.CodeAnalysis.Elfie.Diagnostics;
     // Data/AppDbContext.cs
     using Microsoft.EntityFrameworkCore;
     using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.General;
@@ -13,5 +14,13 @@
 
         public DbSet<Team> Teams { get; set; }
         public DbSet<Player> Players { get; set; }
+        public DbSet<Tournament> Tournaments { get; set; }
+
+        public DbSet<Sports> Sports { get; set; }
+
+
+        public DbSet<Match> Matches { get; set; }
+        public DbSet<Statistic> Statistics { get; set; }
+
     }
 }

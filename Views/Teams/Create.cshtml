@@ -1,38 +1,42 @@
 ﻿@model WebQuanLyGiaiDau_NhomTD.Models.Team
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Thêm Đội Bóng";
 }
 
-<h1>Create</h1>
+<h1 class="text-center text-primary mt-4">🏀 Thêm Đội Bóng Mới</h1>
+<hr class="mb-4" />
 
-<h4>Team</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <form asp-action="Create" class="bg-light p-4 rounded shadow">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label fw-semibold">Tên Đội</label>
+                <input asp-for="Name" class="form-control" placeholder="Nhập tên đội..." />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Coach" class="control-label"></label>
-                <input asp-for="Coach" class="form-control" />
+
+            <div class="mb-3">
+                <label asp-for="Coach" class="form-label fw-semibold">Huấn Luyện Viên</label>
+                <input asp-for="Coach" class="form-control" placeholder="Tên HLV..." />
                 <span asp-validation-for="Coach" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+
+            <div class="d-grid">
+                <input type="submit" value="Thêm Đội" class="btn btn-success fw-bold" />
             </div>
         </form>
+
+        <div class="text-center mt-3">
+            <a asp-action="Index" class="btn btn-outline-secondary">🔙 Quay Lại Danh Sách</a>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

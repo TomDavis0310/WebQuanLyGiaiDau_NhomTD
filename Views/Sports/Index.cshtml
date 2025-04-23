@@ -1,0 +1,46 @@
+﻿@{
+    ViewData["Title"] = "Các Môn Thể Thao";
+}
+
+<h2 class="text-center mt-4 mb-5 display-5 fw-bold text-primary">🏆 Các Môn Thể Thao</h2>
+
+<div class="container">
+    <div class="row justify-content-center g-4">
+        <!-- Môn bóng rổ -->
+        <div class="col-6 col-sm-4 col-md-3 text-center">
+            <a href="/Tournament" class="sport-card d-block p-3 shadow rounded-4 text-decoration-none text-dark bg-white">
+                <img src="~/images/basketball-icon.png" alt="Bóng Rổ" class="img-fluid sport-icon mb-2" />
+                <div class="fw-semibold">Bóng Rổ</div>
+            </a>
+        </div>
+
+        <!-- Môn bóng đá -->
+        <div class="col-6 col-sm-4 col-md-3 text-center">
+            <a href="/Sports/List?sportsId=2" class="sport-card d-block p-3 shadow rounded-4 text-decoration-none text-dark bg-white">
+                <img src="~/images/football-icon.png" alt="Bóng Đá" class="img-fluid sport-icon mb-2" />
+                <div class="fw-semibold">Bóng Đá</div>
+            </a>
+        </div>
+
+        <!-- Thêm các môn thể thao khác tại đây -->
+    </div>
+</div>
+
+<style>
+    .sport-card:hover {
+        transform: translateY(-5px);
+        transition: 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .sport-icon {
+        width: 100px;
+        height: 100px;
+        object-fit: contain;
+        transition: transform 0.3s ease;
+    }
+
+    .sport-card:hover .sport-icon {
+        transform: scale(1.1);
+    }
+</style>

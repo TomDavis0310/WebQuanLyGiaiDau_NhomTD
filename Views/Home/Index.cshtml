@@ -40,14 +40,18 @@
         transition: 0.3s ease;
     }
 
-    .btn-start:hover {
-        background-color: #ffffff;
-        color: #000;
-    }
+        .btn-start:hover {
+            background-color: #ffffff;
+            color: #000;
+        }
 
     a {
         color: #00d4ff;
         text-decoration: underline;
+    }
+
+    footer {
+        border-top: none;
     }
 
     a:hover {
@@ -59,5 +63,9 @@
     <h1>🏆 Quản lý Giải Đấu</h1>
     <h2>Chào mừng bạn đến với hệ thống quản lý giải đấu thể thao</h2>
 
-    <a href="/GiaiDau" class="btn-start">Bắt đầu quản lý</a>
+    <div class="text-center mt-5">
+        <a asp-controller="Sports" asp-action="Index" class="btn btn-primary btn-lg">
+            🎯 Giải Đấu
+        </a>
+    </div>
 </div>

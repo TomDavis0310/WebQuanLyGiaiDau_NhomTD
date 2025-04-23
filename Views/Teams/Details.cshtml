@@ -1,30 +1,27 @@
 ﻿@model WebQuanLyGiaiDau_NhomTD.Models.Team
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Chi Tiết Đội Bóng";
 }
 
-<h1>Details</h1>
+<h1 class="text-center text-info mt-4">📋 Chi Tiết Đội Bóng</h1>
 
-<div>
-    <h4>Team</h4>
-    <hr />
+<div class="container bg-light shadow rounded p-4 mt-4 mb-4">
+    <h5 class="text-primary mb-3">Thông Tin Đội:</h5>
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Coach)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Coach)
-        </dd>
+        <dt class="col-sm-3 fw-bold">Tên Đội:</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Name)</dd>
+
+        <dt class="col-sm-3 fw-bold">Huấn Luyện Viên:</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Coach)</dd>
     </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.TeamId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+    <div class="mt-4 d-flex justify-content-between">
+        <a asp-action="Edit" asp-route-id="@Model?.TeamId" class="btn btn-warning">
+            ✏️ Chỉnh Sửa
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            ↩️ Quay Lại Danh Sách
+        </a>
+    </div>
 </div>

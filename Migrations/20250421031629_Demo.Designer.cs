@@ -12,8 +12,8 @@ using WebQuanLyGiaiDau_NhomTD.Models;
 namespace WebQuanLyGiaiDau_NhomTD.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250414053811_ExtendIdentityUser")]
-    partial class ExtendIdentityUser
+    [Migration("20250421031629_Demo")]
+    partial class Demo
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -233,6 +233,40 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Match", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("MatchDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TeamA")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TeamB")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TeamId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TournamentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId");
+
+                    b.HasIndex("TournamentId");
+
+                    b.ToTable("Matches");
+                });
+
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Player", b =>
                 {
                     b.Property<int>("PlayerId")
@@ -243,6 +277,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Number")
@@ -262,6 +299,57 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.ToTable("Players");
                 });
 
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Sports", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Sports");
+                });
+
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Statistic", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Assists")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MatchId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PlayerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Rebounds")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MatchId");
+
+                    b.ToTable("Statistics");
+                });
+
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Team", b =>
                 {
                     b.Property<int>("TeamId")
@@ -274,6 +362,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("LogoUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -281,6 +372,41 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.HasKey("TeamId");
 
                     b.ToTable("Teams");
+                });
+
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Tournament", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SportsId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SportsId");
+
+                    b.ToTable("Tournaments");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -334,6 +460,21 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Match", b =>
+                {
+                    b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.Team", null)
+                        .WithMany("Matches")
+                        .HasForeignKey("TeamId");
+
+                    b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.Tournament", "Tournament")
+                        .WithMany()
+                        .HasForeignKey("TournamentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tournament");
+                });
+
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Player", b =>
                 {
                     b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.Team", "Team")
@@ -345,8 +486,37 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.Navigation("Team");
                 });
 
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Statistic", b =>
+                {
+                    b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.Match", "Match")
+                        .WithMany("Statistics")
+                        .HasForeignKey("MatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Match");
+                });
+
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Tournament", b =>
+                {
+                    b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.Sports", "Sports")
+                        .WithMany()
+                        .HasForeignKey("SportsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Sports");
+                });
+
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Match", b =>
+                {
+                    b.Navigation("Statistics");
+                });
+
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Team", b =>
                 {
+                    b.Navigation("Matches");
+
                     b.Navigation("Players");
                 });
 #pragma warning restore 612, 618

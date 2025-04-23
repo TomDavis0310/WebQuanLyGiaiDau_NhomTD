@@ -1,39 +1,37 @@
 ﻿@model WebQuanLyGiaiDau_NhomTD.Models.Team
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Chỉnh Sửa Đội Bóng";
 }
 
-<h1>Edit</h1>
+<h1 class="text-center text-warning mt-4">✏️ Chỉnh Sửa Thông Tin Đội</h1>
 
-<h4>Team</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="TeamId" />
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Coach" class="control-label"></label>
-                <input asp-for="Coach" class="form-control" />
-                <span asp-validation-for="Coach" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
-</div>
+<div class="container bg-light rounded shadow p-4 mt-4 mb-4">
+    <form asp-action="Edit">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <input type="hidden" asp-for="TeamId" />
 
-<div>
-    <a asp-action="Index">Back to List</a>
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label fw-bold">Tên Đội:</label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Coach" class="form-label fw-bold">Huấn Luyện Viên:</label>
+            <input asp-for="Coach" class="form-control" />
+            <span asp-validation-for="Coach" class="text-danger"></span>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <input type="submit" value="💾 Lưu Thay Đổi" class="btn btn-success" />
+            <a asp-action="Index" class="btn btn-outline-secondary">↩️ Quay Lại Danh Sách</a>
+        </div>
+    </form>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

@@ -30,6 +30,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Age = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -57,11 +60,29 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     TeamId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Coach = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Coach = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LogoUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Teams", x => x.TeamId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Tournaments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tournaments", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -179,6 +200,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Position = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Number = table.Column<int>(type: "int", nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TeamId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -257,6 +279,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
             migrationBuilder.DropTable(
                 name: "Players");
+
+            migrationBuilder.DropTable(
+                name: "Tournaments");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
