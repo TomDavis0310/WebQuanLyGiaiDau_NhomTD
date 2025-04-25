@@ -1,0 +1,28 @@
+﻿@model WebQuanLyGiaiDau_NhomTD.Models.Team
+
+@{
+    ViewData["Title"] = "Xóa Đội Bóng";
+}
+
+<h1 class="text-center text-danger mt-4">🗑️ Xóa Đội Bóng</h1>
+<h4 class="text-center text-secondary mb-4">Bạn có chắc chắn muốn xóa đội này không?</h4>
+
+<div class="container bg-light rounded shadow p-4 mb-4">
+    <h5 class="text-primary">Thông Tin Đội:</h5>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-3 fw-bold">Tên Đội:</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Name)</dd>
+
+        <dt class="col-sm-3 fw-bold">Huấn Luyện Viên:</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Coach)</dd>
+    </dl>
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="TeamId" />
+        <div class="d-flex justify-content-between mt-4">
+            <input type="submit" value="🗑️ Xóa" class="btn btn-danger" />
+            <a asp-action="Index" class="btn btn-outline-secondary">↩️ Quay Lại</a>
+        </div>
+    </form>
+</div>

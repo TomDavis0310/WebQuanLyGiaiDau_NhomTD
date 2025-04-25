@@ -1,0 +1,27 @@
+﻿@model WebQuanLyGiaiDau_NhomTD.Models.Team
+
+@{
+    ViewData["Title"] = "Chi Tiết Đội Bóng";
+}
+
+<h1 class="text-center text-info mt-4">📋 Chi Tiết Đội Bóng</h1>
+
+<div class="container bg-light shadow rounded p-4 mt-4 mb-4">
+    <h5 class="text-primary mb-3">Thông Tin Đội:</h5>
+    <dl class="row">
+        <dt class="col-sm-3 fw-bold">Tên Đội:</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Name)</dd>
+
+        <dt class="col-sm-3 fw-bold">Huấn Luyện Viên:</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Coach)</dd>
+    </dl>
+
+    <div class="mt-4 d-flex justify-content-between">
+        <a asp-action="Edit" asp-route-id="@Model?.TeamId" class="btn btn-warning">
+            ✏️ Chỉnh Sửa
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            ↩️ Quay Lại Danh Sách
+        </a>
+    </div>
+</div>

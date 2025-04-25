@@ -1,0 +1,29 @@
+﻿@model IEnumerable<WebQuanLyGiaiDau_NhomTD.Models.Tournament>
+
+@{
+    ViewData["Title"] = "Giải đấu theo môn thể thao";
+}
+
+<h2 class="text-center">Giải đấu môn thể thao</h2>
+
+<table class="table table-striped mt-4">
+    <thead>
+        <tr>
+            <th>Tên giải</th>
+            <th>Mô tả</th>
+            <th>Ngày bắt đầu</th>
+            <th>Ngày kết thúc</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Description</td>
+                <td>@item.StartDate.ToString("dd/MM/yyyy")</td>
+                <td>@item.EndDate.ToString("dd/MM/yyyy")</td>
+            </tr>
+        }
+    </tbody>
+</table>
