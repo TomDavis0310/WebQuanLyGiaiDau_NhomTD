@@ -2,70 +2,94 @@
     ViewData["Title"] = "Trang chủ";
 }
 
-<style>
-    body {
-        background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-        color: #fff;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        margin: 0;
-        padding: 0;
-    }
+<div class="hero-section text-center py-5">
+    <div class="container py-5">
+        <h1 class="display-3 fw-bold mb-4">
+            <i class="bi bi-trophy-fill text-warning me-2"></i>Quản Lý Giải Đấu
+        </h1>
+        <p class="lead mb-5">Hệ thống quản lý giải đấu thể thao toàn diện</p>
 
-    .container {
-        padding: 60px 20px;
-        max-width: 800px;
-        margin: auto;
-        text-align: center;
-    }
-
-    h1 {
-        font-size: 3rem;
-        margin-bottom: 20px;
-        color: #00d4ff;
-    }
-
-    h2 {
-        font-weight: normal;
-        color: #ffffffcc;
-        margin-bottom: 30px;
-    }
-
-    .btn-start {
-        background-color: #00d4ff;
-        color: #000;
-        padding: 12px 24px;
-        font-size: 1.2rem;
-        border-radius: 8px;
-        text-decoration: none;
-        transition: 0.3s ease;
-    }
-
-        .btn-start:hover {
-            background-color: #ffffff;
-            color: #000;
-        }
-
-    a {
-        color: #00d4ff;
-        text-decoration: underline;
-    }
-
-    footer {
-        border-top: none;
-    }
-
-    a:hover {
-        color: #ffffff;
-    }
-</style>
-
-<div class="container">
-    <h1>🏆 Quản lý Giải Đấu</h1>
-    <h2>Chào mừng bạn đến với hệ thống quản lý giải đấu thể thao</h2>
-
-    <div class="text-center mt-5">
-        <a asp-controller="Sports" asp-action="Index" class="btn btn-primary btn-lg">
-            🎯 Giải Đấu
-        </a>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow border-0 mb-4">
+                    <div class="card-body p-5">
+                        <h2 class="h4 mb-4">Đăng nhập để tiếp tục</h2>
+                        <div class="d-grid gap-2">
+                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập
+                            </a>
+                            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-person-plus me-2"></i>Đăng ký
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<div class="features-section py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Tính năng chính</h2>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-primary text-white mb-3">
+                            <i class="bi bi-trophy"></i>
+                        </div>
+                        <h3 class="h5">Quản lý giải đấu</h3>
+                        <p class="text-muted">Tạo và quản lý các giải đấu thể thao một cách dễ dàng</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-success text-white mb-3">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <h3 class="h5">Quản lý đội bóng</h3>
+                        <p class="text-muted">Theo dõi thông tin về các đội bóng tham gia giải đấu</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-info text-white mb-3">
+                            <i class="bi bi-clipboard-check"></i>
+                        </div>
+                        <h3 class="h5">Đăng ký tham gia</h3>
+                        <p class="text-muted">Đăng ký tham gia các giải đấu một cách nhanh chóng</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #0143a3, #0273d4);
+        color: white;
+        min-height: 60vh;
+        display: flex;
+        align-items: center;
+    }
+
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 1rem;
+    }
+</style>

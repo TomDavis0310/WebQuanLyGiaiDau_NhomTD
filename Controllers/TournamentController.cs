@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebQuanLyGiaiDau_NhomTD.Models;
+using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
 
 namespace WebQuanLyGiaiDau_NhomTD.Controllers
 {
+    [Authorize]
     public class TournamentController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -45,6 +49,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Tournament/Create
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
         public IActionResult Create()
         {
             var sports = _context.Sports.ToList();
@@ -57,6 +62,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
         public async Task<IActionResult> Create(Tournament tournament, IFormFile imageUrl)
         {
             if (ModelState.IsValid)
@@ -104,6 +110,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
 
         // GET: Tournament/Edit/5
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -124,6 +131,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,StartDate,EndDate,ImageUrl")] Tournament tournament)
         {
             if (id != tournament.Id)
@@ -155,6 +163,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Tournament/Delete/5
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -175,6 +184,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // POST: Tournament/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var tournament = await _context.Tournaments.FindAsync(id);
@@ -190,6 +200,129 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         private bool TournamentExists(int id)
         {
             return _context.Tournaments.Any(e => e.Id == id);
+        }
+
+        // GET: Tournament/Register/5
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        public async Task<IActionResult> Register(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var tournament = await _context.Tournaments
+                .Include(t => t.Sports)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (tournament == null)
+            {
+                return NotFound();
+            }
+
+            // Check if user has already registered for this tournament
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var existingRegistration = await _context.TournamentRegistrations
+                .FirstOrDefaultAsync(r => r.TournamentId == id && r.UserId == userId);
+
+            if (existingRegistration != null)
+            {
+                // User has already registered
+                ViewBag.AlreadyRegistered = true;
+                ViewBag.RegistrationStatus = existingRegistration.Status;
+            }
+            else
+            {
+                ViewBag.AlreadyRegistered = false;
+            }
+
+            return View(tournament);
+        }
+
+        // POST: Tournament/Register/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        public async Task<IActionResult> Register(int id, string notes)
+        {
+            var tournament = await _context.Tournaments.FindAsync(id);
+            if (tournament == null)
+            {
+                return NotFound();
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Check if user has already registered
+            var existingRegistration = await _context.TournamentRegistrations
+                .FirstOrDefaultAsync(r => r.TournamentId == id && r.UserId == userId);
+
+            if (existingRegistration != null)
+            {
+                // User has already registered
+                TempData["Message"] = "Bạn đã đăng ký giải đấu này rồi.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Create new registration
+            var registration = new TournamentRegistration
+            {
+                TournamentId = id,
+                UserId = userId,
+                RegistrationDate = DateTime.Now,
+                Status = "Pending",
+                Notes = notes
+            };
+
+            _context.TournamentRegistrations.Add(registration);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Đăng ký giải đấu thành công. Vui lòng chờ phê duyệt.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Tournament/MyRegistrations
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        public async Task<IActionResult> MyRegistrations()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var registrations = await _context.TournamentRegistrations
+                .Include(r => r.Tournament)
+                .Where(r => r.UserId == userId)
+                .ToListAsync();
+
+            return View(registrations);
+        }
+
+        // GET: Tournament/ManageRegistrations
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        public async Task<IActionResult> ManageRegistrations()
+        {
+            var registrations = await _context.TournamentRegistrations
+                .Include(r => r.Tournament)
+                .Include(r => r.User)
+                .ToListAsync();
+
+            return View(registrations);
+        }
+
+        // POST: Tournament/UpdateRegistrationStatus
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        public async Task<IActionResult> UpdateRegistrationStatus(int id, string status)
+        {
+            var registration = await _context.TournamentRegistrations.FindAsync(id);
+            if (registration == null)
+            {
+                return NotFound();
+            }
+
+            registration.Status = status;
+            _context.Update(registration);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(ManageRegistrations));
         }
     }
 }

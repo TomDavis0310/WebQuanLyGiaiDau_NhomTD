@@ -1,46 +1,94 @@
 ﻿@{
-    ViewData["Title"] = "Các Môn Thể Thao";
+    ViewData["Title"] = "Trang Chủ";
 }
 
-<h2 class="text-center mt-4 mb-5 display-5 fw-bold text-primary">🏆 Các Môn Thể Thao</h2>
+<div class="bg-overlay">
+    <h2 class="title-box text-center text-uppercase fw-bold text-danger">
+        TRANG WEB QUẢN LÝ GIẢI ĐẤU
+    </h2>
 
-<div class="container">
-    <div class="row justify-content-center g-4">
-        <!-- Môn bóng rổ -->
-        <div class="col-6 col-sm-4 col-md-3 text-center">
-            <a href="/Tournament" class="sport-card d-block p-3 shadow rounded-4 text-decoration-none text-dark bg-white">
-                <img src="~/images/basketball-icon.png" alt="Bóng Rổ" class="img-fluid sport-icon mb-2" />
-                <div class="fw-semibold">Bóng Rổ</div>
-            </a>
+    <div class="container py-5">
+        <div class="row justify-content-center g-4">
+            <!-- Mỗi ô là 1 liên kết đến controller cụ thể -->
+            <!-- Ô 1: Bóng rổ -->
+            <div class="col-6 col-md-4 text-center">
+                <a asp-controller="Tournaments" asp-action="Index" class="sport-box bg-danger d-inline-block"></a>
+            </div>
+
+            <!-- Ô 2: Bóng đá -->
+            <div class="col-6 col-md-4 text-center">
+                <a asp-controller="Sports" asp-action="List" asp-route-sportsId="2"
+                   class="sport-box" style="background-color: blueviolet;"></a>
+            </div>
+
+            <!-- Ô 3: Đội bóng -->
+            <div class="col-6 col-md-4 text-center">
+                <a asp-controller="Teams" asp-action="Index" class="sport-box bg-white border d-inline-block"></a>
+            </div>
+
+            <!-- Ô 4: Cầu thủ -->
+            <div class="col-6 col-md-4 text-center">
+                <a asp-controller="Players" asp-action="Index" class="sport-box bg-success d-inline-block"></a>
+            </div>
+
+            <!-- Ô 5: Trận đấu -->
+            <div class="col-6 col-md-4 text-center">
+                <a asp-controller="Matches" asp-action="Index" class="sport-box bg-warning d-inline-block"></a>
+            </div>
+
+            <!-- Ô 6: Thống kê -->
+            <div class="col-6 col-md-4 text-center">
+                <a asp-controller="Statistics" asp-action="Index" class="sport-box" style="background-color: #222;"></a>
+            </div>
         </div>
-
-        <!-- Môn bóng đá -->
-        <div class="col-6 col-sm-4 col-md-3 text-center">
-            <a href="/Sports/List?sportsId=2" class="sport-card d-block p-3 shadow rounded-4 text-decoration-none text-dark bg-white">
-                <img src="~/images/football-icon.png" alt="Bóng Đá" class="img-fluid sport-icon mb-2" />
-                <div class="fw-semibold">Bóng Đá</div>
-            </a>
-        </div>
-
-        <!-- Thêm các môn thể thao khác tại đây -->
     </div>
 </div>
 
 <style>
-    .sport-card:hover {
-        transform: translateY(-5px);
-        transition: 0.3s ease;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    .bg-overlay {
+        background: url('/images/basketball-bg.jpg') no-repeat center center;
+        background-size: cover;
+        position: relative;
+        min-height: 100vh;
+        padding-top: 50px;
     }
 
-    .sport-icon {
-        width: 100px;
-        height: 100px;
-        object-fit: contain;
+        .bg-overlay::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+    .title-box {
+        background-color: rgba(0, 0, 0, 0.8);
+        color: red;
+        padding: 10px 20px;
+        border-radius: 5px;
+        z-index: 2;
+        position: relative;
+        display: inline-block;
+    }
+
+    .container {
+        position: relative;
+        z-index: 2;
+    }
+
+    .sport-box {
+        width: 120px;
+        height: 120px;
+        border-radius: 25px;
         transition: transform 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
 
-    .sport-card:hover .sport-icon {
-        transform: scale(1.1);
-    }
+        .sport-box:hover {
+            transform: scale(1.1);
+        }
+
 </style>

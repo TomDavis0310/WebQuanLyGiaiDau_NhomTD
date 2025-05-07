@@ -15,29 +15,36 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using WebQuanLyGiaiDau_NhomTD.Models;
+using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
 
 namespace WebQuanLyGiaiDau_NhomTD.Areas.Identity.Pages.Account
 {
     public class RegisterModel : PageModel
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly IUserStore<IdentityUser> _userStore;
-        private readonly IUserEmailStore<IdentityUser> _emailStore;
+        private readonly SignInManager<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly UserManager<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser> _userManager;
+        private readonly IUserStore<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser> _userStore;
+        private readonly IUserEmailStore<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
 
         public RegisterModel(
-            UserManager<IdentityUser> userManager,
-            IUserStore<IdentityUser> userStore,
-            SignInManager<IdentityUser> signInManager,
+            UserManager<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager,
+            IUserStore<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser> userStore,
+            SignInManager<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
             _userStore = userStore;
             _emailStore = GetEmailStore();
             _signInManager = signInManager;
@@ -70,12 +77,14 @@ namespace WebQuanLyGiaiDau_NhomTD.Areas.Identity.Pages.Account
         /// </summary>
         public class InputModel
         {
-            [Required]
-            public string FullName { get; set; }
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
+            ///
+            [Required]
+            public string FullName { get; set; }
+
             [Required]
             [EmailAddress]
             [Display(Name = "Email")]
@@ -99,11 +108,26 @@ namespace WebQuanLyGiaiDau_NhomTD.Areas.Identity.Pages.Account
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
+
+            // Role selection removed - users will be assigned the User role by default
         }
 
 
         public async Task OnGetAsync(string returnUrl = null)
         {
+            // Create Admin and User roles if they don't exist
+            if (!_roleManager.RoleExistsAsync(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin).GetAwaiter().GetResult())
+            {
+                _roleManager.CreateAsync(new IdentityRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)).GetAwaiter().GetResult();
+            }
+
+            if (!_roleManager.RoleExistsAsync(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User).GetAwaiter().GetResult())
+            {
+                _roleManager.CreateAsync(new IdentityRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)).GetAwaiter().GetResult();
+            }
+
+            Input = new();
+
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
@@ -115,6 +139,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
+                user.FullName = Input.FullName;
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
@@ -123,6 +148,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
+
+                    // Always assign the User role to new registrations
+                    await _userManager.AddToRoleAsync(user, WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User);
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -156,27 +184,27 @@ namespace WebQuanLyGiaiDau_NhomTD.Areas.Identity.Pages.Account
             return Page();
         }
 
-        private IdentityUser CreateUser()
+        private WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser CreateUser()
         {
             try
             {
-                return Activator.CreateInstance<IdentityUser>();
+                return Activator.CreateInstance<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser>();
             }
             catch
             {
-                throw new InvalidOperationException($"Can't create an instance of '{nameof(IdentityUser)}'. " +
-                    $"Ensure that '{nameof(IdentityUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
+                throw new InvalidOperationException($"Can't create an instance of '{nameof(WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser)}'. " +
+                    $"Ensure that '{nameof(WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
                     $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
             }
         }
 
-        private IUserEmailStore<IdentityUser> GetEmailStore()
+        private IUserEmailStore<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser> GetEmailStore()
         {
             if (!_userManager.SupportsUserEmail)
             {
                 throw new NotSupportedException("The default UI requires a user store with email support.");
             }
-            return (IUserEmailStore<IdentityUser>)_userStore;
+            return (IUserEmailStore<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser>)_userStore;
         }
     }
 }

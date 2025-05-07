@@ -1,4 +1,5 @@
 ﻿@model IEnumerable<WebQuanLyGiaiDau_NhomTD.Models.Team>
+@using WebQuanLyGiaiDau_NhomTD.Models.UserModel
 
 @{
     ViewData["Title"] = "Danh Sách Đội Bóng";
@@ -6,9 +7,12 @@
 
 <h1 class="text-center text-primary mt-4">📋 Danh Sách Đội Bóng</h1>
 
-<div class="text-end mb-3">
-    <a asp-action="Create" class="btn btn-success">➕ Thêm Đội Mới</a>
-</div>
+@if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+{
+    <div class="text-end mb-3">
+        <a asp-action="Create" class="btn btn-success">➕ Thêm Đội Mới</a>
+    </div>
+}
 
 <table class="table table-hover table-bordered shadow">
     <thead class="table-dark text-center">
@@ -25,9 +29,12 @@
                 <td>@Html.DisplayFor(modelItem => item.Name)</td>
                 <td>@Html.DisplayFor(modelItem => item.Coach)</td>
                 <td class="text-center">
-                    <a asp-action="Edit" asp-route-id="@item.TeamId" class="btn btn-sm btn-warning me-1">✏️ Sửa</a>
                     <a asp-action="Details" asp-route-id="@item.TeamId" class="btn btn-sm btn-info me-1">🔍 Xem</a>
-                    <a asp-action="Delete" asp-route-id="@item.TeamId" class="btn btn-sm btn-danger">🗑️ Xóa</a>
+                    @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.TeamId" class="btn btn-sm btn-warning me-1">✏️ Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@item.TeamId" class="btn btn-sm btn-danger">🗑️ Xóa</a>
+                    }
                 </td>
             </tr>
         }

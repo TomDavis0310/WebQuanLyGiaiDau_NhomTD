@@ -6,6 +6,7 @@
     <title>@ViewData["Title"] - WebQuanLyGiaiDau_NhomTD</title>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WebQuanLyGiaiDau_NhomTD.styles.css" asp-append-version="true" />
 </head>
@@ -15,7 +16,7 @@
         <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom shadow-sm mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    WebQuanLyGiaiDau_NhomTD
+                    <i class="bi bi-trophy-fill text-warning me-2"></i>Quản Lý Giải Đấu
                 </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
@@ -25,47 +26,95 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
 
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <!-- Common navigation for all authenticated users -->
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">
+                                    <i class="bi bi-house-door"></i> Trang chủ
+                                </a>
+                            </li>
 
-                        <!-- Product dropdown -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="productDropdown" data-bs-toggle="dropdown">
-                                Games
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="productDropdown">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Sports" asp-action="List" asp-route-sportsId="2">⚽ Football</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Sports" asp-action="List" asp-route-sportsId="3">🏐 Volleyball</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Tournament" asp-action="List" asp-route-sportsId="1">🏀 Basketball</a>
-                                </li>
-                            </ul>
-                        </li>
+                            <!-- Sports dropdown for all users -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="sportsDropdown" data-bs-toggle="dropdown">
+                                    <i class="bi bi-dribbble"></i> Môn thể thao
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="sportsDropdown">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Sports" asp-action="List" asp-route-sportsId="2">⚽ Bóng đá</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Sports" asp-action="List" asp-route-sportsId="3">🏐 Bóng chuyền</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Tournament" asp-action="List" asp-route-sportsId="1">🏀 Bóng rổ</a>
+                                    </li>
+                                </ul>
+                            </li>
 
-                        <!-- Resources dropdown -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="resourcesDropdown" data-bs-toggle="dropdown">
-                                Resources
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="resourcesDropdown">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Camp" asp-action="Index">📅 Camps</a>
+                            <!-- Tournament link for all users -->
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Tournament" asp-action="Index">
+                                    <i class="bi bi-trophy"></i> Giải đấu
+                                </a>
+                            </li>
+
+                            @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+                            {
+                                <!-- Admin-specific navigation -->
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" data-bs-toggle="dropdown">
+                                        <i class="bi bi-gear"></i> Quản lý
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Teams" asp-action="Index">
+                                                <i class="bi bi-people-fill"></i> Quản lý đội
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Players" asp-action="Index">
+                                                <i class="bi bi-person-fill"></i> Quản lý cầu thủ
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Tournament" asp-action="ManageRegistrations">
+                                                <i class="bi bi-clipboard-check"></i> Quản lý đăng ký
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="League" asp-action="Index">🏆 Leagues</a>
+                            }
+
+                            @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User))
+                            {
+                                <!-- User-specific navigation -->
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Tournament" asp-action="MyRegistrations">
+                                        <i class="bi bi-list-check"></i> Giải đấu đã đăng ký
+                                    </a>
                                 </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Tournament" asp-action="Index">🎯 Tournaments</a>
-                                </li>
-                            </ul>
-                        </li>
+                            }
+                        }
+                        else
+                        {
+                            <!-- Navigation for non-authenticated users -->
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">
+                                    <i class="bi bi-house-door"></i> Trang chủ
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Privacy">
+                                    <i class="bi bi-shield-check"></i> Chính sách
+                                </a>
+                            </li>
+                        }
                     </ul>
 
                     <div class="d-flex">
-                        <a class="btn btn-outline-dark me-2" asp-area="Identity" asp-page="/Account/Login">Login</a>
-                        <a class="btn btn-info text-white" asp-area="Identity" asp-page="/Account/Register">Register</a>
+                        <partial name="_LoginPartial" />
                     </div>
 
                 </div>

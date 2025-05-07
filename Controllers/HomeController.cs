@@ -1,6 +1,8 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebQuanLyGiaiDau_NhomTD.Models;
+using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
 
 namespace WebQuanLyGiaiDau_NhomTD.Controllers;
 
@@ -14,6 +16,29 @@ public class HomeController : Controller
     }
 
     public IActionResult Index()
+    {
+        if (User.Identity.IsAuthenticated)
+        {
+            if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+            {
+                return View("AdminDashboard");
+            }
+            else if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User))
+            {
+                return View("UserDashboard");
+            }
+        }
+        return View();
+    }
+
+    [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+    public IActionResult AdminDashboard()
+    {
+        return View();
+    }
+
+    [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+    public IActionResult UserDashboard()
     {
         return View();
     }

@@ -1,11 +1,17 @@
-﻿using System.Linq;
+﻿using System;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebQuanLyGiaiDau_NhomTD.Models;
+using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
 
 namespace WebQuanLyGiaiDau_NhomTD.Controllers
 {
+    [Authorize]
     public class SportsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -53,5 +59,87 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             // Trả về View với danh sách giải đấu
             return View(tournaments);
         }
+
+        // GET: Sports/Create
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Sports/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        public async Task<IActionResult> Create(Sports sports, IFormFile imageUrl)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    if (imageUrl != null)
+                    {
+                        sports.ImageUrl = await SaveImage(imageUrl);
+                    }
+
+                    _context.Add(sports);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, "Lỗi khi lưu dữ liệu: " + ex.Message);
+                }
+            }
+            return View(sports);
+        }
+
+        private async Task<string> SaveImage(IFormFile image)
+        {
+            var savePath = Path.Combine("wwwroot/images", image.FileName);
+            using (var fileStream = new FileStream(savePath, FileMode.Create))
+            {
+                await image.CopyToAsync(fileStream);
+            }
+            return "/images/" + image.FileName;
+        }
+
+        // GET: Sports/Delete/5
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var sport = await _context.Sports
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (sport == null)
+            {
+                return NotFound();
+            }
+
+            return View(sport);
+        }
+
+        // POST: Sports/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var sport = await _context.Sports.FindAsync(id);
+            if (sport != null)
+            {
+                _context.Sports.Remove(sport);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
+
+
+

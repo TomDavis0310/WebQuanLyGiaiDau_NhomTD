@@ -1,53 +1,45 @@
 ﻿@model IEnumerable<WebQuanLyGiaiDau_NhomTD.Models.Player>
+@using WebQuanLyGiaiDau_NhomTD.Models.UserModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Danh Sách Cầu Thủ";
 }
 
-<h1>Index</h1>
+<h1 class="text-center text-primary mt-4">📋 Danh Sách Cầu Thủ</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
+@if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+{
+    <div class="text-end mb-3">
+        <a asp-action="Create" class="btn btn-success">➕ Thêm Cầu Thủ Mới</a>
+    </div>
+}
+<table class="table table-hover table-bordered shadow">
+    <thead class="table-dark text-center">
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.FullName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Position)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Number)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Team)
-            </th>
-            <th></th>
+            <th>Họ Tên</th>
+            <th>Vị Trí</th>
+            <th>Số Áo</th>
+            <th>Đội</th>
+            <th>Hành Động</th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FullName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Position)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Number)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Team.TeamId)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.PlayerId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.PlayerId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.PlayerId">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr class="align-middle">
+                <td>@Html.DisplayFor(modelItem => item.FullName)</td>
+                <td>@Html.DisplayFor(modelItem => item.Position)</td>
+                <td class="text-center">@Html.DisplayFor(modelItem => item.Number)</td>
+                <td>@Html.DisplayFor(modelItem => item.Team.Name)</td>
+                <td class="text-center">
+                    <a asp-action="Details" asp-route-id="@item.PlayerId" class="btn btn-sm btn-info me-1">🔍 Xem</a>
+                    @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.PlayerId" class="btn btn-sm btn-warning me-1">✏️ Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@item.PlayerId" class="btn btn-sm btn-danger">🗑️ Xóa</a>
+                    }
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

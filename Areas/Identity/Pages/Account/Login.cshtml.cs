@@ -14,15 +14,17 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
+using WebQuanLyGiaiDau_NhomTD.Models;
 
 namespace WebQuanLyGiaiDau_NhomTD.Areas.Identity.Pages.Account
 {
     public class LoginModel : PageModel
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly SignInManager<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
 
-        public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser> signInManager, ILogger<LoginModel> logger)
         {
             _signInManager = signInManager;
             _logger = logger;

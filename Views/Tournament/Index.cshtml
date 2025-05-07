@@ -1,11 +1,41 @@
 @model IEnumerable<WebQuanLyGiaiDau_NhomTD.Models.Tournament>
+@using Microsoft.AspNetCore.Identity
+@using WebQuanLyGiaiDau_NhomTD.Models.UserModel
+@inject SignInManager<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser> SignInManager
+@inject UserManager<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser> UserManager
 
-<h1 class="text-center text-primary mt-4"> List Tournament</h1>
+<h1 class="text-center text-primary mt-4">Danh sách giải đấu bóng rổ</h1>
 
-<div class="text-end mb-3">
-    <a asp-action="Create" class="btn btn-success">
-        New Tournament
-    </a>
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="d-flex justify-content-between mb-3">
+    @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User))
+    {
+        <a asp-action="MyRegistrations" class="btn btn-primary">
+            <i class="bi bi-list-check"></i> Giải đấu đã đăng ký
+        </a>
+    }
+    @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+    {
+        <div>
+            <a asp-action="ManageRegistrations" class="btn btn-info text-white">
+                <i class="bi bi-people"></i> Quản lý đăng ký
+            </a>
+            <a asp-action="Create" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Tạo giải đấu mới
+            </a>
+        </div>
+    }
+    else
+    {
+        <div></div> <!-- Empty div for flex spacing -->
+    }
 </div>
 
 <table class="table table-striped table-bordered shadow-sm">
@@ -38,9 +68,24 @@
                     }
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning"> Edit</a>
-                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white"> View</a>
-                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger"> Delete</a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white">
+                        <i class="bi bi-eye"></i> Xem
+                    </a>
+                    @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i> Sửa
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
+                            <i class="bi bi-trash"></i> Xóa
+                        </a>
+                    }
+                    @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User))
+                    {
+                        <a asp-action="Register" asp-route-id="@item.Id" class="btn btn-sm btn-success">
+                            <i class="bi bi-check-circle"></i> Đăng ký
+                        </a>
+                    }
                 </td>
             </tr>
         }

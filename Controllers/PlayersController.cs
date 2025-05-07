@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebQuanLyGiaiDau_NhomTD.Models;
+using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
 
 namespace WebQuanLyGiaiDau_NhomTD.Controllers
 {
+    [Authorize]
     public class PlayersController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -45,9 +48,10 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Players/Create
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
         public IActionResult Create()
         {
-            ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "TeamId");
+            ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "Name");
             return View();
         }
 
@@ -56,6 +60,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
         public async Task<IActionResult> Create([Bind("PlayerId,FullName,Position,Number,TeamId")] Player player)
         {
             if (ModelState.IsValid)
@@ -64,11 +69,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "TeamId", player.TeamId);
+            ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "Name", player.TeamId);
             return View(player);
         }
 
         // GET: Players/Edit/5
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -81,7 +87,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             {
                 return NotFound();
             }
-            ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "TeamId", player.TeamId);
+            ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "Name", player.TeamId);
             return View(player);
         }
 
@@ -90,6 +96,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
         public async Task<IActionResult> Edit(int id, [Bind("PlayerId,FullName,Position,Number,TeamId")] Player player)
         {
             if (id != player.PlayerId)
@@ -117,11 +124,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "TeamId", player.TeamId);
+            ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "Name", player.TeamId);
             return View(player);
         }
 
         // GET: Players/Delete/5
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -143,6 +151,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // POST: Players/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var player = await _context.Players.FindAsync(id);
