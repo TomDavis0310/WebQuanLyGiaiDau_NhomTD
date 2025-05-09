@@ -1,0 +1,49 @@
+@model WebQuanLyGiaiDau_NhomTD.Models.Match
+
+@{
+    ViewData["Title"] = "Chỉnh Sửa Trận Đấu";
+}
+
+<h1 class="text-center text-warning mt-4">✏️ Chỉnh Sửa Trận Đấu</h1>
+
+<div class="container bg-light rounded shadow p-4 mt-4 mb-4">
+    <form asp-action="Edit">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <input type="hidden" asp-for="Id" />
+
+        <div class="mb-3">
+            <label asp-for="TeamA" class="form-label fw-bold">Đội A:</label>
+            <input asp-for="TeamA" class="form-control" />
+            <span asp-validation-for="TeamA" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="TeamB" class="form-label fw-bold">Đội B:</label>
+            <input asp-for="TeamB" class="form-control" />
+            <span asp-validation-for="TeamB" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="MatchDate" class="form-label fw-bold">Ngày Thi Đấu:</label>
+            <input asp-for="MatchDate" class="form-control" />
+            <span asp-validation-for="MatchDate" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="TournamentId" class="form-label fw-bold">Giải Đấu:</label>
+            <select asp-for="TournamentId" class="form-select" asp-items="ViewBag.TournamentId"></select>
+            <span asp-validation-for="TournamentId" class="text-danger"></span>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <input type="submit" value="💾 Lưu Thay Đổi" class="btn btn-success" />
+            <a asp-action="Index" class="btn btn-outline-secondary">↩️ Quay Lại Danh Sách</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -2,6 +2,7 @@ using WebQuanLyGiaiDau_NhomTD.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
+using WebQuanLyGiaiDau_NhomTD;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -90,6 +91,10 @@ using (var scope = app.Services.CreateScope())
             userManager.AddToRoleAsync(regularUser, WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User).GetAwaiter().GetResult();
         }
     }
+
+    // Seed basketball tournament data
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    SeedBasketballTournament.Initialize(dbContext);
 }
 
 // Cấu hình pipeline

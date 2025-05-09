@@ -25,26 +25,33 @@
 
             <div class="form-group mb-3">
                 <label asp-for="StartDate" class="form-label fw-bold">Ngày Bắt Đầu</label>
-                <input asp-for="StartDate" class="form-control" type="date" />
+                <input asp-for="StartDate" class="form-control" type="date" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
                 <span asp-validation-for="StartDate" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
                 <label asp-for="EndDate" class="form-label fw-bold">Ngày Kết Thúc</label>
-                <input asp-for="EndDate" class="form-control" type="date" />
+                <input asp-for="EndDate" class="form-control" type="date" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
                 <span asp-validation-for="EndDate" class="text-danger"></span>
             </div>
 
+            <div class="form-group mb-3">
+                <label asp-for="SportsId" class="form-label fw-bold">Môn Thể Thao</label>
+                <select asp-for="SportsId" class="form-select" asp-items="ViewBag.Sports">
+                    <option value="">-- Chọn Môn Thể Thao --</option>
+                </select>
+                <span asp-validation-for="SportsId" class="text-danger"></span>
+            </div>
 
             <div class="form-group mb-4">
                 <label asp-for="ImageUrl" class="form-label fw-bold">URL Ảnh Đại Diện</label>
-                <input type="file" asp-for="ImageUrl" class="form-control" />
+                <input type="file" name="imageUrl" class="form-control" />
             </div>
 
             <div class="d-flex justify-content-between">
                 <input type="submit" value="Tạo Giải Đấu" class="btn btn-primary" />
                 <a asp-action="Index" class="btn btn-secondary">⬅️ Quay Lại</a>
-                
+
             </div>
         </form>
     </div>

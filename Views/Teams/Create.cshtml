@@ -9,7 +9,7 @@
 
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <form asp-action="Create" class="bg-light p-4 rounded shadow">
+        <form asp-action="Create" enctype="multipart/form-data" class="bg-light p-4 rounded shadow">
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
             <div class="mb-3">
@@ -24,7 +24,13 @@
                 <span asp-validation-for="Coach" class="text-danger"></span>
             </div>
 
-            <div class="d-grid">
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Logo Đội Bóng</label>
+                <input type="file" name="logoFile" class="form-control" accept="image/*" />
+                <small class="text-muted">Chọn logo cho đội bóng (không bắt buộc)</small>
+            </div>
+
+            <div class="d-grid mt-4">
                 <input type="submit" value="Thêm Đội" class="btn btn-success fw-bold" />
             </div>
         </form>

@@ -7,20 +7,46 @@
 <h1 class="text-center text-warning mt-4">✏️ Chỉnh Sửa Thông Tin Đội</h1>
 
 <div class="container bg-light rounded shadow p-4 mt-4 mb-4">
-    <form asp-action="Edit">
+    <form asp-action="Edit" enctype="multipart/form-data">
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
         <input type="hidden" asp-for="TeamId" />
 
-        <div class="mb-3">
-            <label asp-for="Name" class="form-label fw-bold">Tên Đội:</label>
-            <input asp-for="Name" class="form-control" />
-            <span asp-validation-for="Name" class="text-danger"></span>
-        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label fw-bold">Tên Đội:</label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
 
-        <div class="mb-3">
-            <label asp-for="Coach" class="form-label fw-bold">Huấn Luyện Viên:</label>
-            <input asp-for="Coach" class="form-control" />
-            <span asp-validation-for="Coach" class="text-danger"></span>
+                <div class="mb-3">
+                    <label asp-for="Coach" class="form-label fw-bold">Huấn Luyện Viên:</label>
+                    <input asp-for="Coach" class="form-control" />
+                    <span asp-validation-for="Coach" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="mb-3 text-center">
+                    <label class="form-label fw-bold d-block">Logo Hiện Tại:</label>
+                    @if (!string.IsNullOrEmpty(Model.LogoUrl))
+                    {
+                        <img src="@Model.LogoUrl" alt="Logo đội bóng" class="img-thumbnail mb-2" style="max-height: 150px;" />
+                    }
+                    else
+                    {
+                        <div class="bg-light border rounded p-3 mb-2 text-muted">
+                            <i class="bi bi-image"></i> Chưa có logo
+                        </div>
+                    }
+
+                    <div class="mt-3">
+                        <label class="form-label fw-bold">Thay Đổi Logo:</label>
+                        <input type="file" name="logoFile" class="form-control" accept="image/*" />
+                        <small class="text-muted">Để trống nếu không muốn thay đổi logo</small>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="d-flex justify-content-between mt-4">

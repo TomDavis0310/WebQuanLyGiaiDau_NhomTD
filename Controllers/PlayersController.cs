@@ -44,6 +44,23 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return NotFound();
             }
 
+            // Get player statistics
+            var playerStats = await _context.Statistics
+                .Include(s => s.Match)
+                .Where(s => s.PlayerName == player.FullName)
+                .ToListAsync();
+
+            ViewData["PlayerStatistics"] = playerStats;
+
+            // Calculate average statistics
+            if (playerStats.Any())
+            {
+                ViewData["AvgPoints"] = playerStats.Average(s => s.Points);
+                ViewData["AvgAssists"] = playerStats.Average(s => s.Assists);
+                ViewData["AvgRebounds"] = playerStats.Average(s => s.Rebounds);
+                ViewData["TotalGames"] = playerStats.Count;
+            }
+
             return View(player);
         }
 
@@ -61,16 +78,48 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
-        public async Task<IActionResult> Create([Bind("PlayerId,FullName,Position,Number,TeamId")] Player player)
+        public async Task<IActionResult> Create([Bind("PlayerId,FullName,Position,Number,TeamId")] Player player, IFormFile imageFile)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(player);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    // Xử lý tải lên hình ảnh nếu có
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        player.ImageUrl = await SaveImage(imageFile);
+                    }
+
+                    _context.Add(player);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, "Lỗi khi lưu dữ liệu: " + ex.Message);
+                }
             }
             ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "Name", player.TeamId);
             return View(player);
+        }
+
+        // Phương thức lưu hình ảnh
+        private async Task<string> SaveImage(IFormFile image)
+        {
+            var savePath = Path.Combine("wwwroot/images/players", image.FileName);
+
+            // Đảm bảo thư mục tồn tại
+            var directory = Path.GetDirectoryName(savePath);
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            using (var fileStream = new FileStream(savePath, FileMode.Create))
+            {
+                await image.CopyToAsync(fileStream);
+            }
+            return "/images/players/" + image.FileName;
         }
 
         // GET: Players/Edit/5
@@ -97,7 +146,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
-        public async Task<IActionResult> Edit(int id, [Bind("PlayerId,FullName,Position,Number,TeamId")] Player player)
+        public async Task<IActionResult> Edit(int id, [Bind("PlayerId,FullName,Position,Number,TeamId")] Player player, IFormFile imageFile)
         {
             if (id != player.PlayerId)
             {
@@ -108,8 +157,23 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             {
                 try
                 {
+                    // Lấy thông tin cầu thủ hiện tại để giữ lại URL hình ảnh nếu không có hình mới
+                    var existingPlayer = await _context.Players.AsNoTracking().FirstOrDefaultAsync(p => p.PlayerId == id);
+
+                    // Xử lý tải lên hình ảnh mới nếu có
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        player.ImageUrl = await SaveImage(imageFile);
+                    }
+                    else if (existingPlayer != null)
+                    {
+                        // Giữ lại URL hình ảnh cũ nếu không có hình mới
+                        player.ImageUrl = existingPlayer.ImageUrl;
+                    }
+
                     _context.Update(player);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -122,7 +186,10 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, "Lỗi khi cập nhật dữ liệu: " + ex.Message);
+                }
             }
             ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "Name", player.TeamId);
             return View(player);
@@ -154,14 +221,39 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var player = await _context.Players.FindAsync(id);
-            if (player != null)
+            try
             {
-                _context.Players.Remove(player);
-            }
+                var player = await _context.Players.FindAsync(id);
+                if (player != null)
+                {
+                    // Check if there are any statistics for this player
+                    var hasStatistics = await _context.Statistics
+                        .AnyAsync(s => s.PlayerName == player.FullName);
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+                    if (hasStatistics)
+                    {
+                        // If there are related records, return to the delete view with an error message
+                        ViewData["error"] = "Không thể xóa cầu thủ này vì có thống kê liên quan.";
+                        player = await _context.Players
+                            .Include(p => p.Team)
+                            .FirstOrDefaultAsync(m => m.PlayerId == id);
+                        return View(player);
+                    }
+
+                    _context.Players.Remove(player);
+                    await _context.SaveChangesAsync();
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                // Handle any other exceptions
+                var player = await _context.Players
+                    .Include(p => p.Team)
+                    .FirstOrDefaultAsync(m => m.PlayerId == id);
+                ViewData["error"] = "Lỗi khi xóa cầu thủ: " + ex.Message;
+                return View(player);
+            }
         }
 
         private bool PlayerExists(int id)

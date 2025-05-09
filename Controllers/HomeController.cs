@@ -19,14 +19,8 @@ public class HomeController : Controller
     {
         if (User.Identity.IsAuthenticated)
         {
-            if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
-            {
-                return View("AdminDashboard");
-            }
-            else if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User))
-            {
-                return View("UserDashboard");
-            }
+            // Redirect to Sports/Index for all authenticated users
+            return RedirectToAction("Index", "Sports");
         }
         return View();
     }

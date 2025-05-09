@@ -1,48 +1,91 @@
-﻿@{
-    ViewData["Title"] = "Trang Chủ";
+﻿@model IEnumerable<WebQuanLyGiaiDau_NhomTD.Models.Sports>
+@using WebQuanLyGiaiDau_NhomTD.Models.UserModel
+
+@{
+    ViewData["Title"] = "Chọn Môn Thể Thao";
 }
 
 <div class="bg-overlay">
     <h2 class="title-box text-center text-uppercase fw-bold text-danger">
-        TRANG WEB QUẢN LÝ GIẢI ĐẤU
+        CHỌN MÔN THỂ THAO
     </h2>
 
     <div class="container py-5">
+        @if (User.IsInRole(SD.Role_Admin))
+        {
+            <div class="text-end mb-4">
+                <a asp-controller="Sports" asp-action="Create" class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i> Thêm Môn Thể Thao Mới
+                </a>
+            </div>
+        }
+
         <div class="row justify-content-center g-4">
-            <!-- Mỗi ô là 1 liên kết đến controller cụ thể -->
-            <!-- Ô 1: Bóng rổ -->
-            <div class="col-6 col-md-4 text-center">
-                <a asp-controller="Tournaments" asp-action="Index" class="sport-box bg-danger d-inline-block"></a>
-            </div>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var sport in Model)
+                {
+                    <div class="col-6 col-md-4 col-lg-3 text-center mb-4">
+                        <div class="position-relative">
+                            <a asp-controller="Sports" asp-action="List" asp-route-sportsId="@sport.Id"
+                               class="sport-card d-block text-decoration-none">
+                                <div class="sport-box @GetRandomColor() d-flex align-items-center justify-content-center mx-auto">
+                                    @if (!string.IsNullOrEmpty(sport.ImageUrl))
+                                    {
+                                        <img src="@sport.ImageUrl" alt="@sport.Name" class="img-fluid sport-image" />
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-trophy-fill display-4"></i>
+                                    }
+                                </div>
+                                <h5 class="mt-3 text-white">@sport.Name</h5>
+                            </a>
 
-            <!-- Ô 2: Bóng đá -->
-            <div class="col-6 col-md-4 text-center">
-                <a asp-controller="Sports" asp-action="List" asp-route-sportsId="2"
-                   class="sport-box" style="background-color: blueviolet;"></a>
-            </div>
-
-            <!-- Ô 3: Đội bóng -->
-            <div class="col-6 col-md-4 text-center">
-                <a asp-controller="Teams" asp-action="Index" class="sport-box bg-white border d-inline-block"></a>
-            </div>
-
-            <!-- Ô 4: Cầu thủ -->
-            <div class="col-6 col-md-4 text-center">
-                <a asp-controller="Players" asp-action="Index" class="sport-box bg-success d-inline-block"></a>
-            </div>
-
-            <!-- Ô 5: Trận đấu -->
-            <div class="col-6 col-md-4 text-center">
-                <a asp-controller="Matches" asp-action="Index" class="sport-box bg-warning d-inline-block"></a>
-            </div>
-
-            <!-- Ô 6: Thống kê -->
-            <div class="col-6 col-md-4 text-center">
-                <a asp-controller="Statistics" asp-action="Index" class="sport-box" style="background-color: #222;"></a>
-            </div>
+                            @if (User.IsInRole(SD.Role_Admin))
+                            {
+                                <div class="admin-actions">
+                                    <a asp-action="Edit" asp-route-id="@sport.Id" class="btn btn-sm btn-warning me-1" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@sport.Id" class="btn btn-sm btn-danger" title="Xóa">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center text-white">
+                    <div class="alert alert-info">
+                        <h4>Chưa có môn thể thao nào</h4>
+                        @if (User.IsInRole(SD.Role_Admin))
+                        {
+                            <p>Hãy thêm môn thể thao mới để bắt đầu.</p>
+                        }
+                        else
+                        {
+                            <p>Vui lòng liên hệ quản trị viên để thêm môn thể thao.</p>
+                        }
+                    </div>
+                </div>
+            }
         </div>
     </div>
 </div>
+
+@functions {
+    string[] colors = new[] { "bg-primary", "bg-success", "bg-danger", "bg-warning", "bg-info" };
+    Random random = new Random();
+
+    string GetRandomColor()
+    {
+        return colors[random.Next(colors.Length)];
+    }
+}
 
 <style>
     .bg-overlay {
@@ -60,7 +103,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.7);
             z-index: 1;
         }
 
@@ -72,6 +115,7 @@
         z-index: 2;
         position: relative;
         display: inline-block;
+        margin-bottom: 30px;
     }
 
     .container {
@@ -80,15 +124,32 @@
     }
 
     .sport-box {
-        width: 120px;
-        height: 120px;
+        width: 150px;
+        height: 150px;
         border-radius: 25px;
         transition: transform 0.3s ease;
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        color: white;
     }
 
-        .sport-box:hover {
-            transform: scale(1.1);
-        }
+    .sport-card:hover .sport-box {
+        transform: scale(1.1);
+    }
 
+    .sport-image {
+        max-width: 80%;
+        max-height: 80%;
+        object-fit: contain;
+    }
+
+    .admin-actions {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 10;
+        background-color: rgba(0, 0, 0, 0.6);
+        padding: 5px;
+        border-radius: 5px;
+        display: flex;
+    }
 </style>

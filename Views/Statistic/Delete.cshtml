@@ -1,0 +1,44 @@
+@model WebQuanLyGiaiDau_NhomTD.Models.Statistic
+
+@{
+    ViewData["Title"] = "Xóa Thống Kê";
+}
+
+<h1 class="text-center text-danger mt-4">🗑️ Xóa Thống Kê</h1>
+<h4 class="text-center text-secondary mb-4">Bạn có chắc chắn muốn xóa thống kê này không?</h4>
+
+@if (ViewData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @ViewData["error"]
+    </div>
+}
+
+<div class="container bg-light rounded shadow p-4 mb-4">
+    <h5 class="text-primary">Thông Tin Thống Kê:</h5>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-3 fw-bold">Cầu Thủ:</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.PlayerName)</dd>
+
+        <dt class="col-sm-3 fw-bold">Điểm:</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Points)</dd>
+
+        <dt class="col-sm-3 fw-bold">Kiến Tạo:</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Assists)</dd>
+
+        <dt class="col-sm-3 fw-bold">Bắt Bóng:</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Rebounds)</dd>
+
+        <dt class="col-sm-3 fw-bold">Trận Đấu:</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Match.TeamA) vs @Html.DisplayFor(model => model.Match.TeamB)</dd>
+    </dl>
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <div class="d-flex justify-content-between mt-4">
+            <input type="submit" value="🗑️ Xóa" class="btn btn-danger" />
+            <a asp-action="Index" class="btn btn-outline-secondary">↩️ Quay Lại</a>
+        </div>
+    </form>
+</div>

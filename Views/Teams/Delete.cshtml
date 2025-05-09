@@ -7,6 +7,13 @@
 <h1 class="text-center text-danger mt-4">🗑️ Xóa Đội Bóng</h1>
 <h4 class="text-center text-secondary mb-4">Bạn có chắc chắn muốn xóa đội này không?</h4>
 
+@if (ViewData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @ViewData["error"]
+    </div>
+}
+
 <div class="container bg-light rounded shadow p-4 mb-4">
     <h5 class="text-primary">Thông Tin Đội:</h5>
     <hr />

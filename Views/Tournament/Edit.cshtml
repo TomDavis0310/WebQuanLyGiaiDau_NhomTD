@@ -1,50 +1,68 @@
 @model WebQuanLyGiaiDau_NhomTD.Models.Tournament
 
 @{
-    ViewData["Title"] = "Ch?nh S?a Gi?i ??u";
+    ViewData["Title"] = "Chỉnh Sửa Giải Đấu";
 }
 
-<h1 class="text-center text-primary mt-4">?? Ch?nh S?a Gi?i ??u</h1>
+<h1 class="text-center text-warning mt-4">✏️ Chỉnh Sửa Giải Đấu</h1>
 
 <div class="row justify-content-center">
     <div class="col-md-6 shadow p-4 rounded bg-light">
-        <form asp-action="Edit">
+        <form asp-action="Edit" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
             <input type="hidden" asp-for="Id" />
 
             <div class="form-group mb-3">
-                <label asp-for="Name" class="form-label fw-bold">T�n Gi?i</label>
-                <input asp-for="Name" class="form-control" placeholder="Nh?p t�n gi?i ??u" />
+                <label asp-for="Name" class="form-label fw-bold">Tên Giải Đấu</label>
+                <input asp-for="Name" class="form-control" placeholder="Nhập tên giải đấu" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
-                <label asp-for="Description" class="form-label fw-bold">M� T?</label>
-                <textarea asp-for="Description" class="form-control" rows="3" placeholder="Nh?p m� t? ng?n..."></textarea>
+                <label asp-for="Description" class="form-label fw-bold">Mô Tả</label>
+                <textarea asp-for="Description" class="form-control" rows="3" placeholder="Nhập mô tả ngắn..."></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
-                <label asp-for="StartDate" class="form-label fw-bold">Ng�y B?t ??u</label>
-                <input asp-for="StartDate" type="date" class="form-control" />
+                <label asp-for="StartDate" class="form-label fw-bold">Ngày Bắt Đầu</label>
+                <input asp-for="StartDate" type="date" class="form-control" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
                 <span asp-validation-for="StartDate" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
-                <label asp-for="EndDate" class="form-label fw-bold">Ng�y K?t Th�c</label>
-                <input asp-for="EndDate" type="date" class="form-control" />
+                <label asp-for="EndDate" class="form-label fw-bold">Ngày Kết Thúc</label>
+                <input asp-for="EndDate" type="date" class="form-control" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
                 <span asp-validation-for="EndDate" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
-                <label asp-for="ImageUrl" class="form-label fw-bold">URL ?nh</label>
-                <input asp-for="ImageUrl" class="form-control" placeholder="Nh?p URL ?nh" />
-                <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                <label asp-for="SportsId" class="form-label fw-bold">Môn Thể Thao</label>
+                <select asp-for="SportsId" class="form-select" asp-items="ViewBag.Sports"></select>
+                <span asp-validation-for="SportsId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-4">
+                <label class="form-label fw-bold">Ảnh Hiện Tại</label>
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <div class="mb-2">
+                        <img src="@Model.ImageUrl" class="img-thumbnail" style="max-height: 150px;" />
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">Không có ảnh</p>
+                }
+                <label class="form-label fw-bold mt-2">Thay Đổi Ảnh</label>
+                <input type="file" name="imageUrl" class="form-control" />
+                <small class="text-muted">Để trống nếu không muốn thay đổi ảnh</small>
+                <input type="hidden" asp-for="ImageUrl" />
             </div>
 
             <div class="d-flex justify-content-between mt-4">
-                <a asp-action="Index" class="btn btn-secondary">?? Quay L?i</a>
-                <input type="submit" value="?? L?u Thay ??i" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-outline-secondary">↩️ Quay Lại</a>
+                <input type="submit" value="💾 Lưu Thay Đổi" class="btn btn-success" />
             </div>
         </form>
     </div>

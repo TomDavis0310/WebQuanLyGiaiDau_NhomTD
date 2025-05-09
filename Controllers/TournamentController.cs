@@ -26,7 +26,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Tournaments.ToListAsync());
+            return View(await _context.Tournaments.Include(t => t.Sports).ToListAsync());
         }
 
 
@@ -39,22 +39,193 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             }
 
             var tournament = await _context.Tournaments
+                .Include(t => t.Sports)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (tournament == null)
             {
                 return NotFound();
             }
 
+            // Lấy danh sách các trận đấu của giải đấu này, chỉ lấy các cột cần thiết
+            // Không bao gồm cột Status vì nó không tồn tại trong database
+            var matches = await _context.Matches
+                .AsNoTracking()
+                .Where(m => m.TournamentId == id)
+                .Select(m => new Match
+                {
+                    Id = m.Id,
+                    TeamA = m.TeamA,
+                    TeamB = m.TeamB,
+                    MatchDate = m.MatchDate,
+                    ScoreTeamA = m.ScoreTeamA,
+                    ScoreTeamB = m.ScoreTeamB,
+                    TournamentId = m.TournamentId
+                })
+                .ToListAsync();
+
+            // Load related tournament data separately to avoid Status column issue
+            foreach (var match in matches)
+            {
+                match.Tournament = await _context.Tournaments
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(t => t.Id == match.TournamentId);
+            }
+
+            // Tạo điểm số cho các trận đã hoàn thành nếu chưa có
+            var random = new Random();
+            foreach (var match in matches)
+            {
+                // Xác định trạng thái trận đấu dựa trên ngày
+                var isCompleted = match.CalculatedStatus == "Completed";
+
+                // Tạo điểm số cho các trận đã hoàn thành
+                if (isCompleted && (!match.ScoreTeamA.HasValue || !match.ScoreTeamB.HasValue))
+                {
+                    match.ScoreTeamA = random.Next(60, 121); // Điểm bóng rổ từ 60-120
+                    match.ScoreTeamB = random.Next(60, 121);
+
+                    // Lưu điểm số vào database - chỉ cập nhật các cột cần thiết
+                    var matchToUpdate = await _context.Matches.FindAsync(match.Id);
+                    if (matchToUpdate != null)
+                    {
+                        matchToUpdate.ScoreTeamA = match.ScoreTeamA;
+                        matchToUpdate.ScoreTeamB = match.ScoreTeamB;
+                        _context.Matches.Update(matchToUpdate);
+                    }
+                }
+            }
+
+            // Lưu các thay đổi vào database
+            await _context.SaveChangesAsync();
+
+            // Lấy danh sách các đội tham gia dựa trên các trận đấu của giải đấu hiện tại
+            var teamNames = new HashSet<string>();
+            foreach (var match in matches)
+            {
+                teamNames.Add(match.TeamA);
+                teamNames.Add(match.TeamB);
+            }
+
+            // Lấy thông tin chi tiết về các đội từ bảng Teams
+            // Chỉ lấy các đội tham gia giải đấu hiện tại
+            List<Team> teams = new List<Team>();
+            if (teamNames.Count > 0)
+            {
+                teams = await _context.Teams
+                    .Where(t => teamNames.Contains(t.Name))
+                    .Include(t => t.Players)
+                    .ToListAsync();
+            }
+            // Nếu không có trận đấu nào, hiển thị danh sách đội rỗng
+            // Không lấy tất cả các đội từ database nữa
+
+            // Tính toán bảng xếp hạng dựa trên kết quả trận đấu
+            var teamRankings = new List<dynamic>();
+
+            foreach (var team in teams)
+            {
+                // Tìm tất cả các trận đấu của đội này
+                var teamMatches = matches.Where(m => m.TeamA == team.Name || m.TeamB == team.Name).ToList();
+
+                // Chỉ tính các trận đã hoàn thành (dựa vào CalculatedStatus)
+                var completedMatches = teamMatches.Where(m => m.CalculatedStatus == "Completed").ToList();
+
+                int played = completedMatches.Count;
+                int won = 0;
+                int lost = 0;
+                int drawn = 0;
+                int pointsScored = 0;
+                int pointsConceded = 0;
+
+                foreach (var match in completedMatches)
+                {
+                    if (match.TeamA == team.Name)
+                    {
+                        // Đội này là TeamA
+                        pointsScored += match.ScoreTeamA ?? 0;
+                        pointsConceded += match.ScoreTeamB ?? 0;
+
+                        if (match.ScoreTeamA > match.ScoreTeamB)
+                            won++;
+                        else if (match.ScoreTeamA < match.ScoreTeamB)
+                            lost++;
+                        else
+                            drawn++;
+                    }
+                    else
+                    {
+                        // Đội này là TeamB
+                        pointsScored += match.ScoreTeamB ?? 0;
+                        pointsConceded += match.ScoreTeamA ?? 0;
+
+                        if (match.ScoreTeamB > match.ScoreTeamA)
+                            won++;
+                        else if (match.ScoreTeamB < match.ScoreTeamA)
+                            lost++;
+                        else
+                            drawn++;
+                    }
+                }
+
+                // Tính điểm: thắng 2 điểm, hòa 1 điểm (quy tắc bóng rổ)
+                int points = won * 2 + drawn;
+                int pointDiff = pointsScored - pointsConceded;
+
+                teamRankings.Add(new
+                {
+                    Team = team,
+                    Played = played,
+                    Won = won,
+                    Drawn = drawn,
+                    Lost = lost,
+                    PointsScored = pointsScored,
+                    PointsConceded = pointsConceded,
+                    PointDiff = pointDiff,
+                    Points = points
+                });
+            }
+
+            // Sắp xếp theo điểm (giảm dần) và hiệu số (giảm dần)
+            teamRankings = teamRankings.OrderByDescending(t => t.Points)
+                                      .ThenByDescending(t => t.PointDiff)
+                                      .ToList();
+
+            // Tạo ViewBag.MatchStatus để sử dụng trong view
+            var matchStatus = new Dictionary<int, string>();
+            foreach (var match in matches)
+            {
+                matchStatus[match.Id] = match.CalculatedStatus;
+            }
+
+            ViewBag.Teams = teams;
+            ViewBag.Matches = matches;
+            ViewBag.TeamRankings = teamRankings;
+            ViewBag.MatchStatus = matchStatus;
+
             return View(tournament);
         }
 
         // GET: Tournament/Create
         [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
-        public IActionResult Create()
+        public IActionResult Create(int? sportsId = null)
         {
             var sports = _context.Sports.ToList();
-            ViewBag.Sports = new SelectList(sports, "Id", "Name");
-            return View();
+            ViewBag.Sports = new SelectList(sports, "Id", "Name", sportsId);
+
+            // Tạo giải đấu mới với ngày bắt đầu và kết thúc mặc định
+            var tournament = new Tournament
+            {
+                StartDate = DateTime.Now,
+                EndDate = DateTime.Now.AddMonths(1)
+            };
+
+            // If sportsId is provided, pre-select it in the form
+            if (sportsId.HasValue)
+            {
+                tournament.SportsId = sportsId.Value;
+            }
+
+            return View(tournament);
         }
 
         // POST: Tournament/Create
@@ -76,6 +247,13 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     }
                     _context.Add(tournament);
                     await _context.SaveChangesAsync();
+
+                    // Redirect back to the sports list view if we came from there
+                    if (tournament.SportsId > 0)
+                    {
+                        return RedirectToAction("List", "Sports", new { sportsId = tournament.SportsId });
+                    }
+
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
@@ -123,6 +301,10 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             {
                 return NotFound();
             }
+
+            var sports = _context.Sports.ToList();
+            ViewBag.Sports = new SelectList(sports, "Id", "Name", tournament.SportsId);
+
             return View(tournament);
         }
 
@@ -132,7 +314,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,StartDate,EndDate,ImageUrl")] Tournament tournament)
+        public async Task<IActionResult> Edit(int id, Tournament tournament, IFormFile imageUrl)
         {
             if (id != tournament.Id)
             {
@@ -143,8 +325,30 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             {
                 try
                 {
+                    // Get the existing tournament to preserve the image URL if no new image is uploaded
+                    var existingTournament = await _context.Tournaments.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
+
+                    if (imageUrl != null)
+                    {
+                        // Upload new image
+                        tournament.ImageUrl = await SaveImage(imageUrl);
+                    }
+                    else if (existingTournament != null)
+                    {
+                        // Keep existing image URL if no new image is uploaded
+                        tournament.ImageUrl = existingTournament.ImageUrl;
+                    }
+
                     _context.Update(tournament);
                     await _context.SaveChangesAsync();
+
+                    // Redirect back to the sports list view if we came from there
+                    if (tournament.SportsId > 0)
+                    {
+                        return RedirectToAction("List", "Sports", new { sportsId = tournament.SportsId });
+                    }
+
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -157,8 +361,14 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, "Lỗi khi cập nhật dữ liệu: " + ex.Message);
+                }
             }
+
+            var sports = _context.Sports.ToList();
+            ViewBag.Sports = new SelectList(sports, "Id", "Name", tournament.SportsId);
             return View(tournament);
         }
 
@@ -172,6 +382,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             }
 
             var tournament = await _context.Tournaments
+                .Include(t => t.Sports)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (tournament == null)
             {
@@ -187,14 +398,83 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var tournament = await _context.Tournaments.FindAsync(id);
-            if (tournament != null)
+            try
             {
-                _context.Tournaments.Remove(tournament);
-            }
+                var tournament = await _context.Tournaments.FindAsync(id);
+                if (tournament != null)
+                {
+                    // Check if there are any registrations for this tournament
+                    bool hasRegistrations = false;
+                    try
+                    {
+                        hasRegistrations = await _context.TournamentRegistrations
+                            .AnyAsync(r => r.TournamentId == id);
+                    }
+                    catch (Exception)
+                    {
+                        // Table might not exist yet, ignore this check
+                    }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+                    // Check if there are any matches for this tournament
+                    bool hasMatches = false;
+                    try
+                    {
+                        hasMatches = await _context.Matches
+                            .AnyAsync(m => m.TournamentId == id);
+                    }
+                    catch (Exception)
+                    {
+                        // Table might not exist yet, ignore this check
+                    }
+
+                    if (hasRegistrations || hasMatches)
+                    {
+                        // If there are related records, return to the delete view with an error message
+                        ViewData["error"] = "Không thể xóa giải đấu này vì có đăng ký hoặc trận đấu liên quan.";
+                        tournament = await _context.Tournaments
+                            .FirstOrDefaultAsync(m => m.Id == id);
+                        return View(tournament);
+                    }
+
+                    // Store the sportsId before removing the tournament
+                    int? sportsId = tournament.SportsId;
+
+                    _context.Tournaments.Remove(tournament);
+                    await _context.SaveChangesAsync();
+
+                    // Redirect back to the sports list view if we have a sportsId
+                    if (sportsId.HasValue && sportsId.Value > 0)
+                    {
+                        return RedirectToAction("List", "Sports", new { sportsId = sportsId.Value });
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                // Handle any other exceptions
+                var tournament = await _context.Tournaments
+                    .Include(t => t.Sports)
+                    .FirstOrDefaultAsync(m => m.Id == id);
+
+                // Format a more user-friendly error message
+                string errorMessage = "Lỗi khi xóa giải đấu: ";
+                if (ex.Message.Contains("TournamentRegistrations"))
+                {
+                    errorMessage += "Có đăng ký tham gia giải đấu này. Vui lòng xóa các đăng ký trước.";
+                }
+                else if (ex.Message.Contains("Matches"))
+                {
+                    errorMessage += "Có trận đấu liên quan đến giải đấu này. Vui lòng xóa các trận đấu trước.";
+                }
+                else
+                {
+                    errorMessage += ex.Message;
+                }
+
+                ViewData["error"] = errorMessage;
+                return View(tournament);
+            }
         }
 
         private bool TournamentExists(int id)

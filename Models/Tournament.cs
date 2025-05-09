@@ -14,10 +14,12 @@
         public string Description { get; set; }
 
         [DataType(DataType.Date)]
-        public DateTime StartDate { get; set; }
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
+        public DateTime StartDate { get; set; } = DateTime.Now;
 
         [DataType(DataType.Date)]
-        public DateTime EndDate { get; set; }
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
+        public DateTime EndDate { get; set; } = DateTime.Now.AddMonths(1);
 
         public string? ImageUrl { get; set; }
 

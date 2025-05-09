@@ -16,7 +16,7 @@
         <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom shadow-sm mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-trophy-fill text-warning me-2"></i>Quản Lý Giải Đấu
+                    <i class="bi bi-trophy-fill text-warning me-2"></i>Giải Đấu
                 </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
@@ -26,16 +26,16 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
 
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <!-- Trang chủ luôn hiển thị cho tất cả người dùng -->
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door"></i> Trang chủ
+                            </a>
+                        </li>
+
                         @if (User.Identity.IsAuthenticated)
                         {
-                            <!-- Common navigation for all authenticated users -->
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Home" asp-action="Index">
-                                    <i class="bi bi-house-door"></i> Trang chủ
-                                </a>
-                            </li>
-
-                            <!-- Sports dropdown for all users -->
+                            <!-- Môn thể thao - hiển thị sau khi đăng nhập -->
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="sportsDropdown" data-bs-toggle="dropdown">
                                     <i class="bi bi-dribbble"></i> Môn thể thao
@@ -48,12 +48,12 @@
                                         <a class="dropdown-item" asp-controller="Sports" asp-action="List" asp-route-sportsId="3">🏐 Bóng chuyền</a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" asp-controller="Tournament" asp-action="List" asp-route-sportsId="1">🏀 Bóng rổ</a>
+                                        <a class="dropdown-item" asp-controller="Sports" asp-action="List" asp-route-sportsId="1">🏀 Bóng rổ</a>
                                     </li>
                                 </ul>
                             </li>
 
-                            <!-- Tournament link for all users -->
+                            <!-- Giải đấu - hiển thị sau khi đăng nhập -->
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Tournament" asp-action="Index">
                                     <i class="bi bi-trophy"></i> Giải đấu
@@ -70,17 +70,22 @@
                                     <ul class="dropdown-menu" aria-labelledby="adminDropdown">
                                         <li>
                                             <a class="dropdown-item" asp-controller="Teams" asp-action="Index">
-                                                <i class="bi bi-people-fill"></i> Quản lý đội
+                                                <i class="bi bi-people-fill"></i> Đội bóng
                                             </a>
                                         </li>
                                         <li>
                                             <a class="dropdown-item" asp-controller="Players" asp-action="Index">
-                                                <i class="bi bi-person-fill"></i> Quản lý cầu thủ
+                                                <i class="bi bi-person-fill"></i> Cầu thủ
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Match" asp-action="Index">
+                                                <i class="bi bi-calendar-event"></i> Trận đấu
                                             </a>
                                         </li>
                                         <li>
                                             <a class="dropdown-item" asp-controller="Tournament" asp-action="ManageRegistrations">
-                                                <i class="bi bi-clipboard-check"></i> Quản lý đăng ký
+                                                <i class="bi bi-clipboard-check"></i> Đăng ký giải đấu
                                             </a>
                                         </li>
                                     </ul>
@@ -100,11 +105,6 @@
                         else
                         {
                             <!-- Navigation for non-authenticated users -->
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Home" asp-action="Index">
-                                    <i class="bi bi-house-door"></i> Trang chủ
-                                </a>
-                            </li>
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Home" asp-action="Privacy">
                                     <i class="bi bi-shield-check"></i> Chính sách

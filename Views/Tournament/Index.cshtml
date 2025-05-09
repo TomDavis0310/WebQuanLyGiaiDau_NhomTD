@@ -4,7 +4,9 @@
 @inject SignInManager<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser> SignInManager
 @inject UserManager<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser> UserManager
 
-<h1 class="text-center text-primary mt-4">Danh sách giải đấu bóng rổ</h1>
+<h1 class="text-center text-primary mt-4">
+    <i class="bi bi-trophy"></i> Danh Sách Giải Đấu
+</h1>
 
 @if (TempData["Message"] != null)
 {
@@ -41,12 +43,13 @@
 <table class="table table-striped table-bordered shadow-sm">
     <thead class="table-dark text-center">
         <tr>
-            <th>Name</th>
-            <th>Desripsion</th>
-            <th>Date Start</th>
-            <th>Date End</th>
-            <th>Image</th>
-            <th>Operation</th>
+            <th>Tên Giải</th>
+            <th>Mô Tả</th>
+            <th>Môn Thể Thao</th>
+            <th>Ngày Bắt Đầu</th>
+            <th>Ngày Kết Thúc</th>
+            <th>Hình Ảnh</th>
+            <th>Thao Tác</th>
         </tr>
     </thead>
     <tbody class="align-middle text-center">
@@ -55,6 +58,18 @@
             <tr>
                 <td>@item.Name</td>
                 <td>@item.Description</td>
+                <td>
+                    @if (item.Sports != null)
+                    {
+                        <a asp-controller="Sports" asp-action="List" asp-route-sportsId="@item.SportsId" class="badge bg-primary text-decoration-none">
+                            @item.Sports.Name
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Không xác định</span>
+                    }
+                </td>
                 <td>@item.StartDate.ToString("dd/MM/yyyy")</td>
                 <td>@item.EndDate.ToString("dd/MM/yyyy")</td>
                 <td>
@@ -64,7 +79,7 @@
                     }
                     else
                     {
-                        <span class="text-muted fst-italic">No Image</span>
+                        <span class="text-muted fst-italic">Không có ảnh</span>
                     }
                 </td>
                 <td>

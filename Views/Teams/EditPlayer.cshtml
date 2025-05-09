@@ -1,16 +1,18 @@
-﻿@model WebQuanLyGiaiDau_NhomTD.Models.Player
+@model WebQuanLyGiaiDau_NhomTD.Models.Player
 
 @{
-    ViewData["Title"] = "Thêm Cầu Thủ";
+    ViewData["Title"] = "Chỉnh Sửa Cầu Thủ";
 }
 
-<h1 class="text-center text-primary mt-4">⚽ Thêm Cầu Thủ Mới</h1>
-<hr class="mb-4" />
+<h1 class="text-center text-warning mt-4">✏️ Chỉnh Sửa Cầu Thủ</h1>
+<h4 class="text-center text-secondary mb-4">Đội: @ViewData["TeamName"]</h4>
 
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <form asp-action="Create" enctype="multipart/form-data" class="bg-light p-4 rounded shadow">
+        <form asp-action="EditPlayer" enctype="multipart/form-data" class="bg-light p-4 rounded shadow">
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <input type="hidden" asp-for="PlayerId" />
+            <input type="hidden" asp-for="TeamId" value="@ViewData["TeamId"]" />
 
             <div class="mb-3">
                 <label asp-for="FullName" class="form-label fw-semibold">Họ Tên</label>
@@ -31,24 +33,27 @@
             </div>
 
             <div class="mb-3">
-                <label asp-for="TeamId" class="form-label fw-semibold">Đội Bóng</label>
-                <select asp-for="TeamId" class="form-select" asp-items="ViewBag.TeamId"></select>
-            </div>
-
-            <div class="mb-3">
                 <label class="form-label fw-semibold">Ảnh Cầu Thủ</label>
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <div class="mb-2">
+                        <img src="@Model.ImageUrl" alt="Ảnh hiện tại" class="img-thumbnail" style="max-height: 100px;" />
+                        <small class="d-block text-muted">Ảnh hiện tại</small>
+                    </div>
+                }
                 <input type="file" name="imageFile" class="form-control" accept="image/*" />
-                <small class="text-muted">Chọn ảnh đại diện cho cầu thủ (không bắt buộc)</small>
+                <small class="text-muted">Chọn ảnh mới (để trống nếu muốn giữ ảnh cũ)</small>
             </div>
 
-            <div class="d-grid mt-4">
-                <input type="submit" value="Thêm Cầu Thủ" class="btn btn-primary fw-bold" />
+            <div class="d-flex justify-content-between mt-4">
+                <button type="submit" class="btn btn-warning">
+                    💾 Lưu Thay Đổi
+                </button>
+                <a asp-action="Details" asp-route-id="@ViewData["TeamId"]" class="btn btn-outline-secondary">
+                    ↩️ Quay Lại
+                </a>
             </div>
         </form>
-
-        <div class="text-center mt-3">
-            <a asp-action="Index" class="btn btn-outline-secondary">🔙 Quay Lại Danh Sách</a>
-        </div>
     </div>
 </div>
 

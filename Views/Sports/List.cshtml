@@ -1,29 +1,121 @@
 ﻿@model IEnumerable<WebQuanLyGiaiDau_NhomTD.Models.Tournament>
+@using WebQuanLyGiaiDau_NhomTD.Models.UserModel
 
 @{
-    ViewData["Title"] = "Giải đấu theo môn thể thao";
+    ViewData["Title"] = "Giải Đấu Theo Môn Thể Thao";
+    var sportsId = Context.Request.Query["sportsId"].ToString();
 }
 
-<h2 class="text-center">Giải đấu môn thể thao</h2>
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="text-primary">
+                <i class="bi bi-trophy"></i> Giải Đấu Môn @ViewBag.SportName
+            </h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a asp-controller="Sports" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Quay Lại Danh Sách Môn Thể Thao
+            </a>
+        </div>
+    </div>
 
-<table class="table table-striped mt-4">
-    <thead>
-        <tr>
-            <th>Tên giải</th>
-            <th>Mô tả</th>
-            <th>Ngày bắt đầu</th>
-            <th>Ngày kết thúc</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.Name</td>
-                <td>@item.Description</td>
-                <td>@item.StartDate.ToString("dd/MM/yyyy")</td>
-                <td>@item.EndDate.ToString("dd/MM/yyyy")</td>
-            </tr>
-        }
-    </tbody>
-</table>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Giải Đấu</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a asp-controller="Tournament" asp-action="Index" class="btn btn-outline-primary btn-lg w-100">
+                                <i class="bi bi-trophy"></i> Danh Sách Giải Đấu
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a asp-controller="Teams" asp-action="Index" class="btn btn-outline-success btn-lg w-100">
+                                <i class="bi bi-people"></i> Đội Bóng
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a asp-controller="Players" asp-action="Index" class="btn btn-outline-info btn-lg w-100">
+                                <i class="bi bi-person"></i> Cầu Thủ
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a asp-controller="Match" asp-action="Index" class="btn btn-outline-warning btn-lg w-100">
+                                <i class="bi bi-calendar-event"></i> Trận Đấu
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Danh Sách Giải Đấu</h5>
+            @if (User.IsInRole(SD.Role_Admin))
+            {
+                <a asp-controller="Tournament" asp-action="Create" asp-route-sportsId="@ViewBag.SportId" class="btn btn-success btn-sm">
+                    <i class="bi bi-plus-circle"></i> Thêm Giải Đấu Mới
+                </a>
+            }
+        </div>
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tên Giải</th>
+                                <th>Mô Tả</th>
+                                <th>Ngày Bắt Đầu</th>
+                                <th>Ngày Kết Thúc</th>
+                                <th>Hành Động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.Name</td>
+                                    <td>@item.Description</td>
+                                    <td>@item.StartDate.ToString("dd/MM/yyyy")</td>
+                                    <td>@item.EndDate.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        <a asp-controller="Tournament" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                            <i class="bi bi-info-circle"></i> Chi Tiết
+                                        </a>
+                                        @if (User.IsInRole(SD.Role_Admin))
+                                        {
+                                            <a asp-controller="Tournament" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">
+                                                <i class="bi bi-pencil"></i> Sửa
+                                            </a>
+                                            <a asp-controller="Tournament" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
+                                                <i class="bi bi-trash"></i> Xóa
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <h5>Chưa có giải đấu nào cho môn thể thao này</h5>
+                    @if (User.IsInRole(SD.Role_Admin))
+                    {
+                        <p>Hãy thêm giải đấu mới để bắt đầu.</p>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
