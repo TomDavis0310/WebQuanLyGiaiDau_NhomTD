@@ -10,16 +10,61 @@
     <h5 class="text-primary mb-3">Thông Tin Trận Đấu:</h5>
     <dl class="row">
         <dt class="col-sm-3 fw-bold">Đội A:</dt>
-        <dd class="col-sm-9">@Html.DisplayFor(model => model.TeamA)</dd>
+        <dd class="col-sm-9">
+            @if (!string.IsNullOrEmpty(Model.TeamA))
+            {
+                @Html.DisplayFor(model => model.TeamA)
+            }
+            else
+            {
+                <span class="text-muted">Chưa xác định</span>
+            }
+        </dd>
 
         <dt class="col-sm-3 fw-bold">Đội B:</dt>
-        <dd class="col-sm-9">@Html.DisplayFor(model => model.TeamB)</dd>
+        <dd class="col-sm-9">
+            @if (!string.IsNullOrEmpty(Model.TeamB))
+            {
+                @Html.DisplayFor(model => model.TeamB)
+            }
+            else
+            {
+                <span class="text-muted">Chưa xác định</span>
+            }
+        </dd>
 
         <dt class="col-sm-3 fw-bold">Ngày Thi Đấu:</dt>
-        <dd class="col-sm-9">@Html.DisplayFor(model => model.MatchDate)</dd>
+        <dd class="col-sm-9">
+            @if (Model.MatchDate != default(DateTime))
+            {
+                @Model.MatchDate.ToString("dd/MM/yyyy")
+            }
+            else
+            {
+                <span class="text-muted">Chưa xác định</span>
+            }
+        </dd>
+
+        <dt class="col-sm-3 fw-bold">Giờ Thi Đấu:</dt>
+        <dd class="col-sm-9">15:00</dd>
+
+        <dt class="col-sm-3 fw-bold">Thời Gian Kết Thúc:</dt>
+        <dd class="col-sm-9">15:15</dd>
+
+        <dt class="col-sm-3 fw-bold">Thời Lượng:</dt>
+        <dd class="col-sm-9">15 phút</dd>
 
         <dt class="col-sm-3 fw-bold">Giải Đấu:</dt>
-        <dd class="col-sm-9">@Html.DisplayFor(model => model.Tournament.Name)</dd>
+        <dd class="col-sm-9">
+            @if (Model.Tournament != null)
+            {
+                @Html.DisplayFor(model => model.Tournament.Name)
+            }
+            else
+            {
+                <span class="text-muted">Chưa xác định</span>
+            }
+        </dd>
     </dl>
 
     <div class="mt-4 d-flex justify-content-between">

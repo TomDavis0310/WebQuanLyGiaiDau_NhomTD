@@ -17,11 +17,7 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
-        if (User.Identity.IsAuthenticated)
-        {
-            // Redirect to Sports/Index for all authenticated users
-            return RedirectToAction("Index", "Sports");
-        }
+        // Không chuyển hướng người dùng đã đăng nhập để họ có thể xem tin tức ở trang chủ
         return View();
     }
 

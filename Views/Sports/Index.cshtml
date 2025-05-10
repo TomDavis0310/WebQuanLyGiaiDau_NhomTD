@@ -2,154 +2,371 @@
 @using WebQuanLyGiaiDau_NhomTD.Models.UserModel
 
 @{
-    ViewData["Title"] = "Chọn Môn Thể Thao";
+    ViewData["Title"] = "Môn Thể Thao";
 }
 
-<div class="bg-overlay">
-    <h2 class="title-box text-center text-uppercase fw-bold text-danger">
-        CHỌN MÔN THỂ THAO
-    </h2>
-
-    <div class="container py-5">
-        @if (User.IsInRole(SD.Role_Admin))
-        {
-            <div class="text-end mb-4">
-                <a asp-controller="Sports" asp-action="Create" class="btn btn-success">
-                    <i class="bi bi-plus-circle"></i> Thêm Môn Thể Thao Mới
-                </a>
+<div class="sports-page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-4 fw-bold text-white mb-0 animate-fade-in">
+                    <i class="bi bi-dribbble text-warning me-2"></i>Môn Thể Thao
+                </h1>
+                <p class="lead text-white-50 mt-2 animate-fade-in" style="animation-delay: 0.2s;">
+                    Chọn môn thể thao bạn quan tâm để xem các giải đấu
+                </p>
             </div>
-        }
-
-        <div class="row justify-content-center g-4">
-            @if (Model != null && Model.Any())
-            {
-                foreach (var sport in Model)
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                @if (User.IsInRole(SD.Role_Admin))
                 {
-                    <div class="col-6 col-md-4 col-lg-3 text-center mb-4">
-                        <div class="position-relative">
-                            <a asp-controller="Sports" asp-action="List" asp-route-sportsId="@sport.Id"
-                               class="sport-card d-block text-decoration-none">
-                                <div class="sport-box @GetRandomColor() d-flex align-items-center justify-content-center mx-auto">
-                                    @if (!string.IsNullOrEmpty(sport.ImageUrl))
-                                    {
-                                        <img src="@sport.ImageUrl" alt="@sport.Name" class="img-fluid sport-image" />
-                                    }
-                                    else
-                                    {
-                                        <i class="bi bi-trophy-fill display-4"></i>
-                                    }
-                                </div>
-                                <h5 class="mt-3 text-white">@sport.Name</h5>
-                            </a>
-
-                            @if (User.IsInRole(SD.Role_Admin))
-                            {
-                                <div class="admin-actions">
-                                    <a asp-action="Edit" asp-route-id="@sport.Id" class="btn btn-sm btn-warning me-1" title="Chỉnh sửa">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <a asp-action="Delete" asp-route-id="@sport.Id" class="btn btn-sm btn-danger" title="Xóa">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                </div>
-                            }
-                        </div>
-                    </div>
+                    <a asp-controller="Sports" asp-action="Create" class="btn btn-sports-secondary animate-fade-in" style="animation-delay: 0.3s;">
+                        <i class="bi bi-plus-circle me-2"></i>Thêm Môn Thể Thao
+                    </a>
                 }
-            }
-            else
-            {
-                <div class="col-12 text-center text-white">
-                    <div class="alert alert-info">
-                        <h4>Chưa có môn thể thao nào</h4>
-                        @if (User.IsInRole(SD.Role_Admin))
-                        {
-                            <p>Hãy thêm môn thể thao mới để bắt đầu.</p>
-                        }
-                        else
-                        {
-                            <p>Vui lòng liên hệ quản trị viên để thêm môn thể thao.</p>
-                        }
-                    </div>
-                </div>
-            }
+            </div>
         </div>
     </div>
 </div>
 
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3 mb-md-0">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Tìm kiếm môn thể thao...">
+            </div>
+        </div>
+        <div class="col-md-6 text-md-end">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-secondary active" id="gridView">
+                    <i class="bi bi-grid-3x3-gap-fill me-1"></i> Lưới
+                </button>
+                <button type="button" class="btn btn-outline-secondary" id="listView">
+                    <i class="bi bi-list-ul me-1"></i> Danh sách
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sportsGrid" class="row g-4 justify-content-center">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var sport in Model)
+            {
+                <div class="col-6 col-md-4 col-lg-3 sport-item animate-fade-in" data-name="@sport.Name.ToLower()">
+                    <div class="sports-card h-100 position-relative">
+                        <a asp-controller="Sports" asp-action="List" asp-route-sportsId="@sport.Id" class="text-decoration-none">
+                            <div class="card-body text-center p-4">
+                                <div class="sport-icon-wrapper mb-3">
+                                    @if (!string.IsNullOrEmpty(sport.ImageUrl))
+                                    {
+                                        <img src="@sport.ImageUrl" alt="@sport.Name" class="sport-icon-img" />
+                                    }
+                                    else
+                                    {
+                                        <div class="sport-icon-placeholder @GetRandomGradient()">
+                                            <i class="bi bi-trophy-fill"></i>
+                                        </div>
+                                    }
+                                </div>
+                                <h3 class="h5 mb-2">@sport.Name</h3>
+                                <p class="text-muted small mb-0">Xem các giải đấu</p>
+                            </div>
+                        </a>
+
+                        @if (User.IsInRole(SD.Role_Admin))
+                        {
+                            <div class="admin-actions">
+                                <a asp-action="Edit" asp-route-id="@sport.Id" class="btn btn-sm btn-warning me-1" title="Chỉnh sửa">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@sport.Id" class="btn btn-sm btn-danger" title="Xóa">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center">
+                <div class="alert alert-info py-5">
+                    <i class="bi bi-info-circle display-4 d-block mb-3"></i>
+                    <h4>Chưa có môn thể thao nào</h4>
+                    @if (User.IsInRole(SD.Role_Admin))
+                    {
+                        <p class="mb-0">Hãy thêm môn thể thao mới để bắt đầu.</p>
+                        <div class="mt-3">
+                            <a asp-controller="Sports" asp-action="Create" class="btn btn-sports-primary">
+                                <i class="bi bi-plus-circle me-2"></i>Thêm Môn Thể Thao
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="mb-0">Vui lòng liên hệ quản trị viên để thêm môn thể thao.</p>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <div id="sportsList" class="d-none">
+        @if (Model != null && Model.Any())
+        {
+            <div class="card sports-card">
+                <div class="list-group list-group-flush">
+                    @foreach (var sport in Model)
+                    {
+                        <div class="list-group-item sport-item d-flex align-items-center" data-name="@sport.Name.ToLower()">
+                            <div class="sport-list-icon me-3">
+                                @if (!string.IsNullOrEmpty(sport.ImageUrl))
+                                {
+                                    <img src="@sport.ImageUrl" alt="@sport.Name" class="sport-list-img" />
+                                }
+                                else
+                                {
+                                    <div class="sport-list-placeholder @GetRandomGradient()">
+                                        <i class="bi bi-trophy-fill"></i>
+                                    </div>
+                                }
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">@sport.Name</h5>
+                                <p class="text-muted small mb-0">Xem các giải đấu</p>
+                            </div>
+                            <div>
+                                <a asp-controller="Sports" asp-action="List" asp-route-sportsId="@sport.Id" class="btn btn-sports-outline btn-sm">
+                                    <i class="bi bi-arrow-right me-1"></i>Xem
+                                </a>
+                                @if (User.IsInRole(SD.Role_Admin))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@sport.Id" class="btn btn-sm btn-warning ms-1" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@sport.Id" class="btn btn-sm btn-danger ms-1" title="Xóa">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info py-5 text-center">
+                <i class="bi bi-info-circle display-4 d-block mb-3"></i>
+                <h4>Chưa có môn thể thao nào</h4>
+                @if (User.IsInRole(SD.Role_Admin))
+                {
+                    <p class="mb-0">Hãy thêm môn thể thao mới để bắt đầu.</p>
+                    <div class="mt-3">
+                        <a asp-controller="Sports" asp-action="Create" class="btn btn-sports-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Thêm Môn Thể Thao
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <p class="mb-0">Vui lòng liên hệ quản trị viên để thêm môn thể thao.</p>
+                }
+            </div>
+        }
+    </div>
+</div>
+
 @functions {
-    string[] colors = new[] { "bg-primary", "bg-success", "bg-danger", "bg-warning", "bg-info" };
+    string[] gradients = new[] {
+        "gradient-primary",
+        "gradient-secondary",
+        "gradient-success",
+        "gradient-danger",
+        "gradient-warning"
+    };
     Random random = new Random();
 
-    string GetRandomColor()
+    string GetRandomGradient()
     {
-        return colors[random.Next(colors.Length)];
+        return gradients[random.Next(gradients.Length)];
     }
 }
 
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Search functionality
+            $("#searchInput").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $(".sport-item").filter(function () {
+                    $(this).toggle($(this).data("name").indexOf(value) > -1);
+                });
+            });
+
+            // Toggle between grid and list view
+            $("#gridView").click(function () {
+                $(this).addClass("active");
+                $("#listView").removeClass("active");
+                $("#sportsGrid").removeClass("d-none");
+                $("#sportsList").addClass("d-none");
+            });
+
+            $("#listView").click(function () {
+                $(this).addClass("active");
+                $("#gridView").removeClass("active");
+                $("#sportsList").removeClass("d-none");
+                $("#sportsGrid").addClass("d-none");
+            });
+
+            // Animation on scroll
+            function animateOnScroll() {
+                $('.animate-fade-in').each(function () {
+                    var position = $(this).offset().top;
+                    var scroll = $(window).scrollTop();
+                    var windowHeight = $(window).height();
+
+                    if (scroll + windowHeight > position) {
+                        $(this).css('opacity', '1');
+                    }
+                });
+            }
+
+            // Initial call
+            animateOnScroll();
+
+            // Call on scroll
+            $(window).scroll(function () {
+                animateOnScroll();
+            });
+        });
+    </script>
+}
+
 <style>
-    .bg-overlay {
-        background: url('/images/basketball-bg.jpg') no-repeat center center;
-        background-size: cover;
+    /* Sports page header */
+    .sports-page-header {
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        padding: 3rem 0;
+        margin-bottom: 2rem;
         position: relative;
-        min-height: 100vh;
-        padding-top: 50px;
+        overflow: hidden;
     }
 
-        .bg-overlay::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 1;
-        }
-
-    .title-box {
-        background-color: rgba(0, 0, 0, 0.8);
-        color: red;
-        padding: 10px 20px;
-        border-radius: 5px;
-        z-index: 2;
-        position: relative;
-        display: inline-block;
-        margin-bottom: 30px;
+    .sports-page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.05)" stroke-width="1" fill="none"/></svg>');
+        background-size: 100px 100px;
+        opacity: 0.3;
     }
 
-    .container {
-        position: relative;
-        z-index: 2;
+    /* Sport card styles */
+    .sport-icon-wrapper {
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .sport-box {
-        width: 150px;
-        height: 150px;
-        border-radius: 25px;
+    .sport-icon-img {
+        max-width: 80px;
+        max-height: 80px;
+        object-fit: contain;
         transition: transform 0.3s ease;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        color: white;
     }
 
-    .sport-card:hover .sport-box {
+    .sports-card:hover .sport-icon-img {
         transform: scale(1.1);
     }
 
-    .sport-image {
-        max-width: 80%;
-        max-height: 80%;
+    .sport-icon-placeholder {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        color: white;
+        transition: transform 0.3s ease;
+    }
+
+    .sports-card:hover .sport-icon-placeholder {
+        transform: scale(1.1) rotate(10deg);
+    }
+
+    /* List view styles */
+    .sport-list-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sport-list-img {
+        max-width: 40px;
+        max-height: 40px;
         object-fit: contain;
     }
 
+    .sport-list-placeholder {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: white;
+    }
+
+    /* Admin actions */
     .admin-actions {
         position: absolute;
         top: 10px;
         right: 10px;
         z-index: 10;
-        background-color: rgba(0, 0, 0, 0.6);
+        background-color: rgba(255, 255, 255, 0.9);
         padding: 5px;
         border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         display: flex;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .sports-card:hover .admin-actions {
+        opacity: 1;
+    }
+
+    /* Gradients */
+    .gradient-primary {
+        background: linear-gradient(135deg, #0066cc, #0099ff);
+    }
+
+    .gradient-secondary {
+        background: linear-gradient(135deg, #ff6600, #ff9933);
+    }
+
+    .gradient-success {
+        background: linear-gradient(135deg, #28a745, #5cb85c);
+    }
+
+    .gradient-danger {
+        background: linear-gradient(135deg, #dc3545, #ff6b6b);
+    }
+
+    .gradient-warning {
+        background: linear-gradient(135deg, #ffc107, #ffdb58);
     }
 </style>

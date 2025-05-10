@@ -7,9 +7,25 @@
 <h1 class="text-center text-warning mt-4">✏️ Chỉnh Sửa Cầu Thủ</h1>
 <h4 class="text-center text-secondary mb-4">Đội: @ViewData["TeamName"]</h4>
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <form asp-action="EditPlayer" enctype="multipart/form-data" class="bg-light p-4 rounded shadow">
+        <form asp-action="EditPlayer" asp-route-id="@Model.PlayerId" method="post" enctype="multipart/form-data" class="bg-light p-4 rounded shadow">
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
             <input type="hidden" asp-for="PlayerId" />
             <input type="hidden" asp-for="TeamId" value="@ViewData["TeamId"]" />
@@ -28,8 +44,9 @@
 
             <div class="mb-3">
                 <label asp-for="Number" class="form-label fw-semibold">Số Áo</label>
-                <input asp-for="Number" class="form-control" placeholder="Số áo..." />
+                <input asp-for="Number" class="form-control" placeholder="Số áo..." min="0" max="99" type="number" />
                 <span asp-validation-for="Number" class="text-danger"></span>
+                <small class="text-muted">Số áo phải từ 0 đến 99</small>
             </div>
 
             <div class="mb-3">
@@ -59,4 +76,67 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        // Xác nhận trước khi submit form
+        $(document).ready(function () {
+            $('form').submit(function (e) {
+                // Kiểm tra các trường bắt buộc
+                var fullName = $('#FullName').val();
+                var position = $('#Position').val();
+                var number = $('#Number').val();
+
+                if (!fullName || !position || !number) {
+                    // Nếu thiếu thông tin, hiển thị thông báo và ngăn submit
+                    alert('Vui lòng điền đầy đủ thông tin cầu thủ (Họ tên, Vị trí, Số áo)');
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Kiểm tra số áo hợp lệ
+                if (number < 0 || number > 99) {
+                    alert('Số áo phải từ 0 đến 99');
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Kiểm tra kích thước file ảnh nếu có
+                var fileInput = $('input[name="imageFile"]')[0];
+                if (fileInput && fileInput.files.length > 0) {
+                    var fileSize = fileInput.files[0].size; // kích thước tính bằng byte
+                    var maxSize = 5 * 1024 * 1024; // 5MB
+
+                    if (fileSize > maxSize) {
+                        alert('Kích thước ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 5MB.');
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            // Hiển thị xem trước ảnh khi chọn file
+            $('input[name="imageFile"]').change(function() {
+                if (this.files && this.files[0]) {
+                    var reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        // Tạo hoặc cập nhật phần tử xem trước
+                        var previewContainer = $('.image-preview');
+                        if (previewContainer.length === 0) {
+                            // Tạo mới nếu chưa có
+                            var newPreview = '<div class="image-preview mt-2 mb-2"><p>Ảnh đã chọn:</p><img src="' + e.target.result + '" class="img-thumbnail" style="max-height: 150px;" /></div>';
+                            $('input[name="imageFile"]').after(newPreview);
+                        } else {
+                            // Cập nhật nếu đã có
+                            previewContainer.find('img').attr('src', e.target.result);
+                        }
+                    }
+
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        });
+    </script>
 }

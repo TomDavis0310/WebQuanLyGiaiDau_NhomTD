@@ -18,11 +18,27 @@
         }
 
         // GET: Match
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            var matches = await _context.Matches
+            var matchesQuery = _context.Matches
                 .Include(m => m.Tournament)
-                .ToListAsync();
+                .AsQueryable();
+
+            // Áp dụng tìm kiếm nếu có
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                searchString = searchString.ToLower();
+                matchesQuery = matchesQuery.Where(m =>
+                    (m.TeamA != null && m.TeamA.ToLower().Contains(searchString)) ||
+                    (m.TeamB != null && m.TeamB.ToLower().Contains(searchString)) ||
+                    (m.Tournament != null && m.Tournament.Name.ToLower().Contains(searchString)));
+            }
+
+            var matches = await matchesQuery.ToListAsync();
+
+            // Lưu searchString để hiển thị lại trong form
+            ViewData["CurrentFilter"] = searchString;
+
             return View(matches);
         }
 
@@ -63,6 +79,10 @@
             {
                 try
                 {
+                    // Đặt thời gian bắt đầu là 15:00 (3 giờ chiều)
+                    DateTime matchDate = match.MatchDate.Date;
+                    match.MatchDate = matchDate.AddHours(15); // 15:00
+
                     _context.Matches.Add(match);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
@@ -109,6 +129,10 @@
             {
                 try
                 {
+                    // Đảm bảo thời gian bắt đầu là 15:00 (3 giờ chiều)
+                    DateTime matchDate = match.MatchDate.Date;
+                    match.MatchDate = matchDate.AddHours(15); // 15:00
+
                     _context.Update(match);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));

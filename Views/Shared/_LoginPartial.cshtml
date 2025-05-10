@@ -11,7 +11,7 @@
         <a class="nav-link dropdown-toggle user-profile-dropdown" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-person-circle me-1"></i> @(user?.FullName ?? user?.UserName ?? "Người dùng")
         </a>
-        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
             <li>
                 <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">
                     <i class="bi bi-person"></i> Hồ sơ cá nhân
@@ -40,7 +40,11 @@
 }
 else
 {
-    <a class="btn btn-outline-dark me-2" id="login" asp-area="Identity" asp-page="/Account/Login">Đăng nhập</a>
-    <a class="btn btn-info text-white" id="register" asp-area="Identity" asp-page="/Account/Register">Đăng ký</a>
+    <a class="btn btn-sports-outline me-2" id="login" asp-area="Identity" asp-page="/Account/Login">
+        <i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập
+    </a>
+    <a class="btn btn-sports-primary" id="register" asp-area="Identity" asp-page="/Account/Register">
+        <i class="bi bi-person-plus me-1"></i>Đăng ký
+    </a>
 }
 </ul>

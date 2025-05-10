@@ -26,9 +26,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
                 TournamentId = match.TournamentId,
                 Tournament = match.Tournament,
                 // Set default values for new properties
-                ScoreTeamA = null,
-                ScoreTeamB = null,
-                Status = match.MatchDate < DateTime.Now ? "Completed" : 
+                ScoreTeamA = match.ScoreTeamA,
+                ScoreTeamB = match.ScoreTeamB,
+                Status = match.MatchDate < DateTime.Now ? "Completed" :
                          (match.MatchDate.Date == DateTime.Now.Date ? "InProgress" : "Upcoming")
             };
         }

@@ -146,204 +146,249 @@
 
                     <!-- Không cần khai báo lại biến teamRankings vì đã khai báo ở đầu trang -->
 
-                    <!-- Chia thành 2 màn hình: Bảng xếp hạng (3/10) và Lịch thi đấu (7/10) -->
-                    <div class="row mt-4">
-                        <!-- Bảng xếp hạng (3/10) -->
-                        <div class="col-md-3">
-                            <div class="card shadow-sm h-100">
-                                <div class="card-header bg-primary text-white">
-                                    <h5 class="mb-0">
-                                        <i class="bi bi-bar-chart-fill"></i> Bảng Xếp Hạng
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    @if (teams != null && teams.Any() && teamRankings != null && teamRankings.Any())
-                                    {
-                                        <div class="table-responsive">
-                                            <table class="table table-sm table-striped table-hover">
-                                                <thead class="table-dark">
-                                                    <tr class="text-center">
-                                                        <th>Hạng</th>
-                                                        <th>Đội</th>
-                                                        <th>Điểm</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
+                    <!-- Bảng xếp hạng và Lịch thi đấu -->
+                    <div class="mt-4">
+                        <!-- Tabs cho Bảng xếp hạng và Lịch thi đấu -->
+                        <ul class="nav nav-pills mb-3" id="tournamentTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="standings-tab" data-bs-toggle="pill" data-bs-target="#standings-content" type="button" role="tab" aria-controls="standings-content" aria-selected="true">
+                                    <i class="bi bi-bar-chart-fill"></i> Bảng Xếp Hạng
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="schedule-tab" data-bs-toggle="pill" data-bs-target="#schedule-content" type="button" role="tab" aria-controls="schedule-content" aria-selected="false">
+                                    <i class="bi bi-calendar-event"></i> Lịch Thi Đấu
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="player-stats-tab" data-bs-toggle="pill" data-bs-target="#player-stats-content" type="button" role="tab" aria-controls="player-stats-content" aria-selected="false">
+                                    <i class="bi bi-person-badge"></i> Thống Kê Cầu Thủ
+                                </button>
+                            </li>
+                        </ul>
 
-                                                    @for (int i = 0; i < teamRankings.Count; i++)
-                                                    {
-                                                        var ranking = teamRankings[i];
-                                                        var team = ranking.Team;
+                        <!-- Tab content -->
+                        <div class="tab-content" id="tournamentTabsContent">
+                            <!-- Bảng xếp hạng content -->
+                            <div class="tab-pane fade show active" id="standings-content" role="tabpanel" aria-labelledby="standings-tab">
+                                @if (teams != null && teams.Any() && teamRankings != null && teamRankings.Any())
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead class="table-dark">
+                                                <tr class="text-center">
+                                                    <th>Hạng</th>
+                                                    <th>Đội</th>
+                                                    <th>Trận</th>
+                                                    <th>Thắng</th>
+                                                    <th>Hòa</th>
+                                                    <th>Thua</th>
+                                                    <th>Ghi</th>
+                                                    <th>Thủng</th>
+                                                    <th>Hiệu số</th>
+                                                    <th>Điểm</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @for (int i = 0; i < teamRankings.Count; i++)
+                                                {
+                                                    var ranking = teamRankings[i];
+                                                    var team = ranking.Team;
 
-                                                        <tr class="@(i < 3 ? "table-success" : "")">
-                                                            <td class="text-center fw-bold">@(i + 1)</td>
-                                                            <td>
-                                                                @if (!string.IsNullOrEmpty(team.LogoUrl))
-                                                                {
-                                                                    <img src="@team.LogoUrl" alt="Logo @team.Name" class="me-1" style="height: 20px; width: auto;" />
-                                                                }
-                                                                <span class="small">@team.Name</span>
-                                                            </td>
-                                                            <td class="text-center fw-bold">@ranking.Points</td>
-                                                        </tr>
-                                                    }
-                                                </tbody>
-                                            </table>
-                                        </div>
-
-                                        <!-- Thêm nút để xem chi tiết bảng xếp hạng đầy đủ -->
-                                        <div class="text-center mt-2">
-                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#fullStandingsModal">
-                                                Xem chi tiết
-                                            </button>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <div class="alert alert-info">
-                                            <i class="bi bi-info-circle"></i> Chưa có đội bóng nào tham gia giải đấu này.
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Lịch thi đấu (7/10) -->
-                        <div class="col-md-9">
-                            <div class="card shadow-sm h-100">
-                                <div class="card-header bg-primary text-white">
-                                    <h5 class="mb-0">
-                                        <i class="bi bi-calendar-event"></i> Lịch Thi Đấu
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    @if (matches != null && matches.Any())
-                                    {
-                                        <div class="table-responsive">
-                                            <table class="table table-striped table-hover">
-                                                <thead class="table-primary">
-                                                    <tr>
-                                                        <th>Đội A</th>
-                                                        <th class="text-center">Tỉ Số</th>
-                                                        <th>Đội B</th>
-                                                        <th class="text-center">Ngày Thi Đấu</th>
-                                                        <th class="text-center">Trạng Thái</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach (var match in matches)
-                                                    {
-                                                        // Lấy trạng thái trận đấu từ dictionary
-                                                        string status = matchStatus.ContainsKey(match.Id) ? matchStatus[match.Id] : "Upcoming";
-
-                                                        string statusText = status == "Completed" ? "Đã kết thúc" :
-                                                                           (status == "InProgress" ? "Đang diễn ra" : "Sắp diễn ra");
-                                                        string statusClass = status == "Completed" ? "bg-success" :
-                                                                           (status == "InProgress" ? "bg-danger" : "bg-primary");
-
-                                                        <tr>
-                                                            <td class="fw-bold">@match.TeamA</td>
-                                                            <td class="text-center">
-                                                                @if (status == "Completed")
-                                                                {
-                                                                    <span class="badge bg-secondary">@match.ScoreTeamA - @match.ScoreTeamB</span>
-                                                                }
-                                                                else if (status == "InProgress")
-                                                                {
-                                                                    <span class="badge bg-danger">LIVE</span>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <span class="badge bg-secondary">VS</span>
-                                                                }
-                                                            </td>
-                                                            <td class="fw-bold">@match.TeamB</td>
-                                                            <td class="text-center">@match.MatchDate.ToString("dd/MM/yyyy")</td>
-                                                            <td class="text-center">
-                                                                <span class="badge @statusClass">@statusText</span>
-                                                            </td>
-                                                        </tr>
-                                                    }
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <div class="alert alert-info">
-                                            <i class="bi bi-info-circle"></i> Chưa có trận đấu nào được lên lịch cho giải đấu này.
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Modal hiển thị bảng xếp hạng đầy đủ -->
-                    <div class="modal fade" id="fullStandingsModal" tabindex="-1" aria-labelledby="fullStandingsModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header bg-primary text-white">
-                                    <h5 class="modal-title" id="fullStandingsModalLabel">
-                                        <i class="bi bi-bar-chart-fill"></i> Bảng Xếp Hạng Chi Tiết
-                                    </h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    @if (teams != null && teams.Any() && teamRankings != null && teamRankings.Any())
-                                    {
-                                        <div class="table-responsive">
-                                            <table class="table table-striped table-hover">
-                                                <thead class="table-dark">
-                                                    <tr class="text-center">
-                                                        <th>Hạng</th>
-                                                        <th>Đội</th>
-                                                        <th>Trận</th>
-                                                        <th>Thắng</th>
-                                                        <th>Hòa</th>
-                                                        <th>Thua</th>
-                                                        <th>Ghi</th>
-                                                        <th>Thủng</th>
-                                                        <th>Hiệu số</th>
-                                                        <th>Điểm</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @for (int i = 0; i < teamRankings.Count; i++)
-                                                    {
-                                                        var ranking = teamRankings[i];
-                                                        var team = ranking.Team;
-
-                                                        <tr class="@(i < 3 ? "table-success" : "")">
-                                                            <td class="text-center fw-bold">@(i + 1)</td>
-                                                            <td>
-                                                                @if (!string.IsNullOrEmpty(team.LogoUrl))
+                                                    <tr class="@(i < 3 ? "table-success" : "")">
+                                                        <td class="text-center fw-bold">@(i + 1)</td>
+                                                        <td>
+                                                            @if (team != null)
+                                                            {
+                                                                if (!string.IsNullOrEmpty(team.LogoUrl))
                                                                 {
                                                                     <img src="@team.LogoUrl" alt="Logo @team.Name" class="me-2" style="height: 24px; width: auto;" />
                                                                 }
                                                                 @team.Name
-                                                            </td>
-                                                            <td class="text-center">@ranking.Played</td>
-                                                            <td class="text-center">@ranking.Won</td>
-                                                            <td class="text-center">@ranking.Drawn</td>
-                                                            <td class="text-center">@ranking.Lost</td>
-                                                            <td class="text-center">@ranking.PointsScored</td>
-                                                            <td class="text-center">@ranking.PointsConceded</td>
-                                                            <td class="text-center">@(ranking.PointDiff > 0 ? "+" + ranking.PointDiff : ranking.PointDiff.ToString())</td>
-                                                            <td class="text-center fw-bold">@ranking.Points</td>
-                                                        </tr>
-                                                    }
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    }
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                                </div>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-muted">Không có đội</span>
+                                                            }
+                                                        </td>
+                                                        <td class="text-center">@ranking.Played</td>
+                                                        <td class="text-center">@ranking.Won</td>
+                                                        <td class="text-center">@ranking.Drawn</td>
+                                                        <td class="text-center">@ranking.Lost</td>
+                                                        <td class="text-center">@ranking.PointsScored</td>
+                                                        <td class="text-center">@ranking.PointsConceded</td>
+                                                        <td class="text-center">@(ranking.PointDiff > 0 ? "+" + ranking.PointDiff : ranking.PointDiff.ToString())</td>
+                                                        <td class="text-center fw-bold">@ranking.Points</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i> Chưa có đội bóng nào tham gia giải đấu này.
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Lịch thi đấu content -->
+                            <div class="tab-pane fade" id="schedule-content" role="tabpanel" aria-labelledby="schedule-tab">
+                                @if (matches != null && matches.Any())
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead class="table-primary">
+                                                <tr>
+                                                    <th>Đội A</th>
+                                                    <th class="text-center">Tỉ Số</th>
+                                                    <th>Đội B</th>
+                                                    <th class="text-center">Thời Gian Thi Đấu</th>
+                                                    <th class="text-center">Trạng Thái</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var match in matches)
+                                                {
+                                                    // Lấy trạng thái trận đấu từ dictionary
+                                                    string status = (matchStatus != null && matchStatus.ContainsKey(match.Id)) ? matchStatus[match.Id] : "Upcoming";
+
+                                                    string statusText = status == "Completed" ? "Đã kết thúc" :
+                                                                       (status == "InProgress" ? "Đang diễn ra" : "Sắp diễn ra");
+                                                    string statusClass = status == "Completed" ? "bg-success" :
+                                                                       (status == "InProgress" ? "bg-danger" : "bg-primary");
+
+                                                    <tr>
+                                                        <td class="fw-bold">
+                                                            @if (!string.IsNullOrEmpty(match.TeamA))
+                                                            {
+                                                                @match.TeamA
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-muted">Chưa xác định</span>
+                                                            }
+                                                        </td>
+                                                        <td class="text-center">
+                                                            @if (status == "Completed")
+                                                            {
+                                                                @if (match.ScoreTeamA.HasValue && match.ScoreTeamB.HasValue)
+                                                                {
+                                                                    <span class="badge bg-secondary">@match.ScoreTeamA - @match.ScoreTeamB</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="badge bg-secondary">0 - 0</span>
+                                                                }
+                                                            }
+                                                            else if (status == "InProgress")
+                                                            {
+                                                                @if (match.ScoreTeamA.HasValue && match.ScoreTeamB.HasValue)
+                                                                {
+                                                                    <span class="badge bg-danger">@match.ScoreTeamA - @match.ScoreTeamB</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="badge bg-danger">0 - 0</span>
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-secondary">VS</span>
+                                                            }
+                                                        </td>
+                                                        <td class="fw-bold">
+                                                            @if (!string.IsNullOrEmpty(match.TeamB))
+                                                            {
+                                                                @match.TeamB
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-muted">Chưa xác định</span>
+                                                            }
+                                                        </td>
+                                                        <td class="text-center">
+                                                            @if (match.MatchDate != default(DateTime))
+                                                            {
+                                                                <div>@match.MatchDate.ToString("dd/MM/yyyy")</div>
+                                                                <div><small class="text-muted">15:00 - 15:15</small></div>
+                                                                <div><small class="text-muted fst-italic">(Hoặc đến khi đạt 21 điểm)</small></div>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-muted">Chưa xác định</span>
+                                                            }
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <span class="badge @statusClass">@statusText</span>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i> Chưa có trận đấu nào được lên lịch cho giải đấu này.
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Thống kê cầu thủ content -->
+                            <div class="tab-pane fade" id="player-stats-content" role="tabpanel" aria-labelledby="player-stats-tab">
+                                @{
+                                    var playerStats = ViewBag.PlayerStats as List<dynamic>;
+                                }
+
+                                @if (playerStats != null && playerStats.Any())
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead class="table-primary">
+                                                <tr class="text-center">
+                                                    <th>Hạng</th>
+                                                    <th>Cầu Thủ</th>
+                                                    <th>Đội</th>
+                                                    <th class="text-center">Trận</th>
+                                                    <th class="text-center">Điểm</th>
+                                                    <th class="text-center">TB Điểm</th>
+                                                    <th class="text-center">Kiến Tạo</th>
+                                                    <th class="text-center">Bắt Bóng</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @for (int i = 0; i < playerStats.Count; i++)
+                                                {
+                                                    var player = playerStats[i];
+                                                    <tr class="@(i < 3 ? "table-warning" : "")">
+                                                        <td class="text-center fw-bold">@(i + 1)</td>
+                                                        <td>@player.PlayerName</td>
+                                                        <td>@player.Team</td>
+                                                        <td class="text-center">@player.GamesPlayed</td>
+                                                        <td class="text-center fw-bold">@player.TotalPoints</td>
+                                                        <td class="text-center">@player.PointsPerGame</td>
+                                                        <td class="text-center">@player.TotalAssists</td>
+                                                        <td class="text-center">@player.TotalRebounds</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle"></i> Chưa có thống kê cầu thủ nào cho giải đấu này.
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
+
+
 
                     <div class="d-flex justify-content-between mt-4">
                         <div>
@@ -357,16 +402,25 @@
                                 </a>
                             }
                         </div>
-                        @if (User.IsInRole(SD.Role_Admin))
-                        {
-                            <div>
-                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                        <div>
+                            @if (User.IsInRole(SD.Role_User) && Model.RegistrationStatus == "Open")
+                            {
+                                <a asp-action="Register" asp-route-id="@Model.Id" class="btn btn-success me-2">
+                                    <i class="bi bi-person-plus"></i> Đăng Ký Tham Gia
+                                </a>
+                                <a asp-action="RegisterTeam" asp-route-id="@Model.Id" class="btn btn-primary me-2">
+                                    <i class="bi bi-people-fill"></i> Đăng Ký Đội
+                                </a>
+                            }
+                            @if (User.IsInRole(SD.Role_Admin))
+                            {
+                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning me-2">
                                     <i class="bi bi-pencil"></i> Chỉnh Sửa
                                 </a>
-                                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger ms-2">
+                                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
                                     <i class="bi bi-trash"></i> Xóa
                                 </a>
-                            </div>
+                            }
                         }
                     </div>
                 </div>

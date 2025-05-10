@@ -61,12 +61,27 @@
 
                         <form asp-action="Register" method="post">
                             <input type="hidden" name="id" value="@Model.Id" />
-                            
+
                             <div class="mb-3">
                                 <label for="notes" class="form-label">Ghi chú (không bắt buộc)</label>
                                 <textarea name="notes" id="notes" class="form-control" rows="3" placeholder="Nhập ghi chú hoặc thông tin bổ sung"></textarea>
                             </div>
-                            
+
+                            @if (ViewBag.UserTeams != null && ViewBag.UserTeams.Count > 0)
+                            {
+                                <div class="mb-3">
+                                    <label for="teamId" class="form-label">Đăng ký đội tham gia (không bắt buộc)</label>
+                                    <select name="teamId" id="teamId" class="form-select">
+                                        <option value="">-- Chọn đội --</option>
+                                        @foreach (var team in ViewBag.UserTeams)
+                                        {
+                                            <option value="@team.TeamId">@team.Name</option>
+                                        }
+                                    </select>
+                                    <div class="form-text">Bạn có thể đăng ký đội tham gia giải đấu này.</div>
+                                </div>
+                            }
+
                             <div class="d-flex justify-content-between">
                                 <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
                                 <button type="submit" class="btn btn-success">Xác nhận đăng ký</button>

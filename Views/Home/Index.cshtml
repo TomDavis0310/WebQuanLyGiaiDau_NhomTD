@@ -2,25 +2,99 @@
     ViewData["Title"] = "Trang chủ";
 }
 
-<div class="hero-section text-center py-5">
+<div class="sports-hero">
     <div class="container py-5">
-        <h1 class="display-3 fw-bold mb-4">
-            <i class="bi bi-trophy-fill text-warning me-2"></i>Quản Lý Giải Đấu
-        </h1>
-        <p class="lead mb-5">Hệ thống quản lý giải đấu thể thao toàn diện</p>
+        <div class="row align-items-center">
+            <div class="col-lg-6 text-center text-lg-start animate-fade-in">
+                <h1 class="display-3 fw-bold mb-4">
+                    <span class="text-warning">Hệ Thống</span> Quản Lý Giải Đấu
+                </h1>
+                <p class="lead mb-5">Nền tảng quản lý giải đấu thể thao toàn diện, dễ sử dụng và hiệu quả cho mọi môn thể thao</p>
 
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card shadow border-0 mb-4">
-                    <div class="card-body p-5">
-                        <h2 class="h4 mb-4">Đăng nhập để tiếp tục</h2>
-                        <div class="d-grid gap-2">
-                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg">
-                                <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập
-                            </a>
-                            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-primary btn-lg">
-                                <i class="bi bi-person-plus me-2"></i>Đăng ký
-                            </a>
+                @if (User.Identity == null || !User.Identity.IsAuthenticated)
+                {
+                    <div class="d-flex flex-column flex-sm-row gap-3 justify-content-lg-start justify-content-center">
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-sports-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập
+                        </a>
+                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-sports-secondary btn-lg">
+                            <i class="bi bi-person-plus me-2"></i>Đăng ký
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex flex-column flex-sm-row gap-3 justify-content-lg-start justify-content-center">
+                        <a asp-controller="Sports" asp-action="Index" class="btn btn-sports-primary btn-lg">
+                            <i class="bi bi-dribbble me-2"></i>Khám phá môn thể thao
+                        </a>
+                        <a asp-controller="Tournament" asp-action="Index" class="btn btn-sports-secondary btn-lg">
+                            <i class="bi bi-trophy me-2"></i>Xem giải đấu
+                        </a>
+                    </div>
+                }
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <div class="logo-container">
+                    <img src="/images/Logomain.png" alt="Logo" class="img-fluid main-logo animate-fade-in" style="animation-delay: 0.3s;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="features-section py-5">
+    <div class="container">
+        <h2 class="text-center mb-2 fw-bold">Tính Năng Nổi Bật</h2>
+        <p class="text-center text-muted mb-5">Khám phá những tính năng giúp quản lý giải đấu thể thao hiệu quả</p>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="sports-card h-100">
+                    <div class="card-body p-4">
+                        <div class="feature-icon-container mb-4">
+                            <div class="feature-icon-bg bg-primary-light">
+                                <i class="bi bi-trophy feature-icon text-primary"></i>
+                            </div>
+                        </div>
+                        <h3 class="h4 mb-3">Quản lý giải đấu</h3>
+                        <p class="text-muted">Tạo và quản lý các giải đấu thể thao một cách dễ dàng với hệ thống lịch thi đấu thông minh</p>
+                        <div class="mt-auto pt-3">
+                            <a href="#" class="btn btn-sports-outline btn-sm">Tìm hiểu thêm</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="sports-card h-100">
+                    <div class="card-body p-4">
+                        <div class="feature-icon-container mb-4">
+                            <div class="feature-icon-bg bg-secondary-light">
+                                <i class="bi bi-people-fill feature-icon text-secondary"></i>
+                            </div>
+                        </div>
+                        <h3 class="h4 mb-3">Quản lý đội bóng</h3>
+                        <p class="text-muted">Theo dõi thông tin về các đội bóng, cầu thủ và thành tích trong các giải đấu</p>
+                        <div class="mt-auto pt-3">
+                            <a href="#" class="btn btn-sports-outline btn-sm">Tìm hiểu thêm</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="sports-card h-100">
+                    <div class="card-body p-4">
+                        <div class="feature-icon-container mb-4">
+                            <div class="feature-icon-bg bg-accent-light">
+                                <i class="bi bi-clipboard-check feature-icon text-accent"></i>
+                            </div>
+                        </div>
+                        <h3 class="h4 mb-3">Đăng ký tham gia</h3>
+                        <p class="text-muted">Đăng ký tham gia các giải đấu một cách nhanh chóng và theo dõi trạng thái đăng ký</p>
+                        <div class="mt-auto pt-3">
+                            <a href="#" class="btn btn-sports-outline btn-sm">Tìm hiểu thêm</a>
                         </div>
                     </div>
                 </div>
@@ -29,44 +103,71 @@
     </div>
 </div>
 
-<div class="features-section py-5 bg-light">
+<!-- Tin tức thể thao -->
+<div class="news-section py-5">
     <div class="container">
-        <h2 class="text-center mb-5">Tính năng chính</h2>
+        <h2 class="text-center mb-2 fw-bold">Tin Tức Thể Thao</h2>
+        <p class="text-center text-muted mb-5">Cập nhật những tin tức mới nhất về thể thao</p>
 
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-primary text-white mb-3">
-                            <i class="bi bi-trophy"></i>
-                        </div>
-                        <h3 class="h5">Quản lý giải đấu</h3>
-                        <p class="text-muted">Tạo và quản lý các giải đấu thể thao một cách dễ dàng</p>
+        <!-- Tin tức nổi bật -->
+        <div class="featured-news mb-5">
+            <div class="row" id="featuredNewsContainer">
+                <!-- Dữ liệu sẽ được tải bằng AJAX -->
+                <div class="col-12 text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-success text-white mb-3">
-                            <i class="bi bi-people-fill"></i>
-                        </div>
-                        <h3 class="h5">Quản lý đội bóng</h3>
-                        <p class="text-muted">Theo dõi thông tin về các đội bóng tham gia giải đấu</p>
-                    </div>
+        <!-- Tin tức mới nhất -->
+        <h3 class="mb-4">Tin tức mới nhất</h3>
+        <div class="row g-4" id="latestNewsContainer">
+            <!-- Dữ liệu sẽ được tải bằng AJAX -->
+            <div class="col-12 text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Đang tải...</span>
                 </div>
             </div>
+        </div>
 
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-info text-white mb-3">
-                            <i class="bi bi-clipboard-check"></i>
-                        </div>
-                        <h3 class="h5">Đăng ký tham gia</h3>
-                        <p class="text-muted">Đăng ký tham gia các giải đấu một cách nhanh chóng</p>
+        <div class="text-center mt-4">
+            <a asp-controller="News" asp-action="Index" class="btn btn-sports-primary">
+                <i class="bi bi-newspaper me-2"></i>Xem tất cả tin tức
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="sports-section py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-2 fw-bold">Các Môn Thể Thao</h2>
+        <p class="text-center text-muted mb-5">Hệ thống hỗ trợ đa dạng các môn thể thao phổ biến</p>
+
+        <div class="row g-4 justify-content-center">
+            <div class="col-6 col-md-3 text-center">
+                <div class="sport-icon-container">
+                    <div class="sport-icon-bg">
+                        <img src="/images/basketball-icon.png" alt="Bóng rổ" class="img-fluid sport-icon">
                     </div>
+                    <h4 class="mt-3">Bóng rổ</h4>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 text-center">
+                <div class="sport-icon-container">
+                    <div class="sport-icon-bg">
+                        <img src="/images/football_icon.jpeg" alt="Bóng đá" class="img-fluid sport-icon">
+                    </div>
+                    <h4 class="mt-3">Bóng đá</h4>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 text-center">
+                <div class="sport-icon-container">
+                    <div class="sport-icon-bg">
+                        <i class="bi bi-dribbble sport-icon-fallback"></i>
+                    </div>
+                    <h4 class="mt-3">Các môn khác</h4>
                 </div>
             </div>
         </div>
@@ -74,22 +175,350 @@
 </div>
 
 <style>
-    .hero-section {
-        background: linear-gradient(135deg, #0143a3, #0273d4);
+    /* Hero section styles */
+    .sports-hero {
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
         color: white;
-        min-height: 60vh;
+        min-height: 80vh;
         display: flex;
         align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .sports-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.05)" stroke-width="1" fill="none"/></svg>');
+        background-size: 100px 100px;
+        opacity: 0.3;
+    }
+
+    .logo-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        padding: 2rem;
+    }
+
+    .main-logo {
+        max-width: 100%;
+        max-height: 400px;
+        position: relative;
+        z-index: 2;
+        filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+        object-fit: contain;
+        background-color: transparent;
+    }
+
+    /* Feature section styles */
+    .feature-icon-container {
+        display: flex;
+        justify-content: center;
+    }
+
+    .feature-icon-bg {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .sports-card:hover .feature-icon-bg {
+        transform: scale(1.1) rotate(5deg);
     }
 
     .feature-icon {
-        width: 60px;
-        height: 60px;
+        font-size: 32px;
+    }
+
+    .bg-primary-light {
+        background-color: rgba(0, 102, 204, 0.1);
+    }
+
+    .bg-secondary-light {
+        background-color: rgba(255, 102, 0, 0.1);
+    }
+
+    .bg-accent-light {
+        background-color: rgba(51, 204, 51, 0.1);
+    }
+
+    .text-primary {
+        color: var(--primary-color) !important;
+    }
+
+    .text-secondary {
+        color: var(--secondary-color) !important;
+    }
+
+    .text-accent {
+        color: var(--accent-color) !important;
+    }
+
+    /* Sports section styles */
+    .sport-icon-container {
+        transition: transform 0.3s ease;
+    }
+
+    .sport-icon-container:hover {
+        transform: translateY(-10px);
+    }
+
+    .sport-icon-bg {
+        width: 120px;
+        height: 120px;
+        background-color: white;
         border-radius: 50%;
-        display: inline-flex;
+        display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 24px;
-        margin-bottom: 1rem;
+        margin: 0 auto;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+    .sport-icon-container:hover .sport-icon-bg {
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        transform: scale(1.05);
+    }
+
+    .sport-icon {
+        max-width: 60%;
+        max-height: 60%;
+    }
+
+    .sport-icon-fallback {
+        font-size: 48px;
+        color: var(--primary-color);
+    }
+
+    /* Animation */
+    .animate-fade-in {
+        opacity: 0;
+        animation: fadeIn 0.5s ease forwards;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* News section styles */
+    .news-section {
+        background-color: #f8f9fa;
+    }
+
+    .news-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .news-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .news-img-container {
+        height: 200px;
+        overflow: hidden;
+    }
+
+    .news-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .news-card:hover .news-img {
+        transform: scale(1.05);
+    }
+
+    .news-date {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    .news-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .news-summary {
+        color: #6c757d;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .featured-news-card {
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+        height: 350px;
+    }
+
+    .featured-news-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .featured-news-content {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 20px;
+        background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));
+        color: white;
+    }
+
+    .featured-news-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .featured-news-summary {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .news-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background-color: var(--primary-color);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
     }
 </style>
+
+<!-- AJAX script để tải tin tức -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tải tin tức nổi bật
+        fetch('/News/GetFeaturedNews')
+            .then(response => response.json())
+            .then(data => {
+                const featuredNewsContainer = document.getElementById('featuredNewsContainer');
+                featuredNewsContainer.innerHTML = '';
+
+                if (data.length > 0) {
+                    // Hiển thị tin nổi bật đầu tiên lớn hơn
+                    const featuredHtml = `
+                        <div class="col-md-6 mb-4">
+                            <div class="featured-news-card">
+                                <img src="${data[0].imageUrl || '/images/news/default.jpg'}" alt="${data[0].title}" class="featured-news-img">
+                                <div class="featured-news-content">
+                                    <div class="news-date mb-2">
+                                        <i class="bi bi-calendar-event me-1"></i>${data[0].publishDate}
+                                    </div>
+                                    <h3 class="featured-news-title">${data[0].title}</h3>
+                                    <p class="featured-news-summary">${data[0].summary}</p>
+                                    <a href="/News/Details/${data[0].newsId}" class="btn btn-sm btn-light mt-2">Đọc tiếp</a>
+                                </div>
+                                <div class="news-badge">
+                                    <i class="bi bi-star-fill me-1"></i>Nổi bật
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">`;
+
+                    // Hiển thị các tin nổi bật còn lại nhỏ hơn
+                    let otherFeaturedHtml = '';
+                    for (let i = 1; i < data.length && i < 3; i++) {
+                        otherFeaturedHtml += `
+                            <div class="col-md-6 mb-4">
+                                <div class="card news-card">
+                                    <div class="news-img-container">
+                                        <img src="${data[i].imageUrl || '/images/news/default.jpg'}" alt="${data[i].title}" class="news-img">
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="news-date mb-2">
+                                            <i class="bi bi-calendar-event me-1"></i>${data[i].publishDate}
+                                        </div>
+                                        <h5 class="news-title">${data[i].title}</h5>
+                                        <a href="/News/Details/${data[i].newsId}" class="btn btn-sm btn-outline-primary mt-2">Đọc tiếp</a>
+                                    </div>
+                                </div>
+                            </div>`;
+                    }
+
+                    featuredNewsContainer.innerHTML = featuredHtml + otherFeaturedHtml + '</div></div>';
+                } else {
+                    featuredNewsContainer.innerHTML = '<div class="col-12 text-center"><p>Không có tin tức nổi bật.</p></div>';
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi khi tải tin tức nổi bật:', error);
+                document.getElementById('featuredNewsContainer').innerHTML =
+                    '<div class="col-12 text-center"><p class="text-danger">Đã xảy ra lỗi khi tải tin tức nổi bật.</p></div>';
+            });
+
+        // Tải tin tức mới nhất
+        fetch('/News/GetLatestNews')
+            .then(response => response.json())
+            .then(data => {
+                const latestNewsContainer = document.getElementById('latestNewsContainer');
+                latestNewsContainer.innerHTML = '';
+
+                if (data.length > 0) {
+                    let latestHtml = '';
+                    data.forEach(news => {
+                        latestHtml += `
+                            <div class="col-md-4 mb-4">
+                                <div class="card news-card">
+                                    <div class="news-img-container">
+                                        <img src="${news.imageUrl || '/images/news/default.jpg'}" alt="${news.title}" class="news-img">
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="news-date mb-2">
+                                            <i class="bi bi-calendar-event me-1"></i>${news.publishDate}
+                                            <span class="ms-2"><i class="bi bi-eye me-1"></i>${news.viewCount}</span>
+                                        </div>
+                                        <h5 class="news-title">${news.title}</h5>
+                                        <p class="news-summary">${news.summary}</p>
+                                        <a href="/News/Details/${news.newsId}" class="btn btn-sm btn-outline-primary mt-2">Đọc tiếp</a>
+                                    </div>
+                                </div>
+                            </div>`;
+                    });
+                    latestNewsContainer.innerHTML = latestHtml;
+                } else {
+                    latestNewsContainer.innerHTML = '<div class="col-12 text-center"><p>Không có tin tức mới.</p></div>';
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi khi tải tin tức mới nhất:', error);
+                document.getElementById('latestNewsContainer').innerHTML =
+                    '<div class="col-12 text-center"><p class="text-danger">Đã xảy ra lỗi khi tải tin tức mới nhất.</p></div>';
+            });
+    });
+</script>

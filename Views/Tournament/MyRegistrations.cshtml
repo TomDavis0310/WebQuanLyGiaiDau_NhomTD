@@ -1,11 +1,12 @@
 @model IEnumerable<WebQuanLyGiaiDau_NhomTD.Models.TournamentRegistration>
 
 @{
-    ViewData["Title"] = "Giải đấu đã đăng ký";
+    ViewData["Title"] = "Nộp bài viết/tài liệu";
+    var submissions = ViewBag.Submissions as IEnumerable<WebQuanLyGiaiDau_NhomTD.Models.TournamentSubmission>;
 }
 
 <div class="container mt-4">
-    <h1 class="text-center text-primary mb-4">Giải đấu đã đăng ký</h1>
+    <h1 class="text-center text-primary mb-4">Nộp bài viết/tài liệu</h1>
 
     <div class="mb-3">
         <a asp-action="Index" class="btn btn-secondary">
@@ -13,6 +14,24 @@
         </a>
     </div>
 
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Ẩn phần hiển thị đăng ký giải đấu theo yêu cầu -->
+    <!--
     @if (!Model.Any())
     {
         <div class="alert alert-info">
@@ -37,19 +56,19 @@
                             {
                                 <img src="@registration.Tournament.ImageUrl" class="card-img-top mb-3" alt="@registration.Tournament.Name" style="height: 150px; object-fit: cover;">
                             }
-                            
+
                             <p class="card-text">@registration.Tournament.Description</p>
-                            
+
                             <div class="d-flex justify-content-between mb-2">
                                 <small class="text-muted">Ngày bắt đầu:</small>
                                 <small class="text-muted">@registration.Tournament.StartDate.ToString("dd/MM/yyyy")</small>
                             </div>
-                            
+
                             <div class="d-flex justify-content-between mb-3">
                                 <small class="text-muted">Ngày kết thúc:</small>
                                 <small class="text-muted">@registration.Tournament.EndDate.ToString("dd/MM/yyyy")</small>
                             </div>
-                            
+
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <strong>Trạng thái:</strong>
@@ -82,4 +101,130 @@
             }
         </div>
     }
+    -->
+
+    <!-- Phần nộp bài viết/tài liệu -->
+    <div class="card mt-4 shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Nộp bài viết/tài liệu</h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="SubmitDocument" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="tournamentId" class="form-label">Chọn giải đấu</label>
+                    <select id="tournamentId" name="tournamentId" class="form-select" required>
+                        <option value="">-- Chọn giải đấu --</option>
+                        @foreach (var item in ViewBag.Tournaments)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="title" class="form-label">Tiêu đề</label>
+                    <input type="text" id="title" name="title" class="form-control" required maxlength="200">
+                </div>
+
+                <div class="mb-3">
+                    <label for="content" class="form-label">Nội dung</label>
+                    <textarea id="content" name="content" class="form-control" rows="5" required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="documentFile" class="form-label">Tài liệu đính kèm (tùy chọn)</label>
+                    <input type="file" id="documentFile" name="documentFile" class="form-control" accept=".doc,.docx,.pdf">
+                    <div class="form-text">Chấp nhận các định dạng: .doc, .docx, .pdf</div>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Nộp bài
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Danh sách bài đã nộp -->
+    <div class="card mt-4 shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Bài viết/tài liệu đã nộp</h3>
+        </div>
+        <div class="card-body">
+            @if (submissions == null || !submissions.Any())
+            {
+                <div class="alert alert-info">
+                    <h4 class="alert-heading">Chưa có bài nộp!</h4>
+                    <p>Bạn chưa nộp bài viết hoặc tài liệu nào.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Giải đấu</th>
+                                <th>Tiêu đề</th>
+                                <th>Ngày nộp</th>
+                                <th>Tài liệu</th>
+                                <th>Trạng thái</th>
+                                <th>Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var submission in submissions)
+                            {
+                                <tr>
+                                    <td>@submission.Tournament.Name</td>
+                                    <td>@submission.Title</td>
+                                    <td>@submission.SubmissionDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(submission.FileUrl))
+                                        {
+                                            <a href="@submission.FileUrl" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-file-earmark"></i> @submission.FileName
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Không có</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @switch (submission.Status)
+                                        {
+                                            case "Pending":
+                                                <span class="badge bg-warning text-dark">Đang chờ duyệt</span>
+                                                break;
+                                            case "Approved":
+                                                <span class="badge bg-success">Đã duyệt</span>
+                                                break;
+                                            case "Rejected":
+                                                <span class="badge bg-danger">Từ chối</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary">@submission.Status</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(submission.AdminNotes))
+                                        {
+                                            <span>@submission.AdminNotes</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Không có</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
 </div>

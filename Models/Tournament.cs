@@ -23,6 +23,9 @@
 
         public string? ImageUrl { get; set; }
 
+        // Trạng thái đăng ký: Open (Mở đăng ký), Closed (Đóng đăng ký), Completed (Đã kết thúc)
+        public string RegistrationStatus { get; set; } = "Open";
+
         // Foreign key to Sports
         public int SportsId { get; set; }
         public Sports? Sports { get; set; }
