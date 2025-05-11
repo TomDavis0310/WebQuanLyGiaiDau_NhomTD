@@ -24,32 +24,48 @@
 <h1 class="text-center text-info mt-4">📋 Chi Tiết Đội Bóng</h1>
 
 <div class="container bg-light shadow rounded p-4 mt-4 mb-4">
-    <h5 class="text-primary mb-3">Thông Tin Đội:</h5>
-    <dl class="row">
-        <dt class="col-sm-3 fw-bold">Tên Đội:</dt>
-        <dd class="col-sm-9">
-            @if (!string.IsNullOrEmpty(Model.Name))
+    <div class="row">
+        <div class="col-md-4 text-center mb-3">
+            @if (!string.IsNullOrEmpty(Model.LogoUrl))
             {
-                @Html.DisplayFor(model => model.Name)
+                <img src="@Model.LogoUrl" alt="Logo @Model.Name" class="img-fluid rounded" style="max-height: 200px;" />
             }
             else
             {
-                <span class="text-muted">Chưa xác định</span>
+                <div class="bg-light d-flex align-items-center justify-content-center p-3" style="height: 200px;">
+                    <i class="bi bi-shield-fill text-secondary" style="font-size: 5rem;"></i>
+                </div>
             }
-        </dd>
+        </div>
+        <div class="col-md-8">
+            <h5 class="text-primary mb-3">Thông Tin Đội:</h5>
+            <dl class="row">
+                <dt class="col-sm-4 fw-bold">Tên Đội:</dt>
+                <dd class="col-sm-8">
+                    @if (!string.IsNullOrEmpty(Model.Name))
+                    {
+                        @Html.DisplayFor(model => model.Name)
+                    }
+                    else
+                    {
+                        <span class="text-muted">Chưa xác định</span>
+                    }
+                </dd>
 
-        <dt class="col-sm-3 fw-bold">Huấn Luyện Viên:</dt>
-        <dd class="col-sm-9">
-            @if (!string.IsNullOrEmpty(Model.Coach))
-            {
-                @Html.DisplayFor(model => model.Coach)
-            }
-            else
-            {
-                <span class="text-muted">Chưa xác định</span>
-            }
-        </dd>
-    </dl>
+                <dt class="col-sm-4 fw-bold">Huấn Luyện Viên:</dt>
+                <dd class="col-sm-8">
+                    @if (!string.IsNullOrEmpty(Model.Coach))
+                    {
+                        @Html.DisplayFor(model => model.Coach)
+                    }
+                    else
+                    {
+                        <span class="text-muted">Chưa xác định</span>
+                    }
+                </dd>
+            </dl>
+        </div>
+    </div>
 
     <div class="mt-4 d-flex justify-content-between">
         @if (User.IsInRole(SD.Role_Admin))

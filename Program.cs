@@ -98,6 +98,9 @@ using (var scope = app.Services.CreateScope())
     // Create two basketball tournaments (one completed and one open for registration)
     SeedTwoBasketballTournaments(dbContext);
 
+    // Seed 5v5 basketball tournaments
+    await SeedBasketball5v5Data.SeedBasketball5v5Tournaments(scope.ServiceProvider);
+
     // Seed news data
     SeedNewsData.Initialize(dbContext);
 }

@@ -169,9 +169,16 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 teamNames.Add(match.TeamB);
             }
 
+            // Lấy danh sách các đội đã đăng ký tham gia giải đấu từ bảng TournamentTeams
+            var registeredTeamIds = await _context.TournamentTeams
+                .Where(tt => tt.TournamentId == id && tt.Status == "Approved")
+                .Select(tt => tt.TeamId)
+                .ToListAsync();
+
             // Lấy thông tin chi tiết về các đội từ bảng Teams
-            // Chỉ lấy các đội tham gia giải đấu hiện tại
             List<Team> teams = new List<Team>();
+
+            // Lấy đội từ các trận đấu
             if (teamNames.Count > 0)
             {
                 teams = await _context.Teams
@@ -179,8 +186,21 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     .Include(t => t.Players)
                     .ToListAsync();
             }
-            // Nếu không có trận đấu nào, hiển thị danh sách đội rỗng
-            // Không lấy tất cả các đội từ database nữa
+
+            // Lấy thêm các đội đã đăng ký nhưng chưa có trận đấu
+            if (registeredTeamIds.Count > 0)
+            {
+                // Get the IDs of teams we already have
+                var existingTeamIds = teams.Select(t => t.TeamId).ToList();
+
+                // Get teams that are registered but not already in our list
+                var registeredTeams = await _context.Teams
+                    .Where(t => registeredTeamIds.Contains(t.TeamId) && !existingTeamIds.Contains(t.TeamId))
+                    .Include(t => t.Players)
+                    .ToListAsync();
+
+                teams.AddRange(registeredTeams);
+            }
 
             // Tính toán bảng xếp hạng dựa trên kết quả trận đấu
             var teamRankings = new List<dynamic>();
@@ -862,20 +882,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 .Include(r => r.Tournament)
                 .Where(r => r.UserId == userId)
                 .ToListAsync();
-
-            // Lấy danh sách bài nộp của người dùng
-            var submissions = await _context.TournamentSubmissions
-                .Include(s => s.Tournament)
-                .Where(s => s.UserId == userId)
-                .ToListAsync();
-
-            // Lấy danh sách tất cả các giải đấu để người dùng có thể chọn khi nộp bài
-            var tournaments = await _context.Tournaments
-                .Where(t => t.RegistrationStatus == "Open")
-                .ToListAsync();
-
-            ViewBag.Tournaments = new SelectList(tournaments, "Id", "Name");
-            ViewBag.Submissions = submissions;
 
             return View(registrations);
         }

@@ -46,5 +46,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
         // Navigation
         public Tournament Tournament { get; set; }
         public ICollection<Statistic>? Statistics { get; set; }
+        public ICollection<MatchSet>? MatchSets { get; set; }
     }
 }

@@ -102,12 +102,10 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderKey")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
@@ -144,12 +142,10 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
@@ -170,8 +166,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Age")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("Age")
+                        .HasColumnType("int");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -251,15 +247,21 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.Property<int?>("ScoreTeamB")
                         .HasColumnType("int");
 
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("TeamA")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TeamAId")
+                        .HasColumnType("int");
 
                     b.Property<string>("TeamB")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("TeamId")
+                    b.Property<int?>("TeamBId")
                         .HasColumnType("int");
 
                     b.Property<int>("TournamentId")
@@ -267,11 +269,13 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TeamId");
+                    b.HasIndex("TeamAId");
+
+                    b.HasIndex("TeamBId");
 
                     b.HasIndex("TournamentId");
 
-                    b.ToTable("Matches");
+                    b.ToTable("Matches", (string)null);
                 });
 
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.News", b =>
@@ -283,11 +287,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NewsId"));
 
                     b.Property<string>("Author")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Category")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Content")
@@ -312,13 +314,11 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     b.Property<string>("Summary")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ViewCount")
                         .HasColumnType("int");
@@ -327,7 +327,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     b.HasIndex("SportsId");
 
-                    b.ToTable("News");
+                    b.ToTable("News", (string)null);
                 });
 
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Player", b =>
@@ -338,10 +338,15 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PlayerId"));
 
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("int");
 
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
@@ -351,17 +356,19 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     b.Property<string>("Position")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("TeamId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Weight")
                         .HasColumnType("int");
 
                     b.HasKey("PlayerId");
 
                     b.HasIndex("TeamId");
 
-                    b.ToTable("Players");
+                    b.ToTable("Players", (string)null);
                 });
 
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Sports", b =>
@@ -381,7 +388,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Sports");
+                    b.ToTable("Sports", (string)null);
                 });
 
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Statistic", b =>
@@ -412,7 +419,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     b.HasIndex("MatchId");
 
-                    b.ToTable("Statistics");
+                    b.ToTable("Statistics", (string)null);
                 });
 
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Team", b =>
@@ -436,7 +443,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     b.HasKey("TeamId");
 
-                    b.ToTable("Teams");
+                    b.ToTable("Teams", (string)null);
                 });
 
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Tournament", b =>
@@ -475,7 +482,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     b.HasIndex("SportsId");
 
-                    b.ToTable("Tournaments");
+                    b.ToTable("Tournaments", (string)null);
                 });
 
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.TournamentRegistration", b =>
@@ -509,7 +516,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TournamentRegistrations");
+                    b.ToTable("TournamentRegistrations", (string)null);
                 });
 
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.TournamentTeam", b =>
@@ -542,7 +549,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     b.HasIndex("TournamentId");
 
-                    b.ToTable("TournamentTeams");
+                    b.ToTable("TournamentTeams", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -598,15 +605,23 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Match", b =>
                 {
-                    b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.Team", null)
-                        .WithMany("Matches")
-                        .HasForeignKey("TeamId");
+                    b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.Team", "TeamANavigation")
+                        .WithMany()
+                        .HasForeignKey("TeamAId");
+
+                    b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.Team", "TeamBNavigation")
+                        .WithMany()
+                        .HasForeignKey("TeamBId");
 
                     b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.Tournament", "Tournament")
                         .WithMany()
                         .HasForeignKey("TournamentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("TeamANavigation");
+
+                    b.Navigation("TeamBNavigation");
 
                     b.Navigation("Tournament");
                 });
@@ -698,8 +713,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Team", b =>
                 {
-                    b.Navigation("Matches");
-
                     b.Navigation("Players");
                 });
 #pragma warning restore 612, 618

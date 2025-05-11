@@ -11,11 +11,9 @@
         <a asp-action="Index" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Quay lại danh sách giải đấu
         </a>
-        <a asp-action="ManageRegistrations" class="btn btn-info text-white">
-            <i class="bi bi-people"></i> Quản lý đăng ký người dùng
-        </a>
+
     </div>
-    
+
     @if (TempData["Message"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -102,7 +100,7 @@
                                                 <i class="bi bi-trash"></i> Xóa
                                             </button>
                                         </div>
-                                        
+
                                         @if (submission.Status == "Pending")
                                         {
                                             <div class="mt-2">
@@ -116,7 +114,7 @@
                                         }
                                     </td>
                                 </tr>
-                                
+
                                 <!-- Modal Xem chi tiết -->
                                 <div class="modal fade" id="viewModal-@submission.Id" tabindex="-1" aria-labelledby="viewModalLabel-@submission.Id" aria-hidden="true">
                                     <div class="modal-dialog modal-lg">
@@ -132,14 +130,14 @@
                                                     <strong>Giải đấu:</strong> @submission.Tournament.Name |
                                                     <strong>Ngày nộp:</strong> @submission.SubmissionDate.ToString("dd/MM/yyyy HH:mm")
                                                 </p>
-                                                
+
                                                 <div class="card mb-3">
                                                     <div class="card-header">Nội dung</div>
                                                     <div class="card-body">
                                                         <p>@submission.Content</p>
                                                     </div>
                                                 </div>
-                                                
+
                                                 @if (!string.IsNullOrEmpty(submission.FileUrl))
                                                 {
                                                     <div class="mb-3">
@@ -149,7 +147,7 @@
                                                         </a>
                                                     </div>
                                                 }
-                                                
+
                                                 <div class="mb-3">
                                                     <strong>Trạng thái:</strong>
                                                     @switch (submission.Status)
@@ -168,7 +166,7 @@
                                                             break;
                                                     }
                                                 </div>
-                                                
+
                                                 @if (!string.IsNullOrEmpty(submission.AdminNotes))
                                                 {
                                                     <div class="card">
@@ -185,7 +183,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Modal Duyệt -->
                                 <div class="modal fade" id="approveModal-@submission.Id" tabindex="-1" aria-labelledby="approveModalLabel-@submission.Id" aria-hidden="true">
                                     <div class="modal-dialog">
@@ -211,7 +209,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Modal Từ chối -->
                                 <div class="modal fade" id="rejectModal-@submission.Id" tabindex="-1" aria-labelledby="rejectModalLabel-@submission.Id" aria-hidden="true">
                                     <div class="modal-dialog">
@@ -237,7 +235,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Modal Xóa -->
                                 <div class="modal fade" id="deleteModal-@submission.Id" tabindex="-1" aria-labelledby="deleteModalLabel-@submission.Id" aria-hidden="true">
                                     <div class="modal-dialog">

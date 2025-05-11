@@ -52,11 +52,90 @@
 
             var match = await _context.Matches
                 .Include(m => m.Tournament)
+                .Include(m => m.Statistics)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (match == null)
             {
                 return NotFound();
             }
+
+            // Get player statistics for this match
+            var statistics = await _context.Statistics
+                .Where(s => s.MatchId == id)
+                .ToListAsync();
+
+            // Create virtual match sets (for basketball 5v5 NBA, 4 quarters)
+            var matchSets = new List<dynamic>();
+            var random = new Random();
+
+            // For NBA 5v5, we'll simulate 4 quarters
+            int totalScoreTeamA = match.ScoreTeamA ?? 0;
+            int totalScoreTeamB = match.ScoreTeamB ?? 0;
+
+            // Distribute total score across 4 quarters
+            int[] quarterScoresTeamA = new int[4];
+            int[] quarterScoresTeamB = new int[4];
+
+            if (totalScoreTeamA > 0 || totalScoreTeamB > 0)
+            {
+                // Distribute scores across quarters
+                for (int i = 0; i < 3; i++) // First 3 quarters
+                {
+                    quarterScoresTeamA[i] = totalScoreTeamA > 0 ? random.Next(15, Math.Min(35, totalScoreTeamA)) : 0;
+                    totalScoreTeamA -= quarterScoresTeamA[i];
+
+                    quarterScoresTeamB[i] = totalScoreTeamB > 0 ? random.Next(15, Math.Min(35, totalScoreTeamB)) : 0;
+                    totalScoreTeamB -= quarterScoresTeamB[i];
+                }
+
+                // Last quarter gets the remainder
+                quarterScoresTeamA[3] = totalScoreTeamA;
+                quarterScoresTeamB[3] = totalScoreTeamB;
+            }
+
+            // Find the best players for each quarter
+            for (int quarter = 0; quarter < 4; quarter++)
+            {
+                string bestPlayerName = "Chưa xác định";
+                string bestPlayerTeam = "";
+                int bestPlayerPoints = 0;
+
+                if (statistics.Any())
+                {
+                    // For simplicity, we'll pick a random player from the top performers
+                    var topPlayers = statistics.OrderByDescending(s => s.Points).Take(5).ToList();
+                    if (topPlayers.Any())
+                    {
+                        var bestPlayer = topPlayers[random.Next(topPlayers.Count)];
+                        bestPlayerName = bestPlayer.PlayerName;
+                        bestPlayerTeam = bestPlayer.PlayerName.Contains(match.TeamA) ? match.TeamA : match.TeamB;
+                        bestPlayerPoints = random.Next(5, Math.Min(15, bestPlayer.Points));
+                    }
+                }
+                else if (match.CalculatedStatus != "Upcoming")
+                {
+                    // If no statistics but match is completed or in progress, generate a random best player
+                    bestPlayerName = $"Cầu thủ {random.Next(1, 10)}";
+                    bestPlayerTeam = random.Next(2) == 0 ? match.TeamA : match.TeamB;
+                    bestPlayerPoints = random.Next(5, 15);
+                }
+
+                matchSets.Add(new
+                {
+                    SetNumber = quarter + 1,
+                    ScoreTeamA = quarterScoresTeamA[quarter],
+                    ScoreTeamB = quarterScoresTeamB[quarter],
+                    BestPlayerName = bestPlayerName,
+                    BestPlayerTeam = bestPlayerTeam,
+                    BestPlayerPoints = bestPlayerPoints
+                });
+            }
+
+            ViewBag.MatchSets = matchSets;
+            ViewBag.MatchStatus = match.CalculatedStatus;
+
+            // Tính toán thời gian kết thúc trận đấu dựa trên luật NBA
+            ViewBag.MatchEndTime = CalculateMatchEndTime(match.MatchDate);
 
             return View(match);
         }
@@ -82,6 +161,9 @@
                     // Đặt thời gian bắt đầu là 15:00 (3 giờ chiều)
                     DateTime matchDate = match.MatchDate.Date;
                     match.MatchDate = matchDate.AddHours(15); // 15:00
+
+                    // Thêm thông tin về thời gian kết thúc vào ViewBag để hiển thị
+                    ViewBag.MatchEndTime = CalculateMatchEndTime(match.MatchDate);
 
                     _context.Matches.Add(match);
                     await _context.SaveChangesAsync();
@@ -132,6 +214,9 @@
                     // Đảm bảo thời gian bắt đầu là 15:00 (3 giờ chiều)
                     DateTime matchDate = match.MatchDate.Date;
                     match.MatchDate = matchDate.AddHours(15); // 15:00
+
+                    // Thêm thông tin về thời gian kết thúc vào ViewBag để hiển thị
+                    ViewBag.MatchEndTime = CalculateMatchEndTime(match.MatchDate);
 
                     _context.Update(match);
                     await _context.SaveChangesAsync();
@@ -203,6 +288,18 @@
         private bool MatchExists(int id)
         {
             return _context.Matches.Any(e => e.Id == id);
+        }
+
+        // Helper method to calculate match end time based on NBA rules
+        private DateTime CalculateMatchEndTime(DateTime startTime)
+        {
+            // NBA 5v5 match duration:
+            // 4 quarters x 12 minutes = 48 minutes of play time
+            // 2 x 2.5 minutes break between quarters 1-2 and 3-4 = 5 minutes
+            // 1 x 15 minutes halftime break between quarters 2-3 = 15 minutes
+            // Total: 48 + 5 + 15 = 68 minutes = 1 hour and 8 minutes
+
+            return startTime.AddHours(1).AddMinutes(8);
         }
     }
 }

@@ -20,6 +20,7 @@
 
 
         public DbSet<Match> Matches { get; set; }
+        public DbSet<MatchSet> MatchSets { get; set; }
         public DbSet<Statistic> Statistics { get; set; }
         public DbSet<TournamentRegistration> TournamentRegistrations { get; set; }
         public DbSet<TournamentTeam> TournamentTeams { get; set; }
