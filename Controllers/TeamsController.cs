@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -23,9 +24,25 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Teams
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            return View(await _context.Teams.ToListAsync());
+            var teamsQuery = _context.Teams.AsQueryable();
+
+            // Áp dụng tìm kiếm nếu có
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                searchString = searchString.ToLower();
+                teamsQuery = teamsQuery.Where(t =>
+                    t.Name.ToLower().Contains(searchString) ||
+                    (t.Coach != null && t.Coach.ToLower().Contains(searchString)));
+            }
+
+            var teams = await teamsQuery.ToListAsync();
+
+            // Lưu searchString để hiển thị lại trong form
+            ViewData["CurrentFilter"] = searchString;
+
+            return View(teams);
         }
 
         // GET: Teams/Details/5
@@ -87,20 +104,39 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // Phương thức lưu hình ảnh
         private async Task<string> SaveImage(IFormFile image)
         {
-            var savePath = Path.Combine("wwwroot/images/teams", image.FileName);
-
-            // Đảm bảo thư mục tồn tại
-            var directory = Path.GetDirectoryName(savePath);
-            if (!Directory.Exists(directory))
+            try
             {
-                Directory.CreateDirectory(directory);
-            }
+                // Đảm bảo tên file không chứa ký tự đặc biệt
+                string fileName = Path.GetFileName(image.FileName);
+                // Thêm timestamp để tránh trùng tên file
+                string uniqueFileName = DateTime.Now.Ticks + "_" + fileName;
 
-            using (var fileStream = new FileStream(savePath, FileMode.Create))
-            {
-                await image.CopyToAsync(fileStream);
+                // Tạo đường dẫn đầy đủ
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "teams");
+
+                // Đảm bảo thư mục tồn tại
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Lưu file
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(fileStream);
+                }
+
+                // Trả về đường dẫn tương đối để lưu vào database
+                return "/images/teams/" + uniqueFileName;
             }
-            return "/images/teams/" + image.FileName;
+            catch (Exception ex)
+            {
+                // Log lỗi
+                Console.WriteLine("Lỗi khi lưu ảnh: " + ex.Message);
+                throw;
+            }
         }
 
         // GET: Teams/Edit/5
@@ -262,30 +298,95 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [Authorize(Roles = SD.Role_Admin)]
         public async Task<IActionResult> AddPlayer([Bind("FullName,Position,Number,TeamId")] Player player, IFormFile imageFile)
         {
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    // Xử lý tải lên hình ảnh nếu có
-                    if (imageFile != null && imageFile.Length > 0)
-                    {
-                        player.ImageUrl = await SavePlayerImage(imageFile);
-                    }
+            // Lưu teamId để sử dụng trong trường hợp lỗi
+            int teamId = player.TeamId;
 
-                    _context.Add(player);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Details), new { id = player.TeamId });
-                }
-                catch (Exception ex)
+            try
+            {
+                // Kiểm tra đội bóng có tồn tại không
+                var team = await _context.Teams.FindAsync(player.TeamId);
+                if (team == null)
                 {
-                    ModelState.AddModelError(string.Empty, "Lỗi khi lưu dữ liệu: " + ex.Message);
+                    TempData["ErrorMessage"] = "Đội bóng không tồn tại.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Kiểm tra số áo có hợp lệ không
+                if (player.Number < 0 || player.Number > 99)
+                {
+                    TempData["ErrorMessage"] = "Số áo phải từ 0 đến 99.";
+                    return RedirectToAction(nameof(AddPlayer), new { teamId = player.TeamId });
+                }
+
+                // Kiểm tra số áo đã tồn tại trong đội chưa
+                bool numberExists = await _context.Players
+                    .AnyAsync(p => p.TeamId == player.TeamId && p.Number == player.Number);
+
+                if (numberExists)
+                {
+                    TempData["ErrorMessage"] = $"Số áo {player.Number} đã được sử dụng trong đội {team.Name}.";
+                    return RedirectToAction(nameof(AddPlayer), new { teamId = player.TeamId });
+                }
+
+                // Kiểm tra tên cầu thủ không được để trống
+                if (string.IsNullOrWhiteSpace(player.FullName))
+                {
+                    TempData["ErrorMessage"] = "Vui lòng nhập họ tên cầu thủ.";
+                    return RedirectToAction(nameof(AddPlayer), new { teamId = player.TeamId });
+                }
+
+                // Kiểm tra vị trí không được để trống
+                if (string.IsNullOrWhiteSpace(player.Position))
+                {
+                    TempData["ErrorMessage"] = "Vui lòng nhập vị trí thi đấu.";
+                    return RedirectToAction(nameof(AddPlayer), new { teamId = player.TeamId });
+                }
+
+                if (ModelState.IsValid)
+                {
+                    try
+                    {
+                        // Xử lý tải lên hình ảnh nếu có
+                        if (imageFile != null && imageFile.Length > 0)
+                        {
+                            player.ImageUrl = await SavePlayerImage(imageFile);
+                        }
+
+                        _context.Add(player);
+                        await _context.SaveChangesAsync();
+
+                        // Thêm thông báo thành công
+                        TempData["SuccessMessage"] = $"Đã thêm cầu thủ {player.FullName} vào đội {team.Name} thành công.";
+
+                        return RedirectToAction(nameof(Details), new { id = player.TeamId });
+                    }
+                    catch (Exception ex)
+                    {
+                        TempData["ErrorMessage"] = "Lỗi khi lưu dữ liệu: " + ex.Message;
+                        Console.WriteLine("Lỗi thêm cầu thủ: " + ex.ToString());
+                        return RedirectToAction(nameof(AddPlayer), new { teamId = player.TeamId });
+                    }
+                }
+                else
+                {
+                    // Log lỗi validation
+                    var errors = string.Join("; ", ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage));
+
+                    TempData["ErrorMessage"] = "Lỗi dữ liệu: " + errors;
+                    Console.WriteLine("Lỗi validation: " + errors);
+
+                    return RedirectToAction(nameof(AddPlayer), new { teamId = player.TeamId });
                 }
             }
-
-            var team = _context.Teams.Find(player.TeamId);
-            ViewData["TeamId"] = player.TeamId;
-            ViewData["TeamName"] = team?.Name;
-            return View(player);
+            catch (Exception ex)
+            {
+                // Xử lý ngoại lệ không mong muốn
+                Console.WriteLine("Lỗi không mong muốn: " + ex.ToString());
+                TempData["ErrorMessage"] = "Đã xảy ra lỗi: " + ex.Message;
+                return RedirectToAction(nameof(AddPlayer), new { teamId = teamId });
+            }
         }
 
         // GET: Teams/EditPlayer/5
@@ -320,54 +421,127 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [Authorize(Roles = SD.Role_Admin)]
         public async Task<IActionResult> EditPlayer(int id, [Bind("PlayerId,FullName,Position,Number,TeamId")] Player player, IFormFile imageFile)
         {
-            if (id != player.PlayerId)
+            // Lưu teamId để sử dụng trong trường hợp lỗi
+            int teamId = player.TeamId;
+
+            try
             {
-                return NotFound();
-            }
+                if (id != player.PlayerId)
+                {
+                    TempData["ErrorMessage"] = "ID cầu thủ không hợp lệ.";
+                    return RedirectToAction(nameof(Details), new { id = teamId });
+                }
 
-            if (ModelState.IsValid)
+                // Kiểm tra cầu thủ có tồn tại không
+                var existingPlayer = await _context.Players.AsNoTracking().FirstOrDefaultAsync(p => p.PlayerId == id);
+                if (existingPlayer == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy cầu thủ cần chỉnh sửa.";
+                    return RedirectToAction(nameof(Details), new { id = teamId });
+                }
+
+                // Kiểm tra đội bóng có tồn tại không
+                var team = await _context.Teams.FindAsync(player.TeamId);
+                if (team == null)
+                {
+                    TempData["ErrorMessage"] = "Đội bóng không tồn tại.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Kiểm tra số áo có hợp lệ không
+                if (player.Number < 0 || player.Number > 99)
+                {
+                    TempData["ErrorMessage"] = "Số áo phải từ 0 đến 99.";
+                    return RedirectToAction(nameof(EditPlayer), new { id = player.PlayerId, teamId = player.TeamId });
+                }
+
+                // Kiểm tra số áo đã tồn tại trong đội chưa (trừ cầu thủ hiện tại)
+                bool numberExists = await _context.Players
+                    .AnyAsync(p => p.TeamId == player.TeamId && p.Number == player.Number && p.PlayerId != player.PlayerId);
+
+                if (numberExists)
+                {
+                    TempData["ErrorMessage"] = $"Số áo {player.Number} đã được sử dụng trong đội {team.Name}.";
+                    return RedirectToAction(nameof(EditPlayer), new { id = player.PlayerId, teamId = player.TeamId });
+                }
+
+                // Kiểm tra tên cầu thủ không được để trống
+                if (string.IsNullOrWhiteSpace(player.FullName))
+                {
+                    TempData["ErrorMessage"] = "Vui lòng nhập họ tên cầu thủ.";
+                    return RedirectToAction(nameof(EditPlayer), new { id = player.PlayerId, teamId = player.TeamId });
+                }
+
+                // Kiểm tra vị trí không được để trống
+                if (string.IsNullOrWhiteSpace(player.Position))
+                {
+                    TempData["ErrorMessage"] = "Vui lòng nhập vị trí thi đấu.";
+                    return RedirectToAction(nameof(EditPlayer), new { id = player.PlayerId, teamId = player.TeamId });
+                }
+
+                if (ModelState.IsValid)
+                {
+                    try
+                    {
+                        // Xử lý tải lên ảnh mới nếu có
+                        if (imageFile != null && imageFile.Length > 0)
+                        {
+                            player.ImageUrl = await SavePlayerImage(imageFile);
+                        }
+                        else
+                        {
+                            // Giữ lại URL ảnh cũ nếu không có ảnh mới
+                            player.ImageUrl = existingPlayer.ImageUrl;
+                        }
+
+                        _context.Update(player);
+                        await _context.SaveChangesAsync();
+
+                        // Thêm thông báo thành công
+                        TempData["SuccessMessage"] = $"Đã cập nhật thông tin cầu thủ {player.FullName} thành công.";
+
+                        return RedirectToAction(nameof(Details), new { id = player.TeamId });
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        if (!PlayerExists(player.PlayerId))
+                        {
+                            TempData["ErrorMessage"] = "Không tìm thấy cầu thủ cần chỉnh sửa.";
+                            return RedirectToAction(nameof(Details), new { id = teamId });
+                        }
+                        else
+                        {
+                            TempData["ErrorMessage"] = "Lỗi cập nhật dữ liệu: Dữ liệu đã bị thay đổi bởi người khác.";
+                            return RedirectToAction(nameof(EditPlayer), new { id = player.PlayerId, teamId = player.TeamId });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        TempData["ErrorMessage"] = "Lỗi khi cập nhật dữ liệu: " + ex.Message;
+                        Console.WriteLine("Lỗi cập nhật cầu thủ: " + ex.ToString());
+                        return RedirectToAction(nameof(EditPlayer), new { id = player.PlayerId, teamId = player.TeamId });
+                    }
+                }
+                else
+                {
+                    // Log lỗi validation
+                    var errors = string.Join("; ", ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage));
+
+                    TempData["ErrorMessage"] = "Lỗi dữ liệu: " + errors;
+                    Console.WriteLine("Lỗi validation: " + errors);
+
+                    return RedirectToAction(nameof(EditPlayer), new { id = player.PlayerId, teamId = player.TeamId });
+                }
+            }
+            catch (Exception ex)
             {
-                try
-                {
-                    // Lấy thông tin cầu thủ hiện tại để giữ lại URL ảnh nếu không có ảnh mới
-                    var existingPlayer = await _context.Players.AsNoTracking().FirstOrDefaultAsync(p => p.PlayerId == id);
-
-                    // Xử lý tải lên ảnh mới nếu có
-                    if (imageFile != null && imageFile.Length > 0)
-                    {
-                        player.ImageUrl = await SavePlayerImage(imageFile);
-                    }
-                    else if (existingPlayer != null)
-                    {
-                        // Giữ lại URL ảnh cũ nếu không có ảnh mới
-                        player.ImageUrl = existingPlayer.ImageUrl;
-                    }
-
-                    _context.Update(player);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Details), new { id = player.TeamId });
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!PlayerExists(player.PlayerId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError(string.Empty, "Lỗi khi cập nhật dữ liệu: " + ex.Message);
-                }
+                // Xử lý ngoại lệ không mong muốn
+                Console.WriteLine("Lỗi không mong muốn: " + ex.ToString());
+                TempData["ErrorMessage"] = "Đã xảy ra lỗi: " + ex.Message;
+                return RedirectToAction(nameof(EditPlayer), new { id = player.PlayerId, teamId = teamId });
             }
-
-            var team = await _context.Teams.FindAsync(player.TeamId);
-            ViewData["TeamId"] = player.TeamId;
-            ViewData["TeamName"] = team?.Name;
-            return View(player);
         }
 
         // GET: Teams/DeletePlayer/5
@@ -399,38 +573,69 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         {
             try
             {
-                var player = await _context.Players.FindAsync(id);
-                if (player != null)
+                // Kiểm tra teamId có hợp lệ không
+                var team = await _context.Teams.FindAsync(teamId);
+                if (team == null)
                 {
-                    // Check if there are any statistics for this player
-                    var hasStatistics = await _context.Statistics
-                        .AnyAsync(s => s.PlayerName == player.FullName);
-
-                    if (hasStatistics)
-                    {
-                        // If there are related records, return to the delete view with an error message
-                        ViewData["error"] = "Không thể xóa cầu thủ này vì có thống kê liên quan.";
-                        player = await _context.Players
-                            .Include(p => p.Team)
-                            .FirstOrDefaultAsync(m => m.PlayerId == id);
-                        ViewData["TeamId"] = teamId;
-                        return View(player);
-                    }
-
-                    _context.Players.Remove(player);
-                    await _context.SaveChangesAsync();
+                    TempData["ErrorMessage"] = "Không tìm thấy đội bóng.";
+                    return RedirectToAction(nameof(Index));
                 }
+
+                // Kiểm tra cầu thủ có tồn tại không
+                var player = await _context.Players
+                    .Include(p => p.Team)
+                    .FirstOrDefaultAsync(m => m.PlayerId == id);
+
+                if (player == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy cầu thủ cần xóa.";
+                    return RedirectToAction(nameof(Details), new { id = teamId });
+                }
+
+                // Kiểm tra cầu thủ có thuộc đội bóng không
+                if (player.TeamId != teamId)
+                {
+                    TempData["ErrorMessage"] = "Cầu thủ không thuộc đội bóng này.";
+                    return RedirectToAction(nameof(Details), new { id = teamId });
+                }
+
+                // Lưu tên cầu thủ để hiển thị thông báo sau khi xóa
+                string playerName = player.FullName;
+                string teamName = player.Team?.Name ?? "không xác định";
+
+                // Kiểm tra xem cầu thủ có thống kê liên quan không
+                var hasStatistics = await _context.Statistics
+                    .AnyAsync(s => s.PlayerName == player.FullName);
+
+                if (hasStatistics)
+                {
+                    // Nếu có thống kê liên quan, không cho phép xóa
+                    TempData["ErrorMessage"] = $"Không thể xóa cầu thủ {playerName} vì có thống kê liên quan trong các trận đấu.";
+                    return RedirectToAction(nameof(Details), new { id = teamId });
+                }
+
+                // Tiến hành xóa cầu thủ
+                _context.Players.Remove(player);
+                await _context.SaveChangesAsync();
+
+                // Thông báo thành công
+                TempData["SuccessMessage"] = $"Đã xóa cầu thủ {playerName} khỏi đội {teamName} thành công.";
+
+                return RedirectToAction(nameof(Details), new { id = teamId });
+            }
+            catch (DbUpdateException ex)
+            {
+                // Xử lý lỗi khi xóa dữ liệu liên quan đến ràng buộc khóa ngoại
+                Console.WriteLine("Lỗi khi xóa cầu thủ (DbUpdateException): " + ex.ToString());
+                TempData["ErrorMessage"] = "Không thể xóa cầu thủ vì có dữ liệu liên quan.";
                 return RedirectToAction(nameof(Details), new { id = teamId });
             }
             catch (Exception ex)
             {
-                // Handle any other exceptions
-                var player = await _context.Players
-                    .Include(p => p.Team)
-                    .FirstOrDefaultAsync(m => m.PlayerId == id);
-                ViewData["error"] = "Lỗi khi xóa cầu thủ: " + ex.Message;
-                ViewData["TeamId"] = teamId;
-                return View(player);
+                // Xử lý các ngoại lệ khác
+                Console.WriteLine("Lỗi khi xóa cầu thủ: " + ex.ToString());
+                TempData["ErrorMessage"] = "Lỗi khi xóa cầu thủ: " + ex.Message;
+                return RedirectToAction(nameof(Details), new { id = teamId });
             }
         }
 
@@ -442,20 +647,61 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // Phương thức lưu hình ảnh cầu thủ
         private async Task<string> SavePlayerImage(IFormFile image)
         {
-            var savePath = Path.Combine("wwwroot/images/players", image.FileName);
-
-            // Đảm bảo thư mục tồn tại
-            var directory = Path.GetDirectoryName(savePath);
-            if (!Directory.Exists(directory))
+            try
             {
-                Directory.CreateDirectory(directory);
-            }
+                if (image == null || image.Length == 0)
+                {
+                    return null;
+                }
 
-            using (var fileStream = new FileStream(savePath, FileMode.Create))
-            {
-                await image.CopyToAsync(fileStream);
+                // Kiểm tra kích thước file (giới hạn 5MB)
+                if (image.Length > 5 * 1024 * 1024)
+                {
+                    throw new Exception("Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 5MB.");
+                }
+
+                // Kiểm tra loại file
+                string extension = Path.GetExtension(image.FileName).ToLower();
+                string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
+
+                if (!allowedExtensions.Contains(extension))
+                {
+                    throw new Exception("Chỉ chấp nhận file hình ảnh có định dạng: .jpg, .jpeg, .png, .gif");
+                }
+
+                // Đảm bảo tên file không chứa ký tự đặc biệt
+                string fileName = Path.GetFileNameWithoutExtension(image.FileName);
+                // Loại bỏ ký tự đặc biệt từ tên file
+                fileName = Regex.Replace(fileName, @"[^\w\d]", "_");
+                // Thêm timestamp để tránh trùng tên file
+                string uniqueFileName = DateTime.Now.Ticks + "_" + fileName + extension;
+
+                // Tạo đường dẫn đầy đủ
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "players");
+
+                // Đảm bảo thư mục tồn tại
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Lưu file
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(fileStream);
+                }
+
+                // Trả về đường dẫn tương đối để lưu vào database
+                return "/images/players/" + uniqueFileName;
             }
-            return "/images/players/" + image.FileName;
+            catch (Exception ex)
+            {
+                // Log lỗi
+                Console.WriteLine("Lỗi khi lưu ảnh cầu thủ: " + ex.Message);
+                throw new Exception("Lỗi khi lưu ảnh cầu thủ: " + ex.Message);
+            }
         }
     }
 }

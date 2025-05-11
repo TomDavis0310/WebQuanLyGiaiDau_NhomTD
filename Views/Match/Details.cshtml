@@ -2,39 +2,174 @@
 
 @{
     ViewData["Title"] = "Chi Tiết Trận Đấu";
+    var matchSets = ViewBag.MatchSets as List<dynamic>;
+    var matchStatus = ViewBag.MatchStatus as string;
+    var matchEndTime = ViewBag.MatchEndTime as DateTime?;
 }
 
 <h1 class="text-center text-info mt-4">📋 Chi Tiết Trận Đấu</h1>
 
 <div class="container bg-light shadow rounded p-4 mt-4 mb-4">
-    <h5 class="text-primary mb-3">Thông Tin Trận Đấu:</h5>
-    <dl class="row">
-        <dt class="col-sm-3 fw-bold">Đội A:</dt>
-        <dd class="col-sm-9">@Html.DisplayFor(model => model.TeamA)</dd>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Thông Tin Trận Đấu</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center mb-4">
+                        <div class="col-md-4 text-center">
+                            <h4>@Model.TeamA</h4>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="score-display p-3 bg-light rounded shadow-sm">
+                                @if (matchStatus == "Completed" || matchStatus == "InProgress")
+                                {
+                                    <h2 class="mb-0 fw-bold">@(Model.ScoreTeamA ?? 0) - @(Model.ScoreTeamB ?? 0)</h2>
+                                    <div class="badge @(matchStatus == "Completed" ? "bg-success" : "bg-danger") mt-2">
+                                        @(matchStatus == "Completed" ? "Đã kết thúc" : "Đang diễn ra")
+                                    </div>
+                                }
+                                else
+                                {
+                                    <h2 class="mb-0 fw-bold">VS</h2>
+                                    <div class="badge bg-primary mt-2">Sắp diễn ra</div>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h4>@Model.TeamB</h4>
+                        </div>
+                    </div>
 
-        <dt class="col-sm-3 fw-bold">Đội B:</dt>
-        <dd class="col-sm-9">@Html.DisplayFor(model => model.TeamB)</dd>
+                    <dl class="row">
+                        <dt class="col-sm-3 fw-bold">Ngày Thi Đấu:</dt>
+                        <dd class="col-sm-9">
+                            @if (Model.MatchDate != default(DateTime))
+                            {
+                                @Model.MatchDate.ToString("dd/MM/yyyy")
+                            }
+                            else
+                            {
+                                <span class="text-muted">Chưa xác định</span>
+                            }
+                        </dd>
 
-        <dt class="col-sm-3 fw-bold">Ngày Thi Đấu:</dt>
-        <dd class="col-sm-9">@Html.DisplayFor(model => model.MatchDate)</dd>
+                        <dt class="col-sm-3 fw-bold">Giờ Thi Đấu:</dt>
+                        <dd class="col-sm-9">15:00</dd>
 
-        <dt class="col-sm-3 fw-bold">Giải Đấu:</dt>
-        <dd class="col-sm-9">@Html.DisplayFor(model => model.Tournament.Name)</dd>
-    </dl>
+                        <dt class="col-sm-3 fw-bold">Thời Gian Kết Thúc:</dt>
+                        <dd class="col-sm-9">@(matchEndTime?.ToString("HH:mm") ?? "16:08")</dd>
 
-    <div class="mt-4 d-flex justify-content-between">
-        @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
-        {
-            <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-warning">
-                ✏️ Chỉnh Sửa
-            </a>
-        }
-        else
-        {
-            <div></div> <!-- Empty div for flex spacing -->
-        }
-        <a asp-action="Index" class="btn btn-outline-secondary">
-            ↩️ Quay Lại Danh Sách
-        </a>
+                        <dt class="col-sm-3 fw-bold">Giải Đấu:</dt>
+                        <dd class="col-sm-9">
+                            @if (Model.Tournament != null)
+                            {
+                                <a asp-controller="Tournament" asp-action="Details" asp-route-id="@Model.TournamentId">
+                                    @Html.DisplayFor(model => model.Tournament.Name)
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Chưa xác định</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            @if (matchSets != null && matchSets.Any())
+            {
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Kết Quả Các Hiệp Đấu</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-primary">
+                                    <tr class="text-center">
+                                        <th>Hiệp</th>
+                                        <th>@Model.TeamA</th>
+                                        <th>@Model.TeamB</th>
+                                        <th>Cầu Thủ Xuất Sắc</th>
+                                        <th>Đội</th>
+                                        <th>Điểm</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var set in matchSets)
+                                    {
+                                        <tr class="text-center">
+                                            <td>@set.SetNumber</td>
+                                            <td class="fw-bold">@set.ScoreTeamA</td>
+                                            <td class="fw-bold">@set.ScoreTeamB</td>
+                                            <td>@set.BestPlayerName</td>
+                                            <td>@set.BestPlayerTeam</td>
+                                            <td>@set.BestPlayerPoints</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (Model.Statistics != null && Model.Statistics.Any())
+            {
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Thống Kê Cầu Thủ</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-success">
+                                    <tr class="text-center">
+                                        <th>Cầu Thủ</th>
+                                        <th>Điểm</th>
+                                        <th>Kiến Tạo</th>
+                                        <th>Bắt Bóng</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var stat in Model.Statistics.OrderByDescending(s => s.Points))
+                                    {
+                                        <tr class="text-center">
+                                            <td>@stat.PlayerName</td>
+                                            <td class="fw-bold">@stat.Points</td>
+                                            <td>@stat.Assists</td>
+                                            <td>@stat.Rebounds</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="mt-4 d-flex justify-content-between">
+                @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+                {
+                    <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-warning">
+                        <i class="bi bi-pencil"></i> Chỉnh Sửa
+                    </a>
+                }
+                else
+                {
+                    <div></div> <!-- Empty div for flex spacing -->
+                }
+                <div>
+                    <a asp-controller="Tournament" asp-action="Details" asp-route-id="@Model.TournamentId" class="btn btn-primary me-2">
+                        <i class="bi bi-trophy"></i> Xem Giải Đấu
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Quay Lại Danh Sách
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

@@ -22,10 +22,28 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Players
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            var applicationDbContext = _context.Players.Include(p => p.Team);
-            return View(await applicationDbContext.ToListAsync());
+            var playersQuery = _context.Players
+                .Include(p => p.Team)
+                .AsQueryable();
+
+            // Áp dụng tìm kiếm nếu có
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                searchString = searchString.ToLower();
+                playersQuery = playersQuery.Where(p =>
+                    p.FullName.ToLower().Contains(searchString) ||
+                    (p.Position != null && p.Position.ToLower().Contains(searchString)) ||
+                    (p.Team != null && p.Team.Name.ToLower().Contains(searchString)));
+            }
+
+            var players = await playersQuery.ToListAsync();
+
+            // Lưu searchString để hiển thị lại trong form
+            ViewData["CurrentFilter"] = searchString;
+
+            return View(players);
         }
 
         // GET: Players/Details/5
@@ -106,20 +124,39 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // Phương thức lưu hình ảnh
         private async Task<string> SaveImage(IFormFile image)
         {
-            var savePath = Path.Combine("wwwroot/images/players", image.FileName);
-
-            // Đảm bảo thư mục tồn tại
-            var directory = Path.GetDirectoryName(savePath);
-            if (!Directory.Exists(directory))
+            try
             {
-                Directory.CreateDirectory(directory);
-            }
+                // Đảm bảo tên file không chứa ký tự đặc biệt
+                string fileName = Path.GetFileName(image.FileName);
+                // Thêm timestamp để tránh trùng tên file
+                string uniqueFileName = DateTime.Now.Ticks + "_" + fileName;
 
-            using (var fileStream = new FileStream(savePath, FileMode.Create))
-            {
-                await image.CopyToAsync(fileStream);
+                // Tạo đường dẫn đầy đủ
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "players");
+
+                // Đảm bảo thư mục tồn tại
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Lưu file
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(fileStream);
+                }
+
+                // Trả về đường dẫn tương đối để lưu vào database
+                return "/images/players/" + uniqueFileName;
             }
-            return "/images/players/" + image.FileName;
+            catch (Exception ex)
+            {
+                // Log lỗi
+                Console.WriteLine("Lỗi khi lưu ảnh: " + ex.Message);
+                throw;
+            }
         }
 
         // GET: Players/Edit/5

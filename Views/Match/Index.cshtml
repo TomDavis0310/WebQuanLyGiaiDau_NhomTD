@@ -7,31 +7,88 @@
 
 <h1 class="text-center text-primary mt-4">📋 Danh Sách Trận Đấu</h1>
 
-@if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
-{
-    <div class="text-end mb-3">
-        <a asp-action="Create" class="btn btn-success">➕ Thêm Trận Đấu Mới</a>
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form asp-action="Index" method="get" class="d-flex">
+            <div class="input-group">
+                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="form-control" placeholder="Tìm kiếm trận đấu..." />
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Tìm
+                </button>
+                @if (!string.IsNullOrEmpty((string)ViewData["CurrentFilter"]))
+                {
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Xóa bộ lọc
+                    </a>
+                }
+            </div>
+        </form>
     </div>
-}
+    <div class="col-md-6 text-end">
+        @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+        {
+            <a asp-action="Create" class="btn btn-success">➕ Thêm Trận Đấu Mới</a>
+        }
+    </div>
+</div>
 
 <table class="table table-hover table-bordered shadow">
     <thead class="table-dark text-center">
         <tr>
             <th>Đội A</th>
             <th>Đội B</th>
-            <th>Ngày Thi Đấu</th>
+            <th>Thời Gian Thi Đấu</th>
             <th>Giải Đấu</th>
             <th>Hành Động</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @if (Model != null && Model.Any())
         {
+            foreach (var item in Model)
+            {
             <tr class="align-middle">
-                <td>@Html.DisplayFor(modelItem => item.TeamA)</td>
-                <td>@Html.DisplayFor(modelItem => item.TeamB)</td>
-                <td class="text-center">@item.MatchDate.ToString("dd/MM/yyyy")</td>
-                <td>@Html.DisplayFor(modelItem => item.Tournament.Name)</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.TeamA))
+                    {
+                        @Html.DisplayFor(modelItem => item.TeamA)
+                    }
+                    else
+                    {
+                        <span class="text-muted">Chưa xác định</span>
+                    }
+                </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.TeamB))
+                    {
+                        @Html.DisplayFor(modelItem => item.TeamB)
+                    }
+                    else
+                    {
+                        <span class="text-muted">Chưa xác định</span>
+                    }
+                </td>
+                <td class="text-center">
+                    @if (item.MatchDate != default(DateTime))
+                    {
+                        <div>@item.MatchDate.ToString("dd/MM/yyyy")</div>
+                        <div><small class="text-muted">15:00 - 16:08</small></div>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Chưa xác định</span>
+                    }
+                </td>
+                <td>
+                    @if (item.Tournament != null)
+                    {
+                        @Html.DisplayFor(modelItem => item.Tournament.Name)
+                    }
+                    else
+                    {
+                        <span class="text-muted">Không có giải đấu</span>
+                    }
+                </td>
                 <td class="text-center">
                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info me-1">🔍 Xem</a>
                     @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
@@ -40,6 +97,13 @@
                         <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">🗑️ Xóa</a>
                     }
                 </td>
+            </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="text-center">Không tìm thấy trận đấu nào.</td>
             </tr>
         }
     </tbody>

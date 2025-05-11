@@ -3,28 +3,30 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - WebQuanLyGiaiDau_NhomTD</title>
+    <title>@ViewData["Title"] - Hệ Thống Quản Lý Giải Đấu</title>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/sports-theme.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WebQuanLyGiaiDau_NhomTD.styles.css" asp-append-version="true" />
 </head>
 <body>
 
     <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom shadow-sm mb-3">
-            <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg sports-navbar sticky-top">
+            <div class="container">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-trophy-fill text-warning me-2"></i>Giải Đấu
+                    <i class="bi bi-trophy-fill"></i>Hệ Thống Giải Đấu
                 </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-
+                <div class="navbar-collapse collapse d-lg-inline-flex justify-content-between">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <!-- Trang chủ luôn hiển thị cho tất cả người dùng -->
                         <li class="nav-item">
@@ -33,24 +35,20 @@
                             </a>
                         </li>
 
-                        @if (User.Identity.IsAuthenticated)
+                        <!-- Tin tức thể thao luôn hiển thị cho tất cả người dùng -->
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="News" asp-action="Index">
+                                <i class="bi bi-newspaper"></i> Tin tức thể thao
+                            </a>
+                        </li>
+
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
                             <!-- Môn thể thao - hiển thị sau khi đăng nhập -->
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="sportsDropdown" data-bs-toggle="dropdown">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Sports" asp-action="Index">
                                     <i class="bi bi-dribbble"></i> Môn thể thao
                                 </a>
-                                <ul class="dropdown-menu" aria-labelledby="sportsDropdown">
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Sports" asp-action="List" asp-route-sportsId="2">⚽ Bóng đá</a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Sports" asp-action="List" asp-route-sportsId="3">🏐 Bóng chuyền</a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Sports" asp-action="List" asp-route-sportsId="1">🏀 Bóng rổ</a>
-                                    </li>
-                                </ul>
                             </li>
 
                             <!-- Giải đấu - hiển thị sau khi đăng nhập -->
@@ -83,9 +81,10 @@
                                                 <i class="bi bi-calendar-event"></i> Trận đấu
                                             </a>
                                         </li>
+
                                         <li>
-                                            <a class="dropdown-item" asp-controller="Tournament" asp-action="ManageRegistrations">
-                                                <i class="bi bi-clipboard-check"></i> Đăng ký giải đấu
+                                            <a class="dropdown-item" asp-controller="News" asp-action="Index">
+                                                <i class="bi bi-newspaper"></i> Quản lý tin tức
                                             </a>
                                         </li>
                                     </ul>
@@ -95,11 +94,14 @@
                             @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User))
                             {
                                 <!-- User-specific navigation -->
-                                <li class="nav-item">
+                                <!-- Ẩn mục đăng ký giải đấu theo yêu cầu -->
+                                <!-- <li class="nav-item">
                                     <a class="nav-link" asp-controller="Tournament" asp-action="MyRegistrations">
-                                        <i class="bi bi-list-check"></i> Giải đấu đã đăng ký
+                                        <i class="bi bi-list-check"></i> Đăng ký giải đấu
                                     </a>
-                                </li>
+                                </li> -->
+
+
                             }
                         }
                         else
@@ -116,22 +118,44 @@
                     <div class="d-flex">
                         <partial name="_LoginPartial" />
                     </div>
-
                 </div>
             </div>
         </nav>
     </header>
 
-    <div class="container">
+    <div class="container mt-4">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="footer text-muted">
+    <footer class="sports-footer mt-5">
         <div class="container">
-            &copy; 2025 - WebQuanLyGiaiDau_NhomTD -
-            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-3">Hệ Thống Quản Lý Giải Đấu</h5>
+                    <p class="mb-0">Nền tảng quản lý giải đấu thể thao toàn diện, dễ sử dụng và hiệu quả.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5 class="mb-3">Liên kết</h5>
+                    <ul class="list-unstyled">
+                        <li><a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door me-2"></i>Trang chủ</a></li>
+                        <li><a asp-controller="News" asp-action="Index"><i class="bi bi-newspaper me-2"></i>Tin tức thể thao</a></li>
+                        <li><a asp-controller="Home" asp-action="Privacy"><i class="bi bi-shield-check me-2"></i>Chính sách</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5 class="mb-3">Liên hệ</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-envelope me-2"></i>support@giaidau.com</li>
+                        <li><i class="bi bi-telephone me-2"></i>(+84) 123 456 789</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="mt-4 mb-4" style="border-color: rgba(255,255,255,0.1);">
+            <div class="text-center">
+                &copy; 2025 - Hệ Thống Quản Lý Giải Đấu - Mọi quyền được bảo lưu
+            </div>
         </div>
     </footer>
 

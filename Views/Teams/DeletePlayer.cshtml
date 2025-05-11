@@ -13,6 +13,12 @@
         @ViewData["error"]
     </div>
 }
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
 
 <div class="container bg-light shadow rounded p-4 mt-4 mb-4">
     <h5 class="text-primary mb-3">Thông Tin Cầu Thủ:</h5>
@@ -44,11 +50,11 @@
         </div>
     </div>
 
-    <form asp-action="DeletePlayer" class="mt-4">
+    <form asp-action="DeletePlayer" class="mt-4" id="deleteForm">
         <input type="hidden" name="id" value="@Model.PlayerId" />
         <input type="hidden" name="teamId" value="@ViewData["TeamId"]" />
         <div class="d-flex justify-content-between">
-            <button type="submit" class="btn btn-danger" @(ViewData["error"] != null ? "disabled" : "")>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn" @(ViewData["error"] != null || TempData["ErrorMessage"] != null ? "disabled" : "")>
                 🗑️ Xác Nhận Xóa
             </button>
             <a asp-action="Details" asp-route-id="@ViewData["TeamId"]" class="btn btn-outline-secondary">
@@ -56,4 +62,43 @@
             </a>
         </div>
     </form>
+
+    <!-- Modal xác nhận xóa -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Xác nhận xóa cầu thủ</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn xóa cầu thủ <strong>@Model.FullName</strong> khỏi đội <strong>@Model.Team.Name</strong>?</p>
+                    <p class="text-danger"><strong>Lưu ý:</strong> Hành động này không thể hoàn tác.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger" id="submitDeleteBtn">Xác nhận xóa</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Xử lý khi nhấn nút xác nhận xóa
+            $("#confirmDeleteBtn").click(function() {
+                // Hiển thị modal xác nhận
+                var deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+                deleteModal.show();
+            });
+
+            // Xử lý khi nhấn nút xác nhận trong modal
+            $("#submitDeleteBtn").click(function() {
+                // Submit form xóa
+                $("#deleteForm").submit();
+            });
+        });
+    </script>
+}
