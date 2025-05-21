@@ -37,10 +37,13 @@
 
         @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
         {
-
             <a asp-action="ManageTeamRegistrations" class="btn btn-info text-white me-2">
                 <i class="bi bi-people-fill"></i> Quản lý đăng ký đội
             </a>
+        }
+
+        @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin) || User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User))
+        {
             <a asp-action="Create" class="btn btn-success">
                 <i class="bi bi-plus-circle"></i> Tạo giải đấu mới
             </a>
@@ -53,6 +56,7 @@
         <tr>
             <th>Tên Giải</th>
             <th>Mô Tả</th>
+            <th>Địa Điểm</th>
             <th>Môn Thể Thao</th>
             <th>Ngày Bắt Đầu</th>
             <th>Ngày Kết Thúc</th>
@@ -68,7 +72,17 @@
             {
             <tr>
                 <td>@item.Name</td>
-                <td>@item.Description</td>
+                <td><span class="tournament-description">@item.Description</span></td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.Location))
+                    {
+                        @item.Location
+                    }
+                    else
+                    {
+                        <span class="text-muted">Không xác định</span>
+                    }
+                </td>
                 <td>
                     @if (item.Sports != null)
                     {

@@ -31,7 +31,7 @@
         <dd class="col-sm-9">@Html.DisplayFor(model => model.Tournament.Name)</dd>
     </dl>
 
-    <form asp-action="Delete">
+    <form asp-action="Delete" onsubmit="return confirm('Bạn có chắc chắn muốn xóa trận đấu này? Hành động này không thể hoàn tác và sẽ xóa tất cả dữ liệu liên quan.');">
         <input type="hidden" asp-for="Id" />
         <div class="d-flex justify-content-between mt-4">
             <input type="submit" value="🗑️ Xóa" class="btn btn-danger" />

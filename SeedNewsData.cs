@@ -21,7 +21,7 @@ namespace WebQuanLyGiaiDau_NhomTD
                 try
                 {
                     // Thử truy vấn bảng News
-                    var newsItem = context.News.FirstOrDefault();
+                    var newsItem = context.News.OrderBy(n => n.NewsId).FirstOrDefault();
                     tableExists = true;
                 }
                 catch
@@ -74,7 +74,7 @@ namespace WebQuanLyGiaiDau_NhomTD
             }
 
             // Lấy ID của môn thể thao bóng rổ
-            var basketball = context.Sports.FirstOrDefault(s => s.Name == "Bóng Rổ");
+            var basketball = context.Sports.OrderBy(s => s.Id).FirstOrDefault(s => s.Name == "Bóng Rổ");
             int? basketballId = basketball?.Id;
 
             // Tạo dữ liệu mẫu cho tin tức

@@ -10,7 +10,12 @@
     <h5 class="text-primary mb-3">Thông Tin Thống Kê:</h5>
     <dl class="row">
         <dt class="col-sm-3 fw-bold">Cầu Thủ:</dt>
-        <dd class="col-sm-9">@Html.DisplayFor(model => model.PlayerName)</dd>
+        <dd class="col-sm-9">
+            <a asp-controller="Tournament" asp-action="FindPlayerByName" asp-route-playerName="@Model.PlayerName" asp-route-tournamentId="@Model.Match.TournamentId" class="text-decoration-none">
+                @Html.DisplayFor(model => model.PlayerName)
+                <small class="text-muted"><i class="bi bi-info-circle"></i> Nhấn để xem chi tiết cầu thủ</small>
+            </a>
+        </dd>
 
         <dt class="col-sm-3 fw-bold">Điểm:</dt>
         <dd class="col-sm-9">@Html.DisplayFor(model => model.Points)</dd>
@@ -22,7 +27,12 @@
         <dd class="col-sm-9">@Html.DisplayFor(model => model.Rebounds)</dd>
 
         <dt class="col-sm-3 fw-bold">Trận Đấu:</dt>
-        <dd class="col-sm-9">@Html.DisplayFor(model => model.Match.TeamA) vs @Html.DisplayFor(model => model.Match.TeamB)</dd>
+        <dd class="col-sm-9">
+            <a asp-controller="Match" asp-action="Details" asp-route-id="@Model.MatchId" class="text-decoration-none">
+                @Html.DisplayFor(model => model.Match.TeamA) vs @Html.DisplayFor(model => model.Match.TeamB)
+                <small class="text-muted"><i class="bi bi-info-circle"></i> Nhấn để xem chi tiết trận đấu</small>
+            </a>
+        </dd>
     </dl>
 
     <div class="mt-4 d-flex justify-content-between">

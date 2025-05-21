@@ -28,9 +28,11 @@ namespace WebQuanLyGiaiDau_NhomTD
 
             // Get existing 5v5 tournaments
             var pastTournament = await context.Tournaments
+                .AsNoTracking() // Use AsNoTracking to avoid tracking issues
                 .FirstOrDefaultAsync(t => t.Name == "Giải Bóng Rổ 5v5 Mùa Hè 2023" && t.SportsId == basketball.Id);
 
             var openTournament = await context.Tournaments
+                .AsNoTracking() // Use AsNoTracking to avoid tracking issues
                 .FirstOrDefaultAsync(t => t.Name == "Giải Bóng Rổ 5v5 Mùa Đông 2024" && t.SportsId == basketball.Id);
 
             // Force reseeding of teams and players for existing tournaments
@@ -39,6 +41,10 @@ namespace WebQuanLyGiaiDau_NhomTD
             // If tournaments don't exist, create them
             if (pastTournament == null && openTournament == null)
             {
+                // Lấy thể thức thi đấu vòng tròn
+                var roundRobinFormat = await context.TournamentFormats.FirstOrDefaultAsync(f => f.Name == "Vòng tròn (Round Robin)");
+                int? formatId = roundRobinFormat?.Id;
+
                 // Create past tournament (completed)
                 pastTournament = new Tournament
                 {
@@ -48,7 +54,11 @@ namespace WebQuanLyGiaiDau_NhomTD
                     EndDate = new DateTime(2023, 8, 15),
                     ImageUrl = "/images/basketball5v5_past.jpg",
                     RegistrationStatus = "Completed",
-                    SportsId = basketball.Id
+                    SportsId = basketball.Id,
+                    TournamentFormatId = formatId,
+                    MaxTeams = 8,
+                    TeamsPerGroup = 8,
+                    Location = "Nhà thi đấu Phú Thọ, TP.HCM"
                 };
 
                 // Create open tournament (registration open)
@@ -60,7 +70,11 @@ namespace WebQuanLyGiaiDau_NhomTD
                     EndDate = new DateTime(2025, 2, 28),
                     ImageUrl = "/images/basketball5v5_open.jpg",
                     RegistrationStatus = "Open",
-                    SportsId = basketball.Id
+                    SportsId = basketball.Id,
+                    TournamentFormatId = formatId,
+                    MaxTeams = 8,
+                    TeamsPerGroup = 8,
+                    Location = "Nhà thi đấu Quân khu 7, TP.HCM"
                 };
 
                 context.Tournaments.Add(pastTournament);
@@ -150,6 +164,8 @@ namespace WebQuanLyGiaiDau_NhomTD
                             TeamA = teams[i].Name,
                             TeamB = teams[j].Name,
                             MatchDate = matchDate,
+                            MatchTime = new TimeSpan(15, 0, 0), // 15:00 (3 PM)
+                            Location = pastTournament.Location, // Use tournament location
                             TournamentId = pastTournament.Id
                         };
                         matches.Add(match);
@@ -380,6 +396,8 @@ namespace WebQuanLyGiaiDau_NhomTD
                                         TeamA = teams[i].Name,
                                         TeamB = teams[j].Name,
                                         MatchDate = matchDate,
+                                        MatchTime = new TimeSpan(15, 0, 0), // 15:00 (3 PM)
+                                        Location = pastTournament.Location, // Use tournament location
                                         TournamentId = pastTournament.Id
                                     };
                                     matches.Add(match);

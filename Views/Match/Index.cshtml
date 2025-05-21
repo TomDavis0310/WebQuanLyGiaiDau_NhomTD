@@ -1,8 +1,10 @@
-@model IEnumerable<WebQuanLyGiaiDau_NhomTD.Models.Match>
+@model WebQuanLyGiaiDau_NhomTD.Models.PaginatedList<WebQuanLyGiaiDau_NhomTD.Models.Match>
 @using WebQuanLyGiaiDau_NhomTD.Models.UserModel
 
 @{
     ViewData["Title"] = "Danh Sách Trận Đấu";
+    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
 }
 
 <h1 class="text-center text-primary mt-4">📋 Danh Sách Trận Đấu</h1>
@@ -21,6 +23,7 @@
                         <i class="bi bi-x-circle"></i> Xóa bộ lọc
                     </a>
                 }
+                <input type="hidden" name="pageNumber" value="1" />
             </div>
         </form>
     </div>
@@ -38,6 +41,7 @@
             <th>Đội A</th>
             <th>Đội B</th>
             <th>Thời Gian Thi Đấu</th>
+            <th>Địa Điểm</th>
             <th>Giải Đấu</th>
             <th>Hành Động</th>
         </tr>
@@ -72,7 +76,35 @@
                     @if (item.MatchDate != default(DateTime))
                     {
                         <div>@item.MatchDate.ToString("dd/MM/yyyy")</div>
-                        <div><small class="text-muted">15:00 - 16:08</small></div>
+                        <div><small class="text-muted">
+                            @if (item.MatchTime.HasValue)
+                            {
+                                @item.MatchTime.Value.ToString(@"hh\:mm")
+                            }
+                            else
+                            {
+                                <span>15:00</span>
+                            }
+                            -
+                            @{
+                                string endTimeDisplay = "15:15";
+                                if (item.Tournament != null && (item.Tournament.Name.Contains("5v5") || item.Tournament.Name.Contains("5 vs 5")))
+                                {
+                                    endTimeDisplay = "16:08";
+                                }
+                            }
+                            @endTimeDisplay
+                        </small></div>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Chưa xác định</span>
+                    }
+                </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.Location))
+                    {
+                        @item.Location
                     }
                     else
                     {
@@ -93,6 +125,7 @@
                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info me-1">🔍 Xem</a>
                     @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
                     {
+                        <a asp-action="UpdateScore" asp-route-id="@item.Id" class="btn btn-sm btn-primary me-1">📊 Cập Nhật Kết Quả</a>
                         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning me-1">✏️ Sửa</a>
                         <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">🗑️ Xóa</a>
                     }
@@ -103,8 +136,31 @@
         else
         {
             <tr>
-                <td colspan="5" class="text-center">Không tìm thấy trận đấu nào.</td>
+                <td colspan="6" class="text-center">Không tìm thấy trận đấu nào.</td>
             </tr>
         }
     </tbody>
 </table>
+
+<!-- Phân trang -->
+<div class="d-flex justify-content-between align-items-center mt-4">
+    <div>
+        <span>Trang @Model.PageIndex / @Model.TotalPages</span>
+    </div>
+    <div>
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li class="page-item @prevDisabled">
+                    <a class="page-link @prevDisabled" asp-action="Index" asp-route-pageNumber="@(Model.PageIndex - 1)" asp-route-searchString="@ViewData["CurrentFilter"]">
+                        <i class="bi bi-chevron-left"></i> Trước
+                    </a>
+                </li>
+                <li class="page-item @nextDisabled">
+                    <a class="page-link @nextDisabled" asp-action="Index" asp-route-pageNumber="@(Model.PageIndex + 1)" asp-route-searchString="@ViewData["CurrentFilter"]">
+                        Sau <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>

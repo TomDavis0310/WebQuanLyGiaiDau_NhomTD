@@ -31,6 +31,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
         public int TeamId { get; set; }
 
         public Team Team { get; set; }
+
+        // ID của người dùng sở hữu cầu thủ này (nếu có)
+        public string? UserId { get; set; }
     }
 
 }

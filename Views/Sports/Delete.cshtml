@@ -14,6 +14,20 @@
                     </h4>
                 </div>
                 <div class="card-body">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-circle"></i> @TempData["ErrorMessage"]
+                        </div>
+                    }
+
+                    @if (TempData["WarningMessage"] != null)
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i> @TempData["WarningMessage"]
+                        </div>
+                    }
+
                     <div class="alert alert-warning">
                         <h5>Bạn có chắc chắn muốn xóa môn thể thao này?</h5>
                         <p class="mb-0">Hành động này không thể hoàn tác và có thể ảnh hưởng đến các giải đấu liên quan.</p>

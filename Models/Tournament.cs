@@ -13,6 +13,9 @@
 
         public string Description { get; set; }
 
+        [Display(Name = "Địa điểm")]
+        public string? Location { get; set; }
+
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         [Display(Name = "Ngày Bắt Đầu Giải")]
@@ -38,12 +41,27 @@
 
         public string? ImageUrl { get; set; }
 
-        // Trạng thái đăng ký: Open (Mở đăng ký), Closed (Đóng đăng ký), Completed (Đã kết thúc)
+        // This property is kept for backward compatibility but should not be used directly
+        // Use CalculatedStatus instead
+        [Obsolete("Use CalculatedStatus property instead")]
         public string RegistrationStatus { get; set; } = "Open";
 
         // Foreign key to Sports
         public int SportsId { get; set; }
         public Sports? Sports { get; set; }
+
+        // Foreign key to TournamentFormat
+        [Display(Name = "Thể thức thi đấu")]
+        public int? TournamentFormatId { get; set; }
+        public TournamentFormat? TournamentFormat { get; set; }
+
+        // Số lượng đội tối đa có thể tham gia
+        [Display(Name = "Số lượng đội tối đa")]
+        public int? MaxTeams { get; set; }
+
+        // Số lượng đội trong mỗi bảng đấu (chỉ áp dụng cho thể thức vòng bảng)
+        [Display(Name = "Số đội mỗi bảng")]
+        public int? TeamsPerGroup { get; set; }
 
         [NotMapped]
         public string CalculatedStatus

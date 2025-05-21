@@ -105,12 +105,57 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
         private async Task<string> SaveImage(IFormFile image)
         {
-            var savePath = Path.Combine("wwwroot/images", image.FileName);
-            using (var fileStream = new FileStream(savePath, FileMode.Create))
+            try
             {
-                await image.CopyToAsync(fileStream);
+                if (image == null || image.Length == 0)
+                {
+                    return null;
+                }
+
+                // Kiểm tra kích thước file (giới hạn 5MB)
+                if (image.Length > 5 * 1024 * 1024)
+                {
+                    throw new Exception("Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 5MB.");
+                }
+
+                // Kiểm tra loại file
+                string extension = Path.GetExtension(image.FileName).ToLower();
+                string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
+
+                if (!allowedExtensions.Contains(extension))
+                {
+                    throw new Exception("Chỉ chấp nhận file hình ảnh có định dạng: .jpg, .jpeg, .png, .gif");
+                }
+
+                // Đảm bảo tên file không chứa ký tự đặc biệt
+                string fileName = Path.GetFileNameWithoutExtension(image.FileName);
+                // Thêm timestamp để tránh trùng tên file
+                string uniqueFileName = DateTime.Now.Ticks + "_" + fileName + extension;
+
+                // Tạo đường dẫn đầy đủ
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "sports");
+
+                // Đảm bảo thư mục tồn tại
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Lưu file
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(fileStream);
+                }
+
+                // Trả về đường dẫn tương đối để lưu vào database
+                return "/images/sports/" + uniqueFileName;
             }
-            return "/images/" + image.FileName;
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi lưu hình ảnh: " + ex.Message);
+            }
         }
 
         // GET: Sports/Edit/5
@@ -213,12 +258,37 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var sport = await _context.Sports.FindAsync(id);
-            if (sport != null)
+            if (sport == null)
             {
-                _context.Sports.Remove(sport);
-                await _context.SaveChangesAsync();
+                return NotFound();
             }
 
+            // Check if there are any active tournaments for this sport
+            var hasActiveTournaments = await _context.Tournaments
+                .AnyAsync(t => t.SportsId == id && t.CalculatedStatus == "Giải đấu đang diễn ra");
+
+            if (hasActiveTournaments)
+            {
+                // Cannot delete sport with active tournaments
+                TempData["ErrorMessage"] = "Không thể xóa môn thể thao này vì có giải đấu đang diễn ra. Vui lòng chờ đến khi giải đấu kết thúc.";
+                return RedirectToAction(nameof(Delete), new { id = id });
+            }
+
+            // Check if there are any tournaments for this sport (for warning)
+            var hasTournaments = await _context.Tournaments
+                .AnyAsync(t => t.SportsId == id);
+
+            if (hasTournaments)
+            {
+                // Warn but allow deletion
+                TempData["WarningMessage"] = "Lưu ý: Xóa môn thể thao này sẽ ảnh hưởng đến các giải đấu đã tạo.";
+            }
+
+            // Delete the sport
+            _context.Sports.Remove(sport);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Môn thể thao đã được xóa thành công.";
             return RedirectToAction(nameof(Index));
         }
     }

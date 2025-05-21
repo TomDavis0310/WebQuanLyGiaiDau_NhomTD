@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebQuanLyGiaiDau_NhomTD.Models;
+using WebQuanLyGiaiDau_NhomTD.Services;
 using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
 using Microsoft.AspNetCore.Http;
 
@@ -17,10 +18,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
     public class TournamentController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly TournamentScheduleService _scheduleService;
 
-        public TournamentController(ApplicationDbContext context)
+        public TournamentController(ApplicationDbContext context, WebQuanLyGiaiDau_NhomTD.Services.TournamentScheduleService scheduleService)
         {
             _context = context;
+            _scheduleService = scheduleService;
         }
 
         // GET: Tournament
@@ -60,6 +63,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
             var tournament = await _context.Tournaments
                 .Include(t => t.Sports)
+                .Include(t => t.TournamentFormat)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (tournament == null)
             {
@@ -94,9 +98,14 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             // Load related tournament data separately to avoid Status column issue
             foreach (var match in matches)
             {
-                match.Tournament = await _context.Tournaments
+                var tournamentData = await _context.Tournaments
                     .AsNoTracking()
                     .FirstOrDefaultAsync(t => t.Id == match.TournamentId);
+
+                if (tournamentData != null)
+                {
+                    match.Tournament = tournamentData;
+                }
             }
 
             // Tạo điểm số cho các trận đã hoàn thành và đang diễn ra nếu chưa có
@@ -294,18 +303,50 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             return View(tournament);
         }
 
+        // GET: Tournament/GenerateSchedule
+        [Authorize(Roles = SD.Role_Admin + "," + SD.Role_User)]
+        public IActionResult GenerateSchedule(int id)
+        {
+            try
+            {
+                var matches = _scheduleService.GenerateSchedule(id);
+                TempData["SuccessMessage"] = "Lịch thi đấu đã được tạo thành công!";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Lỗi khi tạo lịch thi đấu: {ex.Message}";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+        }
+
         // GET: Tournament/Create
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize(Roles = SD.Role_Admin + "," + SD.Role_User)]
         public IActionResult Create(int? sportsId = null)
         {
             var sports = _context.Sports.ToList();
             ViewBag.Sports = new SelectList(sports, "Id", "Name", sportsId);
 
+            // Lấy danh sách các thể thức thi đấu
+            var tournamentFormats = _context.TournamentFormats.ToList();
+            if (tournamentFormats == null || !tournamentFormats.Any())
+            {
+                // Nếu chưa có dữ liệu thể thức thi đấu, khởi tạo
+                SeedTournamentFormatData.SeedTournamentFormats(HttpContext.RequestServices).Wait();
+                tournamentFormats = _context.TournamentFormats.ToList();
+            }
+            ViewBag.TournamentFormats = new SelectList(tournamentFormats, "Id", "Name");
+
+            // Truyền thông tin chi tiết về các thể thức thi đấu để hiển thị mô tả
+            ViewBag.FormatDetails = tournamentFormats;
+
             // Tạo giải đấu mới với ngày bắt đầu và kết thúc mặc định
             var tournament = new Tournament
             {
                 StartDate = DateTime.Now,
-                EndDate = DateTime.Now.AddMonths(1)
+                EndDate = DateTime.Now.AddMonths(1),
+                MaxTeams = 8, // Mặc định 8 đội
+                TeamsPerGroup = 4 // Mặc định 4 đội mỗi bảng
             };
 
             // If sportsId is provided, pre-select it in the form
@@ -322,8 +363,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
-        public async Task<IActionResult> Create(Tournament tournament, IFormFile imageUrl)
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        public async Task<IActionResult> Create(Tournament tournament, IFormFile imageUrl, int? TournamentFormatId, int? MaxTeams, int? TeamsPerGroup)
         {
             if (ModelState.IsValid)
             {
@@ -332,10 +373,34 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     if (imageUrl != null)
                     {
                         tournament.ImageUrl = await SaveImage(imageUrl);
-
                     }
+
+                    // Cập nhật thông tin thể thức thi đấu
+                    tournament.TournamentFormatId = TournamentFormatId;
+                    tournament.MaxTeams = MaxTeams;
+                    tournament.TeamsPerGroup = TeamsPerGroup;
+
                     _context.Add(tournament);
                     await _context.SaveChangesAsync();
+
+                    // Nếu người dùng có vai trò User, đánh dấu họ là người tạo giải đấu
+                    if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User))
+                    {
+                        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                        // Tạo đăng ký với trạng thái "Creator"
+                        var registration = new TournamentRegistration
+                        {
+                            TournamentId = tournament.Id,
+                            UserId = userId ?? string.Empty, // Ensure userId is not null
+                            RegistrationDate = DateTime.Now,
+                            Status = "Creator",
+                            Notes = "Người tạo giải đấu"
+                        };
+
+                        _context.TournamentRegistrations.Add(registration);
+                        await _context.SaveChangesAsync();
+                    }
 
                     // Redirect back to the sports list view if we came from there
                     if (tournament.SportsId > 0)
@@ -367,17 +432,62 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
         private async Task<string> SaveImage(IFormFile image)
         {
-            var savePath = Path.Combine("wwwroot/images", image.FileName);
-            using (var fileStream = new FileStream(savePath, FileMode.Create))
+            try
             {
-                await image.CopyToAsync(fileStream);
+                if (image == null || image.Length == 0)
+                {
+                    return string.Empty; // Return empty string instead of null
+                }
+
+                // Kiểm tra kích thước file (giới hạn 5MB)
+                if (image.Length > 5 * 1024 * 1024)
+                {
+                    throw new Exception("Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 5MB.");
+                }
+
+                // Kiểm tra loại file
+                string extension = Path.GetExtension(image.FileName).ToLower();
+                string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
+
+                if (!allowedExtensions.Contains(extension))
+                {
+                    throw new Exception("Chỉ chấp nhận file hình ảnh có định dạng: .jpg, .jpeg, .png, .gif");
+                }
+
+                // Đảm bảo tên file không chứa ký tự đặc biệt
+                string fileName = Path.GetFileNameWithoutExtension(image.FileName);
+                // Thêm timestamp để tránh trùng tên file
+                string uniqueFileName = DateTime.Now.Ticks + "_" + fileName + extension;
+
+                // Tạo đường dẫn đầy đủ
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "tournaments");
+
+                // Đảm bảo thư mục tồn tại
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Lưu file
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(fileStream);
+                }
+
+                // Trả về đường dẫn tương đối để lưu vào database
+                return "/images/tournaments/" + uniqueFileName;
             }
-            return "/images/" + image.FileName;
+            catch (Exception ex)
+            {
+                throw new Exception("Lỗi khi lưu hình ảnh: " + ex.Message);
+            }
         }
 
 
         // GET: Tournament/Edit/5
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -385,14 +495,45 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return NotFound();
             }
 
-            var tournament = await _context.Tournaments.FindAsync(id);
+            var tournament = await _context.Tournaments
+                .Include(t => t.TournamentFormat)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
             if (tournament == null)
             {
                 return NotFound();
             }
 
+            // Kiểm tra quyền: Admin có thể sửa tất cả, User chỉ có thể sửa giải đấu do họ tạo
+            if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User) && !User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+            {
+                // Kiểm tra xem giải đấu này có thuộc về người dùng hiện tại không
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var isTournamentCreator = await _context.TournamentRegistrations
+                    .AnyAsync(tr => tr.TournamentId == id && tr.UserId == userId && tr.Status == "Creator");
+
+                if (!isTournamentCreator)
+                {
+                    TempData["ErrorMessage"] = "Bạn không có quyền chỉnh sửa giải đấu này.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
             var sports = _context.Sports.ToList();
             ViewBag.Sports = new SelectList(sports, "Id", "Name", tournament.SportsId);
+
+            // Lấy danh sách các thể thức thi đấu
+            var tournamentFormats = _context.TournamentFormats.ToList();
+            if (tournamentFormats == null || !tournamentFormats.Any())
+            {
+                // Nếu chưa có dữ liệu thể thức thi đấu, khởi tạo
+                SeedTournamentFormatData.SeedTournamentFormats(HttpContext.RequestServices).Wait();
+                tournamentFormats = _context.TournamentFormats.ToList();
+            }
+            ViewBag.TournamentFormats = new SelectList(tournamentFormats, "Id", "Name", tournament.TournamentFormatId);
+
+            // Truyền thông tin chi tiết về các thể thức thi đấu để hiển thị mô tả
+            ViewBag.FormatDetails = tournamentFormats;
 
             return View(tournament);
         }
@@ -402,8 +543,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
-        public async Task<IActionResult> Edit(int id, Tournament tournament, IFormFile imageUrl)
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        public async Task<IActionResult> Edit(int id, Tournament tournament, IFormFile imageUrl, int? TournamentFormatId, int? MaxTeams, int? TeamsPerGroup)
         {
             if (id != tournament.Id)
             {
@@ -427,6 +568,11 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                         // Keep existing image URL if no new image is uploaded
                         tournament.ImageUrl = existingTournament.ImageUrl;
                     }
+
+                    // Cập nhật thông tin thể thức thi đấu
+                    tournament.TournamentFormatId = TournamentFormatId;
+                    tournament.MaxTeams = MaxTeams;
+                    tournament.TeamsPerGroup = TeamsPerGroup;
 
                     _context.Update(tournament);
                     await _context.SaveChangesAsync();
@@ -732,6 +878,100 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             return "Unknown";
         }
 
+        // Helper method to get a player's ID by name
+        private int? GetPlayerIdByName(string playerName, List<Team> teams)
+        {
+            foreach (var team in teams)
+            {
+                if (team.Players != null)
+                {
+                    var player = team.Players.FirstOrDefault(p => p.FullName == playerName);
+                    if (player != null)
+                    {
+                        return player.PlayerId;
+                    }
+                }
+            }
+            return null;
+        }
+
+        // Action to find player by name and redirect to player details
+        public async Task<IActionResult> FindPlayerByName(string playerName, int tournamentId)
+        {
+            if (string.IsNullOrEmpty(playerName))
+            {
+                return RedirectToAction(nameof(Details), new { id = tournamentId });
+            }
+
+            // Get all teams in the tournament
+            var tournament = await _context.Tournaments.FindAsync(tournamentId);
+            if (tournament == null)
+            {
+                return NotFound();
+            }
+
+            // Get team names from matches
+            var matches = await _context.Matches
+                .Where(m => m.TournamentId == tournamentId)
+                .ToListAsync();
+
+            var teamNames = matches
+                .SelectMany(m => new[] { m.TeamA, m.TeamB })
+                .Where(name => !string.IsNullOrEmpty(name))
+                .Distinct()
+                .ToList();
+
+            // Get registered teams
+            var registeredTeamIds = await _context.TournamentTeams
+                .Where(tt => tt.TournamentId == tournamentId && tt.Status == "Approved")
+                .Select(tt => tt.TeamId)
+                .ToListAsync();
+
+            // Get teams with players
+            var teams = new List<Team>();
+
+            if (teamNames.Count > 0)
+            {
+                teams.AddRange(await _context.Teams
+                    .Where(t => teamNames.Contains(t.Name))
+                    .Include(t => t.Players)
+                    .ToListAsync());
+            }
+
+            if (registeredTeamIds.Count > 0)
+            {
+                var existingTeamIds = teams.Select(t => t.TeamId).ToList();
+
+                teams.AddRange(await _context.Teams
+                    .Where(t => registeredTeamIds.Contains(t.TeamId) && !existingTeamIds.Contains(t.TeamId))
+                    .Include(t => t.Players)
+                    .ToListAsync());
+            }
+
+            // Find player by name
+            foreach (var team in teams)
+            {
+                var player = team.Players?.FirstOrDefault(p => p.FullName == playerName);
+                if (player != null)
+                {
+                    return RedirectToAction("Details", "Players", new { id = player.PlayerId });
+                }
+            }
+
+            // If player not found, try to find by direct query
+            var playerFromDb = await _context.Players
+                .FirstOrDefaultAsync(p => p.FullName == playerName);
+
+            if (playerFromDb != null)
+            {
+                return RedirectToAction("Details", "Players", new { id = playerFromDb.PlayerId });
+            }
+
+            // If player still not found, redirect back to tournament details
+            TempData["ErrorMessage"] = $"Không tìm thấy thông tin cầu thủ: {playerName}";
+            return RedirectToAction(nameof(Details), new { id = tournamentId });
+        }
+
         // GET: Tournament/Register/5
         [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
         public async Task<IActionResult> Register(int? id)
@@ -751,7 +991,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             }
 
             // Kiểm tra trạng thái đăng ký của giải đấu
-            if (tournament.RegistrationStatus != "Open")
+            if (tournament.CalculatedStatus != "Mở đăng ký")
             {
                 TempData["ErrorMessage"] = "Giải đấu này hiện không mở đăng ký.";
                 return RedirectToAction(nameof(Details), new { id = tournament.Id });
@@ -775,7 +1015,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
             // Lấy danh sách đội của người dùng hiện tại
             var userTeams = await _context.Teams
-                .Where(t => t.Coach.Contains(userId)) // Giả sử Coach chứa userId
+                .Where(t => t.Coach != null && userId != null && t.Coach.Contains(userId)) // Kiểm tra null trước khi sử dụng Contains
                 .ToListAsync();
             ViewBag.UserTeams = userTeams;
 
@@ -786,7 +1026,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
-        public async Task<IActionResult> Register(int id, string notes, int? teamId)
+        public async Task<IActionResult> Register(int id, string notes, string teamOption, int? teamId, string newTeamName, IFormFile logoFile)
         {
             var tournament = await _context.Tournaments.FindAsync(id);
             if (tournament == null)
@@ -795,7 +1035,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             }
 
             // Kiểm tra trạng thái đăng ký của giải đấu
-            if (tournament.RegistrationStatus != "Open")
+            if (tournament.CalculatedStatus != "Mở đăng ký")
             {
                 TempData["ErrorMessage"] = "Giải đấu này hiện không mở đăng ký.";
                 return RedirectToAction(nameof(Details), new { id = tournament.Id });
@@ -818,7 +1058,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             var registration = new TournamentRegistration
             {
                 TournamentId = id,
-                UserId = userId,
+                UserId = userId ?? string.Empty, // Ensure userId is not null
                 RegistrationDate = DateTime.Now,
                 Status = "Pending",
                 Notes = notes
@@ -827,9 +1067,10 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             _context.TournamentRegistrations.Add(registration);
             await _context.SaveChangesAsync();
 
-            // Nếu có chọn đội, đăng ký đội cho giải đấu
-            if (teamId.HasValue)
+            // Handle team registration based on user's choice
+            if (teamOption == "existing" && teamId.HasValue)
             {
+                // Register existing team
                 var team = await _context.Teams.FindAsync(teamId.Value);
                 if (team != null)
                 {
@@ -863,12 +1104,108 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     TempData["Message"] = "Đăng ký giải đấu thành công. Không tìm thấy đội đã chọn.";
                 }
             }
+            else if (teamOption == "new" && !string.IsNullOrEmpty(newTeamName))
+            {
+                // Create and register new team
+                string logoUrl = string.Empty;
+
+                // Process logo file if provided
+                if (logoFile != null && logoFile.Length > 0)
+                {
+                    logoUrl = await SaveTeamLogo(logoFile);
+                }
+
+                // Create new team
+                var newTeam = new Team
+                {
+                    Name = newTeamName,
+                    Coach = userId ?? string.Empty, // Ensure userId is not null
+                    LogoUrl = logoUrl,
+                    Players = new List<Player>()
+                };
+
+                _context.Teams.Add(newTeam);
+                await _context.SaveChangesAsync();
+
+                // Register the new team for the tournament
+                var teamRegistration = new TournamentTeam
+                {
+                    TournamentId = id,
+                    TeamId = newTeam.TeamId,
+                    RegistrationDate = DateTime.Now,
+                    Status = "Pending",
+                    Notes = notes
+                };
+
+                _context.TournamentTeams.Add(teamRegistration);
+                await _context.SaveChangesAsync();
+
+                TempData["Message"] = "Đăng ký giải đấu thành công. Đội mới đã được tạo và đăng ký. Vui lòng chờ phê duyệt.";
+            }
             else
             {
-                TempData["Message"] = "Đăng ký giải đấu thành công. Vui lòng chờ phê duyệt.";
+                TempData["Message"] = "Đăng ký giải đấu thành công. Không có đội nào được đăng ký.";
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // Helper method to save team logo
+        private async Task<string> SaveTeamLogo(IFormFile logoFile)
+        {
+            try
+            {
+                if (logoFile == null || logoFile.Length == 0)
+                {
+                    return string.Empty;
+                }
+
+                // Kiểm tra kích thước file (giới hạn 5MB)
+                if (logoFile.Length > 5 * 1024 * 1024)
+                {
+                    throw new Exception("Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 5MB.");
+                }
+
+                // Kiểm tra loại file
+                string extension = Path.GetExtension(logoFile.FileName).ToLower();
+                string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
+
+                if (!allowedExtensions.Contains(extension))
+                {
+                    throw new Exception("Chỉ chấp nhận file hình ảnh có định dạng: .jpg, .jpeg, .png, .gif");
+                }
+
+                // Đảm bảo tên file không chứa ký tự đặc biệt
+                string fileName = Path.GetFileNameWithoutExtension(logoFile.FileName);
+                // Thêm timestamp để tránh trùng tên file
+                string uniqueFileName = DateTime.Now.Ticks + "_" + fileName + extension;
+
+                // Tạo đường dẫn đầy đủ
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "teams");
+
+                // Đảm bảo thư mục tồn tại
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Lưu file
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await logoFile.CopyToAsync(fileStream);
+                }
+
+                // Trả về đường dẫn tương đối
+                return "/images/teams/" + uniqueFileName;
+            }
+            catch (Exception ex)
+            {
+                // Log the error
+                Console.WriteLine($"Error saving team logo: {ex.Message}");
+                return string.Empty;
+            }
         }
 
         // GET: Tournament/MyRegistrations
@@ -902,7 +1239,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             }
 
             // Kiểm tra trạng thái đăng ký của giải đấu
-            if (tournament.RegistrationStatus != "Open")
+            if (tournament.CalculatedStatus != "Mở đăng ký")
             {
                 TempData["ErrorMessage"] = "Giải đấu này hiện không mở đăng ký.";
                 return RedirectToAction(nameof(MyRegistrations));
@@ -912,7 +1249,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             var submission = new TournamentSubmission
             {
                 TournamentId = tournamentId,
-                UserId = userId,
+                UserId = userId ?? string.Empty, // Ensure userId is not null
                 Title = title,
                 Content = content,
                 SubmissionDate = DateTime.Now,
@@ -1091,8 +1428,16 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             var tournament = await _context.Tournaments.FindAsync(submission.TournamentId);
             var user = await _context.Users.FindAsync(submission.UserId);
 
-            submission.Tournament = tournament;
-            submission.User = user;
+            // Chỉ gán khi không null
+            if (tournament != null)
+            {
+                submission.Tournament = tournament;
+            }
+
+            if (user != null)
+            {
+                submission.User = user;
+            }
 
             return View(submission);
         }
@@ -1206,7 +1551,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             }
 
             // Kiểm tra trạng thái đăng ký của giải đấu
-            if (tournament.RegistrationStatus != "Open")
+            if (tournament.CalculatedStatus != "Mở đăng ký")
             {
                 TempData["ErrorMessage"] = "Giải đấu này hiện không mở đăng ký.";
                 return RedirectToAction(nameof(Details), new { id = tournament.Id });
@@ -1215,7 +1560,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             // Lấy danh sách đội của người dùng hiện tại
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userTeams = await _context.Teams
-                .Where(t => t.Coach.Contains(userId)) // Giả sử Coach chứa userId
+                .Where(t => t.Coach != null && userId != null && t.Coach.Contains(userId)) // Kiểm tra null trước khi sử dụng Contains
                 .ToListAsync();
 
             ViewBag.TeamId = new SelectList(userTeams, "TeamId", "Name");
@@ -1235,7 +1580,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             }
 
             // Kiểm tra trạng thái đăng ký của giải đấu
-            if (tournament.RegistrationStatus != "Open")
+            if (tournament.CalculatedStatus != "Mở đăng ký")
             {
                 TempData["ErrorMessage"] = "Giải đấu này hiện không mở đăng ký.";
                 return RedirectToAction(nameof(Details), new { id = tournament.Id });

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -83,10 +84,26 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Players/Create
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
         public IActionResult Create()
         {
-            ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "Name");
+            // Nếu là User, chỉ hiển thị các đội mà họ sở hữu
+            if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User) && !User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userTeams = _context.TournamentTeams
+                    .Where(tt => tt.Team.Players.Any(p => p.UserId == userId))
+                    .Select(tt => tt.Team)
+                    .Distinct()
+                    .ToList();
+
+                ViewData["TeamId"] = new SelectList(userTeams, "TeamId", "Name");
+            }
+            else
+            {
+                ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "Name");
+            }
+
             return View();
         }
 
@@ -95,7 +112,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
         public async Task<IActionResult> Create([Bind("PlayerId,FullName,Position,Number,TeamId")] Player player, IFormFile imageFile)
         {
             if (ModelState.IsValid)
@@ -106,6 +123,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     if (imageFile != null && imageFile.Length > 0)
                     {
                         player.ImageUrl = await SaveImage(imageFile);
+                    }
+
+                    // Nếu người dùng có vai trò User, lưu UserId
+                    if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User))
+                    {
+                        player.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                     }
 
                     _context.Add(player);
@@ -160,7 +183,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Players/Edit/5
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -168,12 +191,40 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return NotFound();
             }
 
-            var player = await _context.Players.FindAsync(id);
+            var player = await _context.Players.Include(p => p.Team).FirstOrDefaultAsync(p => p.PlayerId == id);
             if (player == null)
             {
                 return NotFound();
             }
-            ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "Name", player.TeamId);
+
+            // Kiểm tra quyền: Admin có thể sửa tất cả, User chỉ có thể sửa cầu thủ trong đội của họ
+            if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User) && !User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+            {
+                // Kiểm tra xem cầu thủ này có thuộc đội của người dùng hiện tại không
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var isTeamOwner = await _context.TournamentTeams
+                    .AnyAsync(tt => tt.TeamId == player.TeamId && tt.Team.Players.Any(p => p.UserId == userId));
+
+                if (!isTeamOwner)
+                {
+                    TempData["ErrorMessage"] = "Bạn không có quyền chỉnh sửa cầu thủ này.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Nếu là User, chỉ hiển thị các đội mà họ sở hữu
+                var userTeams = _context.TournamentTeams
+                    .Where(tt => tt.Team.Players.Any(p => p.UserId == userId))
+                    .Select(tt => tt.Team)
+                    .Distinct()
+                    .ToList();
+
+                ViewData["TeamId"] = new SelectList(userTeams, "TeamId", "Name", player.TeamId);
+            }
+            else
+            {
+                ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "Name", player.TeamId);
+            }
+
             return View(player);
         }
 
@@ -182,7 +233,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
         public async Task<IActionResult> Edit(int id, [Bind("PlayerId,FullName,Position,Number,TeamId")] Player player, IFormFile imageFile)
         {
             if (id != player.PlayerId)
@@ -233,7 +284,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Players/Delete/5
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -249,13 +300,28 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return NotFound();
             }
 
+            // Kiểm tra quyền: Admin có thể xóa tất cả, User chỉ có thể xóa cầu thủ trong đội của họ
+            if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User) && !User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+            {
+                // Kiểm tra xem cầu thủ này có thuộc đội của người dùng hiện tại không
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var isTeamOwner = await _context.TournamentTeams
+                    .AnyAsync(tt => tt.TeamId == player.TeamId && tt.Team.Players.Any(p => p.UserId == userId));
+
+                if (!isTeamOwner)
+                {
+                    TempData["ErrorMessage"] = "Bạn không có quyền xóa cầu thủ này.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
             return View(player);
         }
 
         // POST: Players/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             try
