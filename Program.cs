@@ -22,6 +22,9 @@ builder.Services.AddDefaultIdentity<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUs
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+// Đăng ký các services
+builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.TournamentScheduleService>();
+
 // Add authorization policies
 builder.Services.AddAuthorization(options =>
 {
@@ -95,6 +98,12 @@ using (var scope = app.Services.CreateScope())
     // Seed basketball tournament data
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+    // Đảm bảo khởi tạo dữ liệu thể thức thi đấu trước
+    await SeedTournamentFormatData.SeedTournamentFormats(scope.ServiceProvider);
+
+    // Seed missing tables data
+    SeedMissingTablesData.Initialize(dbContext);
+
     // Create two basketball tournaments (one completed and one open for registration)
     SeedTwoBasketballTournaments(dbContext);
 
@@ -129,13 +138,68 @@ app.MapControllerRoute(
 // Ánh xạ các Razor Pages (các trang Identity, ví dụ: đăng nhập, đăng ký)
 app.MapRazorPages();
 
-// Tạo các bảng cần thiết
+// Kiểm tra và tạo các bảng cần thiết (nếu chưa tồn tại)
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var dbContext = services.GetRequiredService<ApplicationDbContext>();
-    var createTables = new CreateTables(dbContext);
-    createTables.CreateTablesAsync().Wait();
+
+    try
+    {
+        // Đảm bảo cơ sở dữ liệu đã được tạo
+        dbContext.Database.EnsureCreated();
+
+        // Kiểm tra xem các bảng đã tồn tại chưa
+        Console.WriteLine("Kiểm tra cấu trúc cơ sở dữ liệu...");
+
+        // Kiểm tra xem bảng TournamentFormats đã tồn tại chưa
+        bool tournamentFormatsTableExists = false;
+        try
+        {
+            // Thử truy vấn bảng TournamentFormats
+            tournamentFormatsTableExists = dbContext.TournamentFormats.Any();
+        }
+        catch (Exception)
+        {
+            // Nếu bảng không tồn tại, tạo bảng
+            Console.WriteLine("Bảng TournamentFormats chưa tồn tại. Đang tạo bảng...");
+
+            // Tạo bảng TournamentFormats bằng SQL trực tiếp
+            dbContext.Database.ExecuteSqlRaw(@"
+                IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'TournamentFormats')
+                BEGIN
+                    CREATE TABLE [dbo].[TournamentFormats](
+                        [Id] [int] IDENTITY(1,1) NOT NULL,
+                        [Name] [nvarchar](max) NOT NULL,
+                        [Description] [nvarchar](max) NOT NULL,
+                        [ScoringRules] [nvarchar](max) NOT NULL,
+                        [WinnerDetermination] [nvarchar](max) NOT NULL,
+                        CONSTRAINT [PK_TournamentFormats] PRIMARY KEY CLUSTERED ([Id] ASC)
+                    )
+                END
+            ");
+
+            // Thêm cột TournamentFormatId vào bảng Tournaments nếu chưa tồn tại
+            dbContext.Database.ExecuteSqlRaw(@"
+                IF NOT EXISTS (SELECT * FROM sys.columns WHERE name = 'TournamentFormatId' AND object_id = OBJECT_ID('Tournaments'))
+                BEGIN
+                    ALTER TABLE [dbo].[Tournaments]
+                    ADD [TournamentFormatId] [int] NULL,
+                        [MaxTeams] [int] NULL,
+                        [TeamsPerGroup] [int] NULL
+                END
+            ");
+
+            Console.WriteLine("Đã tạo bảng TournamentFormats và cập nhật bảng Tournaments.");
+        }
+
+        // Ghi log
+        Console.WriteLine("Cấu trúc cơ sở dữ liệu đã sẵn sàng.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Lỗi khi kiểm tra cơ sở dữ liệu: {ex.Message}");
+    }
 }
 
 app.Run();
@@ -147,7 +211,7 @@ void SeedTwoBasketballTournaments(ApplicationDbContext context)
     context.Database.EnsureCreated();
 
     // Check if we already have basketball sport
-    var basketball = context.Sports.FirstOrDefault(s => s.Name == "Bóng Rổ");
+    var basketball = context.Sports.OrderBy(s => s.Id).FirstOrDefault(s => s.Name == "Bóng Rổ");
     if (basketball == null)
     {
         // Create basketball sport
@@ -164,6 +228,10 @@ void SeedTwoBasketballTournaments(ApplicationDbContext context)
     var completedTournamentExists = context.Tournaments.Any(t => t.Name == "Giải Bóng Rổ 3v3 Mùa Xuân 2024" && t.SportsId == basketball.Id);
     if (!completedTournamentExists)
     {
+        // Lấy thể thức thi đấu vòng tròn
+        var roundRobinFormat = context.TournamentFormats.FirstOrDefault(f => f.Name == "Vòng tròn (Round Robin)");
+        int? formatId = roundRobinFormat?.Id;
+
         var completedTournament = new Tournament
         {
             Name = "Giải Bóng Rổ 3v3 Mùa Xuân 2024",
@@ -171,7 +239,11 @@ void SeedTwoBasketballTournaments(ApplicationDbContext context)
             StartDate = DateTime.Now.AddMonths(-3), // Started 3 months ago
             EndDate = DateTime.Now.AddDays(-15),    // Ended 15 days ago
             SportsId = basketball.Id,
-            ImageUrl = "/images/basketball-tournament.jpg"
+            ImageUrl = "/images/basketball-tournament.jpg",
+            TournamentFormatId = formatId,
+            MaxTeams = 6,
+            TeamsPerGroup = 6,
+            Location = "Nhà thi đấu Tân Bình, TP.HCM"
         };
         context.Tournaments.Add(completedTournament);
         context.SaveChanges();
@@ -183,7 +255,7 @@ void SeedTwoBasketballTournaments(ApplicationDbContext context)
 
         foreach (var teamName in teamNames)
         {
-            var team = existingTeams.FirstOrDefault(t => t.Name == teamName);
+            var team = existingTeams.OrderBy(t => t.TeamId).FirstOrDefault(t => t.Name == teamName);
             if (team == null)
             {
                 team = new Team
@@ -213,6 +285,8 @@ void SeedTwoBasketballTournaments(ApplicationDbContext context)
                     TeamA = teams[i].Name,
                     TeamB = teams[j].Name,
                     MatchDate = matchDate,
+                    MatchTime = new TimeSpan(15, 0, 0), // 15:00 (3 PM)
+                    Location = completedTournament.Location, // Use tournament location
                     TournamentId = completedTournament.Id
                 };
 
@@ -244,6 +318,10 @@ void SeedTwoBasketballTournaments(ApplicationDbContext context)
     var openTournamentExists = context.Tournaments.Any(t => t.Name == "Giải Bóng Rổ 3v3 Mùa Thu 2024" && t.SportsId == basketball.Id);
     if (!openTournamentExists)
     {
+        // Lấy thể thức thi đấu vòng tròn
+        var roundRobinFormat = context.TournamentFormats.FirstOrDefault(f => f.Name == "Vòng tròn (Round Robin)");
+        int? formatId = roundRobinFormat?.Id;
+
         var openTournament = new Tournament
         {
             Name = "Giải Bóng Rổ 3v3 Mùa Thu 2024",
@@ -251,7 +329,11 @@ void SeedTwoBasketballTournaments(ApplicationDbContext context)
             StartDate = DateTime.Now.AddMonths(1),  // Will start in 1 month
             EndDate = DateTime.Now.AddMonths(2),    // Will end in 2 months
             SportsId = basketball.Id,
-            ImageUrl = "/images/basketball-tournament.jpg"
+            ImageUrl = "/images/basketball-tournament.jpg",
+            TournamentFormatId = formatId,
+            MaxTeams = 6,
+            TeamsPerGroup = 6,
+            Location = "Nhà thi đấu Hoa Lư, TP.HCM"
         };
         context.Tournaments.Add(openTournament);
         context.SaveChanges();

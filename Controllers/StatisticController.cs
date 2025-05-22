@@ -47,7 +47,7 @@
 
         // GET: Statistic/Create
         [Authorize(Roles = SD.Role_Admin)]
-        public async Task<IActionResult> Create()
+        public IActionResult Create()
         {
             ViewData["MatchId"] = new SelectList(_context.Matches, "Id", "TeamA");
             return View();
@@ -172,6 +172,7 @@
             catch (Exception ex)
             {
                 // Handle foreign key constraint violation
+                Console.WriteLine($"Lỗi khi xóa thống kê: {ex.Message}");
                 return RedirectToAction(nameof(Delete), new { id = id, error = "Không thể xóa thống kê này vì có dữ liệu liên quan." });
             }
         }

@@ -10,15 +10,37 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
         [Required]
         public string TeamA { get; set; }
 
+        // ID của đội A (tùy chọn)
+        public int? TeamAId { get; set; }
+
         [Required]
         public string TeamB { get; set; }
+
+        // ID của đội B (tùy chọn)
+        public int? TeamBId { get; set; }
 
         // Add score properties
         public int? ScoreTeamA { get; set; }
         public int? ScoreTeamB { get; set; }
 
+        // Vòng đấu (ví dụ: 1, 2, 3, ...)
+        public int? Round { get; set; }
+
+        // Tên bảng đấu (ví dụ: "Bảng A", "Bảng B", ...)
+        public string? GroupName { get; set; }
+
         [DataType(DataType.Date)]
+        [Display(Name = "Ngày Thi Đấu")]
         public DateTime MatchDate { get; set; }
+
+        // Thời gian thi đấu
+        [Display(Name = "Thời Gian Thi Đấu")]
+        [DataType(DataType.Time)]
+        public TimeSpan? MatchTime { get; set; } = new TimeSpan(15, 0, 0); // Default to 15:00 (3 PM)
+
+        // Địa điểm thi đấu
+        [Display(Name = "Địa Điểm Thi Đấu")]
+        public string? Location { get; set; }
 
         // Match status: "Upcoming", "InProgress", "Completed"
         // This property doesn't exist in the database

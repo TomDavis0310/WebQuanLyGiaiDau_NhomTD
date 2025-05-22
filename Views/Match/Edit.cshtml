@@ -25,8 +25,21 @@
 
         <div class="mb-3">
             <label asp-for="MatchDate" class="form-label fw-bold">Ngày Thi Đấu:</label>
-            <input asp-for="MatchDate" class="form-control" />
+            <input asp-for="MatchDate" class="form-control" type="date" />
             <span asp-validation-for="MatchDate" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="MatchTime" class="form-label fw-bold">Thời Gian Thi Đấu:</label>
+            <input asp-for="MatchTime" class="form-control" type="time" />
+            <span asp-validation-for="MatchTime" class="text-danger"></span>
+            <div class="form-text">Mặc định: 15:00 (3 giờ chiều)</div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Location" class="form-label fw-bold">Địa Điểm Thi Đấu:</label>
+            <input asp-for="Location" class="form-control" placeholder="Nhập địa điểm thi đấu..." />
+            <span asp-validation-for="Location" class="text-danger"></span>
         </div>
 
         <div class="mb-3">

@@ -31,6 +31,19 @@
             </div>
 
             <div class="mb-3">
+                <label asp-for="MatchTime" class="form-label fw-semibold">Thời Gian Thi Đấu</label>
+                <input asp-for="MatchTime" class="form-control" type="time" value="15:00" />
+                <span asp-validation-for="MatchTime" class="text-danger"></span>
+                <div class="form-text">Mặc định: 15:00 (3 giờ chiều)</div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Location" class="form-label fw-semibold">Địa Điểm Thi Đấu</label>
+                <input asp-for="Location" class="form-control" placeholder="Nhập địa điểm thi đấu..." />
+                <span asp-validation-for="Location" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
                 <label asp-for="TournamentId" class="form-label fw-semibold">Giải Đấu</label>
                 <select asp-for="TournamentId" class="form-select" asp-items="ViewBag.TournamentId">
                     <option value="">-- Chọn Giải Đấu --</option>

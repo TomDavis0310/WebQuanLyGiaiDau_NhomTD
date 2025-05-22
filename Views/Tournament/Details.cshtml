@@ -37,7 +37,19 @@
                             <div class="col-md-8">
                                 <dl class="row">
                                     <dt class="col-sm-4 fw-bold">Mô Tả</dt>
-                                    <dd class="col-sm-8">@Html.DisplayFor(model => model.Description)</dd>
+                                    <dd class="col-sm-8"><span class="tournament-description">@Html.DisplayFor(model => model.Description)</span></dd>
+
+                                    <dt class="col-sm-4 fw-bold">Địa Điểm</dt>
+                                    <dd class="col-sm-8">
+                                        @if (!string.IsNullOrEmpty(Model.Location))
+                                        {
+                                            @Model.Location
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Chưa xác định</span>
+                                        }
+                                    </dd>
 
                                     <dt class="col-sm-4 fw-bold">Ngày Bắt Đầu</dt>
                                     <dd class="col-sm-8">@Model.StartDate.ToString("dd/MM/yyyy")</dd>
@@ -47,6 +59,85 @@
 
                                     <dt class="col-sm-4 fw-bold">Môn Thể Thao</dt>
                                     <dd class="col-sm-8">@(Model.Sports?.Name ?? "Không xác định")</dd>
+
+                                    <dt class="col-sm-4 fw-bold">Thể Thức Thi Đấu</dt>
+                                    <dd class="col-sm-8">
+                                        @if (Model.TournamentFormat != null)
+                                        {
+                                            <span class="badge bg-info">@Model.TournamentFormat.Name</span>
+                                            <button type="button" class="btn btn-sm btn-outline-info ms-2"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#formatDetailsModal">
+                                                <i class="bi bi-info-circle"></i> Chi tiết
+                                            </button>
+
+                                            <!-- Modal hiển thị chi tiết thể thức thi đấu -->
+                                            <div class="modal fade" id="formatDetailsModal" tabindex="-1" aria-labelledby="formatDetailsModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog modal-lg">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header bg-info text-white">
+                                                            <h5 class="modal-title" id="formatDetailsModalLabel">
+                                                                <i class="bi bi-trophy"></i> Thể Thức Thi Đấu: @Model.TournamentFormat.Name
+                                                            </h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="row">
+                                                                <div class="col-12 mb-3">
+                                                                    <h6 class="fw-bold text-primary">
+                                                                        <i class="bi bi-info-circle"></i> Mô Tả
+                                                                    </h6>
+                                                                    <p>@Model.TournamentFormat.Description</p>
+                                                                </div>
+
+                                                                <div class="col-md-6 mb-3">
+                                                                    <h6 class="fw-bold text-primary">
+                                                                        <i class="bi bi-calculator"></i> Cách Tính Điểm
+                                                                    </h6>
+                                                                    <p>@Model.TournamentFormat.ScoringRules</p>
+                                                                </div>
+
+                                                                <div class="col-md-6 mb-3">
+                                                                    <h6 class="fw-bold text-primary">
+                                                                        <i class="bi bi-award"></i> Cách Xác Định Đội Chiến Thắng
+                                                                    </h6>
+                                                                    <p>@Model.TournamentFormat.WinnerDetermination</p>
+                                                                </div>
+
+                                                                <div class="col-12">
+                                                                    <div class="alert alert-info">
+                                                                        <i class="bi bi-lightbulb"></i> <strong>Lưu ý:</strong>
+                                                                        @if (Model.TournamentFormat.Name.Contains("Vòng tròn"))
+                                                                        {
+                                                                            <span>Trong thể thức vòng tròn, mỗi đội sẽ thi đấu với tất cả các đội còn lại.</span>
+                                                                        }
+                                                                        else if (Model.TournamentFormat.Name.Contains("Loại trực tiếp"))
+                                                                        {
+                                                                            <span>Trong thể thức loại trực tiếp, đội thua sẽ bị loại khỏi giải đấu.</span>
+                                                                        }
+                                                                        else if (Model.TournamentFormat.Name.Contains("Vòng bảng"))
+                                                                        {
+                                                                            <span>Trong thể thức vòng bảng, các đội được chia thành các bảng đấu và thi đấu vòng tròn trong bảng.</span>
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Chưa xác định</span>
+                                        }
+                                    </dd>
+
+                                    <dt class="col-sm-4 fw-bold">Số Đội Tối Đa</dt>
+                                    <dd class="col-sm-8">@(Model.MaxTeams ?? 8) đội</dd>
 
                                     <dt class="col-sm-4 fw-bold">Trạng Thái</dt>
                                     <dd class="col-sm-8">
@@ -71,7 +162,19 @@
                             <div class="col-md-12">
                                 <dl class="row">
                                     <dt class="col-sm-3 fw-bold">Mô Tả</dt>
-                                    <dd class="col-sm-9">@Html.DisplayFor(model => model.Description)</dd>
+                                    <dd class="col-sm-9"><span class="tournament-description">@Html.DisplayFor(model => model.Description)</span></dd>
+
+                                    <dt class="col-sm-3 fw-bold">Địa Điểm</dt>
+                                    <dd class="col-sm-9">
+                                        @if (!string.IsNullOrEmpty(Model.Location))
+                                        {
+                                            @Model.Location
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Chưa xác định</span>
+                                        }
+                                    </dd>
 
                                     <dt class="col-sm-3 fw-bold">Ngày Bắt Đầu</dt>
                                     <dd class="col-sm-9">@Model.StartDate.ToString("dd/MM/yyyy")</dd>
@@ -81,6 +184,26 @@
 
                                     <dt class="col-sm-3 fw-bold">Môn Thể Thao</dt>
                                     <dd class="col-sm-9">@(Model.Sports?.Name ?? "Không xác định")</dd>
+
+                                    <dt class="col-sm-3 fw-bold">Thể Thức Thi Đấu</dt>
+                                    <dd class="col-sm-9">
+                                        @if (Model.TournamentFormat != null)
+                                        {
+                                            <span class="badge bg-info">@Model.TournamentFormat.Name</span>
+                                            <button type="button" class="btn btn-sm btn-outline-info ms-2"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#formatDetailsModal">
+                                                <i class="bi bi-info-circle"></i> Chi tiết
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Chưa xác định</span>
+                                        }
+                                    </dd>
+
+                                    <dt class="col-sm-3 fw-bold">Số Đội Tối Đa</dt>
+                                    <dd class="col-sm-9">@(Model.MaxTeams ?? 8) đội</dd>
 
                                     <dt class="col-sm-3 fw-bold">Trạng Thái</dt>
                                     <dd class="col-sm-9">
@@ -173,7 +296,7 @@
                                 @if (teams != null && teams.Any() && teamRankings != null && teamRankings.Any())
                                 {
                                     <div class="table-responsive">
-                                        <table class="table table-striped table-hover">
+                                        <table class="table table-striped table-hover standings-table">
                                             <thead class="table-dark">
                                                 <tr class="text-center">
                                                     <th>Hạng</th>
@@ -182,10 +305,25 @@
                                                     <th>Thắng</th>
                                                     <th>Hòa</th>
                                                     <th>Thua</th>
-                                                    <th>Ghi</th>
+                                                    <th>
+                                                        Ghi
+                                                        <button class="btn btn-sm btn-outline-light ms-1 sort-standings" data-sort="scored" title="Sắp xếp theo điểm ghi">
+                                                            <i class="bi bi-sort-down"></i>
+                                                        </button>
+                                                    </th>
                                                     <th>Thủng</th>
-                                                    <th>Hiệu số</th>
-                                                    <th>Điểm</th>
+                                                    <th>
+                                                        Hiệu số
+                                                        <button class="btn btn-sm btn-outline-light ms-1 sort-standings" data-sort="diff" title="Sắp xếp theo hiệu số">
+                                                            <i class="bi bi-sort-down"></i>
+                                                        </button>
+                                                    </th>
+                                                    <th>
+                                                        Điểm
+                                                        <button class="btn btn-sm btn-outline-light ms-1 sort-standings" data-sort="points" title="Sắp xếp theo điểm số">
+                                                            <i class="bi bi-sort-down"></i>
+                                                        </button>
+                                                    </th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -234,6 +372,15 @@
 
                             <!-- Lịch thi đấu content -->
                             <div class="tab-pane fade" id="schedule-content" role="tabpanel" aria-labelledby="schedule-tab">
+                                @if (User.IsInRole(SD.Role_Admin) || User.IsInRole(SD.Role_User))
+                                {
+                                    <div class="mb-3">
+                                        <a asp-action="GenerateSchedule" asp-route-id="@Model.Id" class="btn btn-primary">
+                                            <i class="bi bi-calendar-plus"></i> Tạo lịch thi đấu tự động
+                                        </a>
+                                    </div>
+                                }
+
                                 @if (matches != null && matches.Any())
                                 {
                                     <div class="table-responsive">
@@ -311,8 +458,16 @@
                                                             @if (match.MatchDate != default(DateTime))
                                                             {
                                                                 <div>@match.MatchDate.ToString("dd/MM/yyyy")</div>
-                                                                <div><small class="text-muted">15:00 - 15:15</small></div>
-                                                                <div><small class="text-muted fst-italic">(Hoặc đến khi đạt 21 điểm)</small></div>
+                                                                @if (Model.Name.Contains("5v5") || Model.Name.Contains("5 vs 5"))
+                                                                {
+                                                                    <div><small class="text-muted">15:00 - 16:08</small></div>
+                                                                    <div><small class="text-muted fst-italic">(4 hiệp x 12 phút)</small></div>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <div><small class="text-muted">15:00 - 15:15</small></div>
+                                                                    <div><small class="text-muted fst-italic">(Hoặc đến khi đạt 21 điểm)</small></div>
+                                                                }
                                                             }
                                                             else
                                                             {
@@ -335,6 +490,15 @@
                                 {
                                     <div class="alert alert-info">
                                         <i class="bi bi-info-circle"></i> Chưa có trận đấu nào được lên lịch cho giải đấu này.
+
+                                        @if (User.IsInRole(SD.Role_Admin) || User.IsInRole(SD.Role_User))
+                                        {
+                                            <div class="mt-3">
+                                                <a asp-action="GenerateSchedule" asp-route-id="@Model.Id" class="btn btn-primary">
+                                                    <i class="bi bi-calendar-plus"></i> Tạo lịch thi đấu tự động
+                                                </a>
+                                            </div>
+                                        }
                                     </div>
                                 }
                             </div>
@@ -348,17 +512,32 @@
                                 @if (playerStats != null && playerStats.Any())
                                 {
                                     <div class="table-responsive">
-                                        <table class="table table-striped table-hover">
+                                        <table class="table table-striped table-hover" id="playerStatsTable">
                                             <thead class="table-primary">
                                                 <tr class="text-center">
                                                     <th>Hạng</th>
                                                     <th>Cầu Thủ</th>
                                                     <th>Đội</th>
                                                     <th class="text-center">Trận</th>
-                                                    <th class="text-center">Điểm</th>
+                                                    <th class="text-center">
+                                                        Điểm
+                                                        <button class="btn btn-sm btn-outline-primary ms-1" id="sortByPlayerPoints" title="Sắp xếp theo điểm số">
+                                                            <i class="bi bi-sort-down"></i>
+                                                        </button>
+                                                    </th>
                                                     <th class="text-center">TB Điểm</th>
-                                                    <th class="text-center">Kiến Tạo</th>
-                                                    <th class="text-center">Bắt Bóng</th>
+                                                    <th class="text-center">
+                                                        Kiến Tạo
+                                                        <button class="btn btn-sm btn-outline-primary ms-1" id="sortByPlayerAssists" title="Sắp xếp theo kiến tạo">
+                                                            <i class="bi bi-sort-down"></i>
+                                                        </button>
+                                                    </th>
+                                                    <th class="text-center">
+                                                        Bắt Bóng
+                                                        <button class="btn btn-sm btn-outline-primary ms-1" id="sortByPlayerRebounds" title="Sắp xếp theo bắt bóng">
+                                                            <i class="bi bi-sort-down"></i>
+                                                        </button>
+                                                    </th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -367,7 +546,12 @@
                                                     var player = playerStats[i];
                                                     <tr class="@(i < 3 ? "table-warning" : "")">
                                                         <td class="text-center fw-bold">@(i + 1)</td>
-                                                        <td>@player.PlayerName</td>
+                                                        <td>
+                                                            <a href="@Url.Action("FindPlayerByName", "Tournament", new { playerName = player.PlayerName, tournamentId = Model.Id })" class="text-decoration-none">
+                                                                @player.PlayerName
+                                                                <small class="d-block text-muted"><i class="bi bi-info-circle"></i> Nhấn để xem chi tiết</small>
+                                                            </a>
+                                                        </td>
                                                         <td>@player.Team</td>
                                                         <td class="text-center">@player.GamesPlayed</td>
                                                         <td class="text-center fw-bold">@player.TotalPoints</td>
@@ -423,10 +607,117 @@
                                     <i class="bi bi-trash"></i> Xóa
                                 </a>
                             }
-                        }
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Hiển thị tab được chọn từ URL hash
+            var hash = window.location.hash;
+            if (hash) {
+                $('#tournamentTabs a[href="' + hash + '"]').tab('show');
+            }
+
+            // Cập nhật URL hash khi chuyển tab
+            $('#tournamentTabs a').on('shown.bs.tab', function (e) {
+                window.location.hash = e.target.hash;
+            });
+
+            // Kích hoạt popovers cho thông tin thể thức thi đấu
+            var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+            var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+                return new bootstrap.Popover(popoverTriggerEl, {
+                    html: true
+                });
+            });
+
+            // Khởi tạo modal
+            var formatDetailsModal = document.getElementById('formatDetailsModal');
+            if (formatDetailsModal) {
+                var modal = new bootstrap.Modal(formatDetailsModal);
+
+                // Thêm sự kiện khi modal hiển thị
+                formatDetailsModal.addEventListener('shown.bs.modal', function () {
+                    console.log('Modal hiển thị thành công');
+                });
+            }
+
+            // Thêm chức năng sắp xếp bảng xếp hạng
+            $(".sort-standings").click(function() {
+                var sortBy = $(this).data("sort");
+                var rows = $(".standings-table tbody tr").get();
+
+                rows.sort(function(a, b) {
+                    var keyA, keyB;
+
+                    if (sortBy === "points") {
+                        keyA = parseInt($(a).find("td:nth-child(10)").text());
+                        keyB = parseInt($(b).find("td:nth-child(10)").text());
+                    } else if (sortBy === "scored") {
+                        keyA = parseInt($(a).find("td:nth-child(7)").text());
+                        keyB = parseInt($(b).find("td:nth-child(7)").text());
+                    } else if (sortBy === "diff") {
+                        keyA = parseInt($(a).find("td:nth-child(9)").text().replace("+", ""));
+                        keyB = parseInt($(b).find("td:nth-child(9)").text().replace("+", ""));
+                    }
+
+                    return keyB - keyA;
+                });
+
+                $.each(rows, function(index, row) {
+                    $(".standings-table tbody").append(row);
+                    $(row).find("td:first-child").text(index + 1);
+                });
+
+                return false;
+            });
+
+            // Sắp xếp bảng thống kê cầu thủ theo điểm số
+            $("#sortByPlayerPoints").click(function() {
+                sortPlayerStats(5); // Cột điểm số
+                return false;
+            });
+
+            // Sắp xếp bảng thống kê cầu thủ theo kiến tạo
+            $("#sortByPlayerAssists").click(function() {
+                sortPlayerStats(7); // Cột kiến tạo
+                return false;
+            });
+
+            // Sắp xếp bảng thống kê cầu thủ theo bắt bóng
+            $("#sortByPlayerRebounds").click(function() {
+                sortPlayerStats(8); // Cột bắt bóng
+                return false;
+            });
+
+            // Hàm sắp xếp bảng thống kê cầu thủ
+            function sortPlayerStats(columnIndex) {
+                var rows = $("#playerStatsTable tbody tr").get();
+
+                rows.sort(function(a, b) {
+                    var keyA = parseInt($(a).find("td:nth-child(" + columnIndex + ")").text());
+                    var keyB = parseInt($(b).find("td:nth-child(" + columnIndex + ")").text());
+                    return keyB - keyA;
+                });
+
+                $.each(rows, function(index, row) {
+                    $("#playerStatsTable tbody").append(row);
+                    $(row).find("td:first-child").text(index + 1);
+
+                    // Cập nhật lớp CSS cho 3 cầu thủ đứng đầu
+                    if (index < 3) {
+                        $(row).addClass("table-warning");
+                    } else {
+                        $(row).removeClass("table-warning");
+                    }
+                });
+            }
+        });
+    </script>
+}

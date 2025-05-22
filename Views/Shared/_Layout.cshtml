@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/sports-theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/rules.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WebQuanLyGiaiDau_NhomTD.styles.css" asp-append-version="true" />
 </head>
 <body>
@@ -39,6 +40,13 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="News" asp-action="Index">
                                 <i class="bi bi-newspaper"></i> Tin tức thể thao
+                            </a>
+                        </li>
+
+                        <!-- Luật thi đấu luôn hiển thị cho tất cả người dùng -->
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Rules" asp-action="Index">
+                                <i class="bi bi-book"></i> Luật thi đấu
                             </a>
                         </li>
 
@@ -87,6 +95,17 @@
                                                 <i class="bi bi-newspaper"></i> Quản lý tin tức
                                             </a>
                                         </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Tournament" asp-action="ManageRegistrations">
+                                                <i class="bi bi-person-check"></i> Đăng ký người dùng
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Tournament" asp-action="ManageTeamRegistrations">
+                                                <i class="bi bi-people-check"></i> Đăng ký đội
+                                            </a>
+                                        </li>
                                     </ul>
                                 </li>
                             }
@@ -94,14 +113,34 @@
                             @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User))
                             {
                                 <!-- User-specific navigation -->
-                                <!-- Ẩn mục đăng ký giải đấu theo yêu cầu -->
-                                <!-- <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Tournament" asp-action="MyRegistrations">
-                                        <i class="bi bi-list-check"></i> Đăng ký giải đấu
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-bs-toggle="dropdown">
+                                        <i class="bi bi-person-gear"></i> Quản lý
                                     </a>
-                                </li> -->
-
-
+                                    <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Teams" asp-action="Index">
+                                                <i class="bi bi-people-fill"></i> Đội bóng
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Tournament" asp-action="Index">
+                                                <i class="bi bi-trophy"></i> Giải đấu
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Tournament" asp-action="MyRegistrations">
+                                                <i class="bi bi-list-check"></i> Đăng ký giải đấu
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Home" asp-action="UserGuide">
+                                                <i class="bi bi-question-circle"></i> Hướng dẫn sử dụng
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
                             }
                         }
                         else
@@ -141,6 +180,7 @@
                     <ul class="list-unstyled">
                         <li><a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door me-2"></i>Trang chủ</a></li>
                         <li><a asp-controller="News" asp-action="Index"><i class="bi bi-newspaper me-2"></i>Tin tức thể thao</a></li>
+                        <li><a asp-controller="Rules" asp-action="Index"><i class="bi bi-book me-2"></i>Luật thi đấu</a></li>
                         <li><a asp-controller="Home" asp-action="Privacy"><i class="bi bi-shield-check me-2"></i>Chính sách</a></li>
                     </ul>
                 </div>

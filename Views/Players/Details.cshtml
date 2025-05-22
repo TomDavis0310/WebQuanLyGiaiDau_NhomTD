@@ -169,7 +169,10 @@
                                 <td>
                                     @if (!string.IsNullOrEmpty(stat.Match.TeamA) && !string.IsNullOrEmpty(stat.Match.TeamB))
                                     {
-                                        @(stat.Match.TeamA + " vs " + stat.Match.TeamB)
+                                        <a asp-controller="Match" asp-action="Details" asp-route-id="@stat.MatchId" class="text-decoration-none">
+                                            @(stat.Match.TeamA + " vs " + stat.Match.TeamB)
+                                            <small class="d-block text-muted"><i class="bi bi-info-circle"></i> Nhấn để xem chi tiết trận đấu</small>
+                                        </a>
                                     }
                                     else
                                     {

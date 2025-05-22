@@ -1,0 +1,56 @@
+@{
+    ViewData["Title"] = "Luật Thi Đấu";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h1 class="display-4 text-primary mb-4">Luật Thi Đấu Thể Thao</h1>
+            <p class="lead">Trang wiki luật thi đấu chính thức cho các môn thể thao</p>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-8 offset-md-2">
+            <div class="alert alert-info">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i class="bi bi-info-circle-fill fs-3"></i>
+                    </div>
+                    <div>
+                        <h5 class="alert-heading">Trang Wiki Luật Thi Đấu</h5>
+                        <p>Chúng tôi đã cập nhật trang luật thi đấu theo kiểu wiki, giúp bạn dễ dàng tìm kiếm và đọc toàn bộ luật thi đấu mà không cần chuyển trang. Tất cả các môn thể thao đều được tổng hợp trong một trang duy nhất với mục lục chi tiết.</p>
+                        <a asp-action="Wiki" class="btn btn-primary">Truy cập Wiki Luật Thi Đấu</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5 justify-content-center">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <img src="/images/rules/basketball-header.jpg" class="card-img-top" alt="Bóng Rổ" style="height: 200px; object-fit: cover;">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Luật Bóng Rổ</h5>
+                    <p class="card-text">Tìm hiểu về luật thi đấu bóng rổ chính thức theo tiêu chuẩn FIBA</p>
+                    <a asp-action="Wiki" class="btn btn-primary">Xem Luật</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Có thể thêm các môn thể thao khác ở đây -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm bg-light">
+                <div class="card-body text-center d-flex flex-column justify-content-center" style="height: 200px;">
+                    <i class="bi bi-plus-circle text-muted" style="font-size: 3rem;"></i>
+                </div>
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted">Các môn thể thao khác</h5>
+                    <p class="card-text text-muted">Sắp ra mắt thêm luật thi đấu cho các môn thể thao khác</p>
+                    <button class="btn btn-outline-secondary" disabled>Sắp ra mắt</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

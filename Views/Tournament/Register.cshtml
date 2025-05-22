@@ -59,7 +59,7 @@
                             </div>
                         </div>
 
-                        <form asp-action="Register" method="post">
+                        <form asp-action="Register" method="post" enctype="multipart/form-data">
                             <input type="hidden" name="id" value="@Model.Id" />
 
                             <div class="mb-3">
@@ -67,20 +67,83 @@
                                 <textarea name="notes" id="notes" class="form-control" rows="3" placeholder="Nhập ghi chú hoặc thông tin bổ sung"></textarea>
                             </div>
 
+                            <div class="mb-3">
+                            <label class="form-label">Đăng ký đội tham gia</label>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="teamOption" id="existingTeam" value="existing" checked>
+                                <label class="form-check-label" for="existingTeam">
+                                    Sử dụng đội hiện có
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="teamOption" id="newTeam" value="new">
+                                <label class="form-check-label" for="newTeam">
+                                    Tạo đội mới
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="existingTeamSection" class="mb-3">
                             @if (ViewBag.UserTeams != null && ViewBag.UserTeams.Count > 0)
                             {
-                                <div class="mb-3">
-                                    <label for="teamId" class="form-label">Đăng ký đội tham gia (không bắt buộc)</label>
-                                    <select name="teamId" id="teamId" class="form-select">
-                                        <option value="">-- Chọn đội --</option>
-                                        @foreach (var team in ViewBag.UserTeams)
-                                        {
-                                            <option value="@team.TeamId">@team.Name</option>
-                                        }
-                                    </select>
-                                    <div class="form-text">Bạn có thể đăng ký đội tham gia giải đấu này.</div>
-                                </div>
+                                <label for="teamId" class="form-label">Chọn đội</label>
+                                <select name="teamId" id="teamId" class="form-select">
+                                    <option value="">-- Chọn đội --</option>
+                                    @foreach (var team in ViewBag.UserTeams)
+                                    {
+                                        <option value="@team.TeamId">@team.Name</option>
+                                    }
+                                </select>
+                                <div class="form-text">Chọn đội bạn muốn đăng ký tham gia giải đấu này.</div>
                             }
+                            else
+                            {
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle"></i> Bạn chưa có đội nào. Vui lòng tạo đội mới.
+                                </div>
+                                <script>
+                                    document.getElementById('newTeam').checked = true;
+                                    document.getElementById('existingTeam').disabled = true;
+                                </script>
+                            }
+                        </div>
+
+                        <div id="newTeamSection" class="mb-3" style="display: none;">
+                            <div class="mb-3">
+                                <label for="newTeamName" class="form-label">Tên đội mới</label>
+                                <input type="text" class="form-control" id="newTeamName" name="newTeamName" placeholder="Nhập tên đội mới">
+                            </div>
+                            <div class="mb-3">
+                                <label for="logoUrl" class="form-label">Logo đội (không bắt buộc)</label>
+                                <input type="file" class="form-control" id="logoFile" name="logoFile" accept="image/*">
+                                <div class="form-text">Chọn hình ảnh logo cho đội của bạn (JPG, PNG).</div>
+                            </div>
+                        </div>
+
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const existingTeamRadio = document.getElementById('existingTeam');
+                                const newTeamRadio = document.getElementById('newTeam');
+                                const existingTeamSection = document.getElementById('existingTeamSection');
+                                const newTeamSection = document.getElementById('newTeamSection');
+
+                                function toggleSections() {
+                                    if (existingTeamRadio.checked) {
+                                        existingTeamSection.style.display = 'block';
+                                        newTeamSection.style.display = 'none';
+                                    } else {
+                                        existingTeamSection.style.display = 'none';
+                                        newTeamSection.style.display = 'block';
+                                    }
+                                }
+
+                                existingTeamRadio.addEventListener('change', toggleSections);
+                                newTeamRadio.addEventListener('change', toggleSections);
+
+                                // Initial toggle
+                                toggleSections();
+                            });
+                        </script>
 
                             <div class="d-flex justify-content-between">
                                 <a asp-action="Index" class="btn btn-secondary">Quay lại</a>

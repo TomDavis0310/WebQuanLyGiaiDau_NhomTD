@@ -28,5 +28,17 @@
         public DbSet<News> News { get; set; }
         public DbSet<TournamentSubmission> TournamentSubmissions { get; set; }
 
+        // Các bảng mới thêm vào
+        public DbSet<Format> Formats { get; set; }
+        public DbSet<Stage> Stages { get; set; }
+        public DbSet<StageDetail> StageDetails { get; set; }
+        public DbSet<SportDetail> SportDetails { get; set; }
+        public DbSet<CoachDetail> CoachDetails { get; set; }
+        public DbSet<Standing> Standings { get; set; }
+        public DbSet<StandingDetail> StandingDetails { get; set; }
+        public DbSet<PlayerDetail> PlayerDetails { get; set; }
+        public DbSet<MatchDetail> MatchDetails { get; set; }
+        public DbSet<TournamentFormat> TournamentFormats { get; set; }
+        public DbSet<PlayerScoring> PlayerScorings { get; set; }
     }
 }

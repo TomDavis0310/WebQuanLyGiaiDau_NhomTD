@@ -25,7 +25,7 @@
         <dd class="col-sm-9">@Html.DisplayFor(model => model.Coach)</dd>
     </dl>
 
-    <form asp-action="Delete">
+    <form asp-action="Delete" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đội này? Hành động này không thể hoàn tác.');">
         <input type="hidden" asp-for="TeamId" />
         <div class="d-flex justify-content-between mt-4">
             <input type="submit" value="🗑️ Xóa" class="btn btn-danger" />

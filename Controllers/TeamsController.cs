@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -65,7 +66,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Teams/Create
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
         public IActionResult Create()
         {
             return View();
@@ -76,7 +77,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
         public async Task<IActionResult> Create([Bind("TeamId,Name,Coach")] Team team, IFormFile logoFile)
         {
             if (ModelState.IsValid)
@@ -140,7 +141,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Teams/Edit/5
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -153,6 +154,22 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             {
                 return NotFound();
             }
+
+            // Kiểm tra quyền: Admin có thể sửa tất cả, User chỉ có thể sửa đội của mình
+            if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User) && !User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+            {
+                // Kiểm tra xem đội này có thuộc về người dùng hiện tại không
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var isTeamOwner = await _context.TournamentTeams
+                    .AnyAsync(tt => tt.TeamId == id && tt.Team.Players.Any(p => p.UserId == userId));
+
+                if (!isTeamOwner)
+                {
+                    TempData["ErrorMessage"] = "Bạn không có quyền chỉnh sửa đội này.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
             return View(team);
         }
 
@@ -161,7 +178,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
         public async Task<IActionResult> Edit(int id, [Bind("TeamId,Name,Coach")] Team team, IFormFile logoFile)
         {
             if (id != team.TeamId)
@@ -211,7 +228,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Teams/Delete/5
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -226,13 +243,28 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return NotFound();
             }
 
+            // Kiểm tra quyền: Admin có thể xóa tất cả, User chỉ có thể xóa đội của mình
+            if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User) && !User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+            {
+                // Kiểm tra xem đội này có thuộc về người dùng hiện tại không
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var isTeamOwner = await _context.TournamentTeams
+                    .AnyAsync(tt => tt.TeamId == id && tt.Team.Players.Any(p => p.UserId == userId));
+
+                if (!isTeamOwner)
+                {
+                    TempData["ErrorMessage"] = "Bạn không có quyền xóa đội này.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
             return View(team);
         }
 
         // POST: Teams/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             try
