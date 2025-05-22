@@ -19,6 +19,7 @@
         <tr>
             <th>Đội A</th>
             <th>Đội B</th>
+            <th>Tỉ Số</th>
             <th>Ngày Thi Đấu</th>
             <th>Giải Đấu</th>
             <th>Hành Động</th>
@@ -27,10 +28,11 @@
     <tbody>
         @foreach (var item in Model)
         {
-            <tr class="align-middle">
+            <tr class="align-middle" data-match-id="@item.Id">
                 <td>@Html.DisplayFor(modelItem => item.TeamA)</td>
                 <td>@Html.DisplayFor(modelItem => item.TeamB)</td>
-                <td class="text-center">@item.MatchDate.ToString("dd/MM/yyyy")</td>
+                <td class="text-center"><span class="match-score">@item.ScoreTeamA - @item.ScoreTeamB</span></td>
+                <td>@Html.DisplayFor(modelItem => item.MatchDate)</td>
                 <td>@Html.DisplayFor(modelItem => item.Tournament.Name)</td>
                 <td class="text-center">
                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info me-1">🔍 Xem</a>
@@ -44,3 +46,31 @@
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/matchHub")
+            .build();
+
+        connection.on("ReceiveMatchUpdate", (matchId, score) => {
+            console.log(`Match ${matchId} updated: ${score}`);
+            // Find the table row with the matching matchId
+            const row = document.querySelector(`tr[data-match-id="${matchId}"]`);
+            if (row) {
+                // Update the score in the row (assuming you have a specific element for the score)
+                const scoreElement = row.querySelector(".match-score");
+                if (scoreElement) {
+                    scoreElement.textContent = score;
+                } else {
+                    console.log("Score element not found in row");
+                }
+            } else {
+                console.log(`Row not found for matchId ${matchId}`);
+            }
+        });
+
+        connection.start().catch(err => console.error(err.toString()));
+    </script>
+}

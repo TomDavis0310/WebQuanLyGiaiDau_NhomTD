@@ -6,10 +6,17 @@
     using Microsoft.EntityFrameworkCore;
     using WebQuanLyGiaiDau_NhomTD.Models;
     using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
+    using Microsoft.AspNetCore.SignalR;
 
     [Authorize]
     public class MatchController : Controller
     {
+        private readonly IHubContext<MatchHub> _hubContext;
+
+        public MatchController(IHubContext<MatchHub> hubContext)
+        {
+            _hubContext = hubContext;
+        }
         private readonly ApplicationDbContext _context;
 
         public MatchController(ApplicationDbContext context)
@@ -111,6 +118,10 @@
                 {
                     _context.Update(match);
                     await _context.SaveChangesAsync();
+
+                    // Send match update to all connected clients
+                    await _hubContext.Clients.All.SendAsync("ReceiveMatchUpdate", match.Id, match.ScoreTeamA + " - " + match.ScoreTeamB);
+
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)

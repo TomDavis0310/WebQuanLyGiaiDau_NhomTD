@@ -22,6 +22,9 @@ builder.Services.AddDefaultIdentity<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUs
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+// Add SignalR services
+builder.Services.AddSignalR();
+
 // Add authorization policies
 builder.Services.AddAuthorization(options =>
 {
@@ -112,6 +115,8 @@ app.UseRouting();
 // Đảm bảo gọi Middleware Authentication trước Authorization
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<MatchHub>("/matchHub");
 
 // Ánh xạ Route cho Controllers
 app.MapControllerRoute(
