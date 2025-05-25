@@ -7,15 +7,18 @@
     using WebQuanLyGiaiDau_NhomTD.Models;
     using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
     using WebQuanLyGiaiDau_NhomTD.Models.ViewModels;
+    using WebQuanLyGiaiDau_NhomTD.Services;
 
     [Authorize]
     public class MatchController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IYouTubeService _youtubeService;
 
-        public MatchController(ApplicationDbContext context)
+        public MatchController(ApplicationDbContext context, IYouTubeService youtubeService)
         {
             _context = context;
+            _youtubeService = youtubeService;
         }
 
         // GET: Match
@@ -205,6 +208,37 @@
 
             // Tính toán thời gian kết thúc trận đấu dựa trên loại giải đấu
             ViewBag.MatchEndTime = await CalculateMatchEndTime(match.MatchDate, match.TournamentId);
+
+            // Get YouTube video information if available
+            if (!string.IsNullOrEmpty(match.HighlightsVideoUrl))
+            {
+                var highlightsVideoId = _youtubeService.ExtractVideoIdFromUrl(match.HighlightsVideoUrl);
+                if (!string.IsNullOrEmpty(highlightsVideoId))
+                {
+                    var highlightsVideo = await _youtubeService.GetVideoDetailsAsync(highlightsVideoId);
+                    ViewBag.HighlightsVideo = highlightsVideo;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(match.LiveStreamUrl))
+            {
+                var liveStreamVideoId = _youtubeService.ExtractVideoIdFromUrl(match.LiveStreamUrl);
+                if (!string.IsNullOrEmpty(liveStreamVideoId))
+                {
+                    var liveStreamVideo = await _youtubeService.GetVideoDetailsAsync(liveStreamVideoId);
+                    ViewBag.LiveStreamVideo = liveStreamVideo;
+                }
+            }
+
+            // Get recommended videos based on tournament and sport
+            if (match.Tournament != null && match.Tournament.Sports != null)
+            {
+                var recommendedVideos = await _youtubeService.GetRecommendedVideosAsync(
+                    match.Tournament.Name,
+                    match.Tournament.Sports.Name,
+                    5);
+                ViewBag.RecommendedVideos = recommendedVideos;
+            }
 
             return View(match);
         }

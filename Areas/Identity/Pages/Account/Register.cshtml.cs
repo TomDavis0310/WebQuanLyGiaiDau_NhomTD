@@ -115,16 +115,13 @@ namespace WebQuanLyGiaiDau_NhomTD.Areas.Identity.Pages.Account
 
         public async Task OnGetAsync(string returnUrl = null)
         {
-            // Create Admin and User roles if they don't exist
+            // Create Admin role if it doesn't exist
             if (!_roleManager.RoleExistsAsync(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin).GetAwaiter().GetResult())
             {
                 _roleManager.CreateAsync(new IdentityRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)).GetAwaiter().GetResult();
             }
 
-            if (!_roleManager.RoleExistsAsync(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User).GetAwaiter().GetResult())
-            {
-                _roleManager.CreateAsync(new IdentityRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)).GetAwaiter().GetResult();
-            }
+            // Removed User role creation - no longer needed
 
             Input = new();
 
@@ -149,8 +146,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    // Always assign the User role to new registrations
-                    await _userManager.AddToRoleAsync(user, WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User);
+                    // No role assignment needed - users have access without specific roles
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);

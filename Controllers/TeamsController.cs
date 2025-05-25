@@ -66,7 +66,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Teams/Create
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        [Authorize] // Allow all authenticated users
         public IActionResult Create()
         {
             return View();
@@ -77,7 +77,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> Create([Bind("TeamId,Name,Coach")] Team team, IFormFile logoFile)
         {
             if (ModelState.IsValid)
@@ -141,7 +141,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Teams/Edit/5
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -155,8 +155,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return NotFound();
             }
 
-            // Kiểm tra quyền: Admin có thể sửa tất cả, User chỉ có thể sửa đội của mình
-            if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User) && !User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+            // Kiểm tra quyền: Admin có thể sửa tất cả, người dùng thường chỉ có thể sửa đội của mình
+            if (!User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
             {
                 // Kiểm tra xem đội này có thuộc về người dùng hiện tại không
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -178,7 +178,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> Edit(int id, [Bind("TeamId,Name,Coach")] Team team, IFormFile logoFile)
         {
             if (id != team.TeamId)
@@ -228,7 +228,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Teams/Delete/5
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -243,8 +243,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return NotFound();
             }
 
-            // Kiểm tra quyền: Admin có thể xóa tất cả, User chỉ có thể xóa đội của mình
-            if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User) && !User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+            // Kiểm tra quyền: Admin có thể xóa tất cả, người dùng thường chỉ có thể xóa đội của mình
+            if (!User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
             {
                 // Kiểm tra xem đội này có thuộc về người dùng hiện tại không
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -264,7 +264,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // POST: Teams/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             try

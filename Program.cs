@@ -24,12 +24,13 @@ builder.Services.AddRazorPages();
 
 // Đăng ký các services
 builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.TournamentScheduleService>();
+builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.IYouTubeService, WebQuanLyGiaiDau_NhomTD.Services.YouTubeService>();
 
 // Add authorization policies
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin));
-    options.AddPolicy("UserOnly", policy => policy.RequireRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User));
+    // Removed UserOnly policy - all authenticated users have same access
 });
 
 var app = builder.Build();
@@ -46,10 +47,7 @@ using (var scope = app.Services.CreateScope())
         roleManager.CreateAsync(new IdentityRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)).GetAwaiter().GetResult();
     }
 
-    if (!roleManager.RoleExistsAsync(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User).GetAwaiter().GetResult())
-    {
-        roleManager.CreateAsync(new IdentityRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)).GetAwaiter().GetResult();
-    }
+    // Removed User role creation - no longer needed
 
     // Create admin user
     string adminEmail = "admin@example.com";
@@ -73,27 +71,7 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    // Create a regular user
-    string userEmail = "user@example.com";
-    string userPassword = "User123!";
-
-    if (userManager.FindByEmailAsync(userEmail).GetAwaiter().GetResult() == null)
-    {
-        var regularUser = new WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser
-        {
-            UserName = userEmail,
-            Email = userEmail,
-            EmailConfirmed = true,
-            FullName = "Regular User"
-        };
-
-        var result = userManager.CreateAsync(regularUser, userPassword).GetAwaiter().GetResult();
-
-        if (result.Succeeded)
-        {
-            userManager.AddToRoleAsync(regularUser, WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User).GetAwaiter().GetResult();
-        }
-    }
+    // Removed regular user creation - users will register themselves without specific roles
 
     // Seed basketball tournament data
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

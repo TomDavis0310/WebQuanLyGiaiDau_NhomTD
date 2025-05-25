@@ -1,166 +1,296 @@
-@model WebQuanLyGiaiDau_NhomTD.Models.PaginatedList<WebQuanLyGiaiDau_NhomTD.Models.Match>
-@using WebQuanLyGiaiDau_NhomTD.Models.UserModel
+@model PaginatedList<WebQuanLyGiaiDau_NhomTD.Models.Match>
 
 @{
     ViewData["Title"] = "Danh Sách Trận Đấu";
-    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
-    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
 }
 
-<h1 class="text-center text-primary mt-4">📋 Danh Sách Trận Đấu</h1>
-
-<div class="row mb-3">
-    <div class="col-md-6">
-        <form asp-action="Index" method="get" class="d-flex">
-            <div class="input-group">
-                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="form-control" placeholder="Tìm kiếm trận đấu..." />
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-search"></i> Tìm
-                </button>
-                @if (!string.IsNullOrEmpty((string)ViewData["CurrentFilter"]))
+<div class="container mt-4">
+    <!-- Header Section -->
+    <div class="row mb-4" data-animation="animate-fade-in-up">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h1 class="mb-2">
+                        <i class="bi bi-calendar-event text-primary me-2"></i>
+                        Danh Sách Trận Đấu
+                    </h1>
+                    <p class="text-muted mb-0">Quản lý và theo dõi các trận đấu trong hệ thống</p>
+                </div>
+                @if (User.IsInRole("Admin"))
                 {
-                    <a asp-action="Index" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-circle"></i> Xóa bộ lọc
-                    </a>
+                    <div class="mt-3 mt-md-0">
+                        <a asp-action="Create" class="btn btn-sports-primary btn-sports-lg">
+                            <i class="bi bi-plus-circle"></i>
+                            Tạo Trận Đấu Mới
+                        </a>
+                    </div>
                 }
-                <input type="hidden" name="pageNumber" value="1" />
             </div>
-        </form>
+        </div>
     </div>
-    <div class="col-md-6 text-end">
-        @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
-        {
-            <a asp-action="Create" class="btn btn-success">➕ Thêm Trận Đấu Mới</a>
-        }
-    </div>
-</div>
 
-<table class="table table-hover table-bordered shadow">
-    <thead class="table-dark text-center">
-        <tr>
-            <th>Đội A</th>
-            <th>Đội B</th>
-            <th>Thời Gian Thi Đấu</th>
-            <th>Địa Điểm</th>
-            <th>Giải Đấu</th>
-            <th>Hành Động</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model != null && Model.Any())
-        {
-            foreach (var item in Model)
+    <!-- Search Section -->
+    <div class="row mb-4" data-animation="animate-fade-in-up" data-delay="0.1">
+        <div class="col-12">
+            <div class="sports-card">
+                <div class="card-body">
+                    <form asp-action="Index" method="get" class="row g-3">
+                        <div class="col-md-8">
+                            <div class="form-floating">
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="searchString" 
+                                       name="searchString" 
+                                       value="@ViewData["CurrentFilter"]" 
+                                       placeholder="Tìm kiếm theo tên đội hoặc giải đấu...">
+                                <label for="searchString">
+                                    <i class="bi bi-search me-2"></i>Tìm kiếm trận đấu...
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex gap-2 h-100">
+                                <button type="submit" class="btn btn-sports-primary flex-fill">
+                                    <i class="bi bi-search"></i>
+                                    Tìm kiếm
+                                </button>
+                                <a asp-action="Index" class="btn btn-sports-outline">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                    Reset
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Matches List -->
+    <div class="row" data-animation="animate-fade-in-up" data-delay="0.2">
+        <div class="col-12">
+            @if (Model.Any())
             {
-            <tr class="align-middle">
-                <td>
-                    @if (!string.IsNullOrEmpty(item.TeamA))
-                    {
-                        @Html.DisplayFor(modelItem => item.TeamA)
-                    }
-                    else
-                    {
-                        <span class="text-muted">Chưa xác định</span>
-                    }
-                </td>
-                <td>
-                    @if (!string.IsNullOrEmpty(item.TeamB))
-                    {
-                        @Html.DisplayFor(modelItem => item.TeamB)
-                    }
-                    else
-                    {
-                        <span class="text-muted">Chưa xác định</span>
-                    }
-                </td>
-                <td class="text-center">
-                    @if (item.MatchDate != default(DateTime))
-                    {
-                        <div>@item.MatchDate.ToString("dd/MM/yyyy")</div>
-                        <div><small class="text-muted">
-                            @if (item.MatchTime.HasValue)
+                <div class="sports-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-ul me-2"></i>
+                            Danh sách trận đấu (@Model.TotalCount trận)
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th><i class="bi bi-calendar3 me-1"></i>Ngày thi đấu</th>
+                                        <th><i class="bi bi-clock me-1"></i>Thời gian</th>
+                                        <th><i class="bi bi-people me-1"></i>Đội thi đấu</th>
+                                        <th><i class="bi bi-trophy me-1"></i>Giải đấu</th>
+                                        <th><i class="bi bi-geo-alt me-1"></i>Địa điểm</th>
+                                        <th><i class="bi bi-flag me-1"></i>Trạng thái</th>
+                                        <th><i class="bi bi-gear me-1"></i>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var match in Model)
+                                    {
+                                        <tr data-animation="animate-fade-in-up" data-delay="0.@(Model.IndexOf(match) + 1)">
+                                            <td>
+                                                <strong>@match.MatchDate.ToString("dd/MM/yyyy")</strong>
+                                            </td>
+                                            <td>
+                                                @if (match.MatchTime.HasValue)
+                                                {
+                                                    <span class="badge bg-info">
+                                                        <i class="bi bi-clock me-1"></i>
+                                                        @match.MatchTime.Value.ToString(@"hh\:mm")
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Chưa xác định</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="fw-bold text-primary">@match.TeamA</span>
+                                                    <span class="mx-2 text-muted">vs</span>
+                                                    <span class="fw-bold text-secondary">@match.TeamB</span>
+                                                </div>
+                                                @if (match.ScoreTeamA.HasValue && match.ScoreTeamB.HasValue)
+                                                {
+                                                    <small class="text-muted">
+                                                        Tỷ số: @match.ScoreTeamA - @match.ScoreTeamB
+                                                    </small>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (match.Tournament != null)
+                                                {
+                                                    <a asp-controller="Tournament" asp-action="Details" asp-route-id="@match.TournamentId" 
+                                                       class="text-decoration-none">
+                                                        <i class="bi bi-trophy text-warning me-1"></i>
+                                                        @match.Tournament.Name
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Không xác định</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(match.Location))
+                                                {
+                                                    <i class="bi bi-geo-alt text-success me-1"></i>
+                                                    @match.Location
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Chưa xác định</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var statusClass = match.CalculatedStatus switch
+                                                    {
+                                                        "Completed" => "bg-success",
+                                                        "InProgress" => "bg-warning",
+                                                        "Upcoming" => "bg-primary",
+                                                        _ => "bg-secondary"
+                                                    };
+                                                    var statusText = match.CalculatedStatus switch
+                                                    {
+                                                        "Completed" => "Đã kết thúc",
+                                                        "InProgress" => "Đang diễn ra",
+                                                        "Upcoming" => "Sắp diễn ra",
+                                                        _ => "Không xác định"
+                                                    };
+                                                    var statusIcon = match.CalculatedStatus switch
+                                                    {
+                                                        "Completed" => "bi-check-circle",
+                                                        "InProgress" => "bi-play-circle",
+                                                        "Upcoming" => "bi-clock",
+                                                        _ => "bi-question-circle"
+                                                    };
+                                                }
+                                                <span class="badge @statusClass">
+                                                    <i class="bi @statusIcon me-1"></i>
+                                                    @statusText
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a asp-action="Details" asp-route-id="@match.Id" 
+                                                       class="btn btn-sports-outline btn-sports-sm"
+                                                       data-bs-toggle="tooltip" title="Xem chi tiết">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    @if (User.IsInRole("Admin"))
+                                                    {
+                                                        <a asp-action="Edit" asp-route-id="@match.Id" 
+                                                           class="btn btn-sports-secondary btn-sports-sm"
+                                                           data-bs-toggle="tooltip" title="Chỉnh sửa">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </a>
+                                                        <a asp-action="Delete" asp-route-id="@match.Id" 
+                                                           class="btn btn-outline-danger btn-sports-sm"
+                                                           data-bs-toggle="tooltip" title="Xóa">
+                                                            <i class="bi bi-trash"></i>
+                                                        </a>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="sports-card text-center py-5">
+                    <div class="card-body">
+                        <i class="bi bi-calendar-x display-1 text-muted mb-3"></i>
+                        <h4 class="text-muted mb-3">Không tìm thấy trận đấu nào</h4>
+                        <p class="text-muted mb-4">
+                            @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
                             {
-                                @item.MatchTime.Value.ToString(@"hh\:mm")
+                                <span>Không có trận đấu nào phù hợp với từ khóa "<strong>@ViewData["CurrentFilter"]</strong>"</span>
                             }
                             else
                             {
-                                <span>15:00</span>
+                                <span>Hiện tại chưa có trận đấu nào trong hệ thống.</span>
                             }
-                            -
-                            @{
-                                string endTimeDisplay = "15:15";
-                                if (item.Tournament != null && (item.Tournament.Name.Contains("5v5") || item.Tournament.Name.Contains("5 vs 5")))
-                                {
-                                    endTimeDisplay = "16:08";
-                                }
-                            }
-                            @endTimeDisplay
-                        </small></div>
-                    }
-                    else
-                    {
-                        <span class="text-muted">Chưa xác định</span>
-                    }
-                </td>
-                <td>
-                    @if (!string.IsNullOrEmpty(item.Location))
-                    {
-                        @item.Location
-                    }
-                    else
-                    {
-                        <span class="text-muted">Chưa xác định</span>
-                    }
-                </td>
-                <td>
-                    @if (item.Tournament != null)
-                    {
-                        @Html.DisplayFor(modelItem => item.Tournament.Name)
-                    }
-                    else
-                    {
-                        <span class="text-muted">Không có giải đấu</span>
-                    }
-                </td>
-                <td class="text-center">
-                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info me-1">🔍 Xem</a>
-                    @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
-                    {
-                        <a asp-action="UpdateScore" asp-route-id="@item.Id" class="btn btn-sm btn-primary me-1">📊 Cập Nhật Kết Quả</a>
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning me-1">✏️ Sửa</a>
-                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">🗑️ Xóa</a>
-                    }
-                </td>
-            </tr>
+                        </p>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a asp-action="Create" class="btn btn-sports-primary">
+                                <i class="bi bi-plus-circle me-2"></i>
+                                Tạo Trận Đấu Đầu Tiên
+                            </a>
+                        }
+                    </div>
+                </div>
             }
-        }
-        else
-        {
-            <tr>
-                <td colspan="6" class="text-center">Không tìm thấy trận đấu nào.</td>
-            </tr>
-        }
-    </tbody>
-</table>
+        </div>
+    </div>
 
-<!-- Phân trang -->
-<div class="d-flex justify-content-between align-items-center mt-4">
-    <div>
-        <span>Trang @Model.PageIndex / @Model.TotalPages</span>
-    </div>
-    <div>
-        <nav aria-label="Page navigation">
-            <ul class="pagination">
-                <li class="page-item @prevDisabled">
-                    <a class="page-link @prevDisabled" asp-action="Index" asp-route-pageNumber="@(Model.PageIndex - 1)" asp-route-searchString="@ViewData["CurrentFilter"]">
-                        <i class="bi bi-chevron-left"></i> Trước
-                    </a>
-                </li>
-                <li class="page-item @nextDisabled">
-                    <a class="page-link @nextDisabled" asp-action="Index" asp-route-pageNumber="@(Model.PageIndex + 1)" asp-route-searchString="@ViewData["CurrentFilter"]">
-                        Sau <i class="bi bi-chevron-right"></i>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </div>
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="row mt-4" data-animation="animate-fade-in-up" data-delay="0.3">
+            <div class="col-12">
+                <nav aria-label="Phân trang trận đấu">
+                    <ul class="pagination justify-content-center">
+                        @if (Model.HasPreviousPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" asp-route-pageNumber="@(Model.PageIndex - 1)" asp-route-searchString="@ViewData["CurrentFilter"]">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                            </li>
+                        }
+
+                        @for (int i = Math.Max(1, Model.PageIndex - 2); i <= Math.Min(Model.TotalPages, Model.PageIndex + 2); i++)
+                        {
+                            <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-pageNumber="@i" asp-route-searchString="@ViewData["CurrentFilter"]">@i</a>
+                            </li>
+                        }
+
+                        @if (Model.HasNextPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="Index" asp-route-pageNumber="@(Model.PageIndex + 1)" asp-route-searchString="@ViewData["CurrentFilter"]">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+                
+                <div class="text-center text-muted">
+                    <small>
+                        Hiển thị @((Model.PageIndex - 1) * Model.PageSize + 1) - @(Math.Min(Model.PageIndex * Model.PageSize, Model.TotalCount)) 
+                        trong tổng số @Model.TotalCount trận đấu
+                    </small>
+                </div>
+            </div>
+        </div>
+    }
 </div>

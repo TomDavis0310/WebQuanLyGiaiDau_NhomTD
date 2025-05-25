@@ -304,7 +304,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Tournament/GenerateSchedule
-        [Authorize(Roles = SD.Role_Admin + "," + SD.Role_User)]
+        [Authorize] // Allow all authenticated users
         public IActionResult GenerateSchedule(int id)
         {
             try
@@ -321,7 +321,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Tournament/Create
-        [Authorize(Roles = SD.Role_Admin + "," + SD.Role_User)]
+        [Authorize] // Allow all authenticated users
         public IActionResult Create(int? sportsId = null)
         {
             var sports = _context.Sports.ToList();
@@ -363,7 +363,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> Create(Tournament tournament, IFormFile imageUrl, int? TournamentFormatId, int? MaxTeams, int? TeamsPerGroup)
         {
             if (ModelState.IsValid)
@@ -383,8 +383,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     _context.Add(tournament);
                     await _context.SaveChangesAsync();
 
-                    // Nếu người dùng có vai trò User, đánh dấu họ là người tạo giải đấu
-                    if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User))
+                    // Nếu người dùng không phải Admin, đánh dấu họ là người tạo giải đấu
+                    if (!User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
                     {
                         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -487,7 +487,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
 
         // GET: Tournament/Edit/5
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -504,8 +504,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return NotFound();
             }
 
-            // Kiểm tra quyền: Admin có thể sửa tất cả, User chỉ có thể sửa giải đấu do họ tạo
-            if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User) && !User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+            // Kiểm tra quyền: Admin có thể sửa tất cả, người dùng thường chỉ có thể sửa giải đấu do họ tạo
+            if (!User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
             {
                 // Kiểm tra xem giải đấu này có thuộc về người dùng hiện tại không
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -543,7 +543,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin + "," + WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> Edit(int id, Tournament tournament, IFormFile imageUrl, int? TournamentFormatId, int? MaxTeams, int? TeamsPerGroup)
         {
             if (id != tournament.Id)
@@ -973,7 +973,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Tournament/Register/5
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> Register(int? id)
         {
             if (id == null)
@@ -1025,7 +1025,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // POST: Tournament/Register/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> Register(int id, string notes, string teamOption, int? teamId, string newTeamName, IFormFile logoFile)
         {
             var tournament = await _context.Tournaments.FindAsync(id);
@@ -1209,7 +1209,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Tournament/MyRegistrations
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> MyRegistrations()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -1226,7 +1226,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // POST: Tournament/SubmitDocument
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> SubmitDocument(int tournamentId, string title, string content, IFormFile documentFile)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -1533,7 +1533,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Tournament/RegisterTeam/5
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> RegisterTeam(int? id)
         {
             if (id == null)
@@ -1570,7 +1570,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // POST: Tournament/RegisterTeam/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> RegisterTeam(int id, int teamId, string notes)
         {
             var tournament = await _context.Tournaments.FindAsync(id);

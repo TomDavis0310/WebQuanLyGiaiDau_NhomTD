@@ -372,7 +372,7 @@
 
                             <!-- Lịch thi đấu content -->
                             <div class="tab-pane fade" id="schedule-content" role="tabpanel" aria-labelledby="schedule-tab">
-                                @if (User.IsInRole(SD.Role_Admin) || User.IsInRole(SD.Role_User))
+                                @if (User.Identity.IsAuthenticated)
                                 {
                                     <div class="mb-3">
                                         <a asp-action="GenerateSchedule" asp-route-id="@Model.Id" class="btn btn-primary">
@@ -491,7 +491,7 @@
                                     <div class="alert alert-info">
                                         <i class="bi bi-info-circle"></i> Chưa có trận đấu nào được lên lịch cho giải đấu này.
 
-                                        @if (User.IsInRole(SD.Role_Admin) || User.IsInRole(SD.Role_User))
+                                        @if (User.Identity.IsAuthenticated)
                                         {
                                             <div class="mt-3">
                                                 <a asp-action="GenerateSchedule" asp-route-id="@Model.Id" class="btn btn-primary">
@@ -589,7 +589,7 @@
                             }
                         </div>
                         <div>
-                            @if (User.IsInRole(SD.Role_User) && Model.CalculatedStatus == "Mở đăng ký")
+                            @if (User.Identity.IsAuthenticated && !User.IsInRole(SD.Role_Admin) && Model.CalculatedStatus == "Mở đăng ký")
                             {
                                 <a asp-action="Register" asp-route-id="@Model.Id" class="btn btn-success me-2">
                                     <i class="bi bi-person-plus"></i> Đăng Ký Tham Gia

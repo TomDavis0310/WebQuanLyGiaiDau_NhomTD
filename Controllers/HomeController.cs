@@ -27,11 +27,7 @@ public class HomeController : Controller
         return View();
     }
 
-    [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
-    public IActionResult UserDashboard()
-    {
-        return View();
-    }
+    // Removed UserDashboard - no longer needed as all users have same access level
 
     public IActionResult Privacy()
     {
