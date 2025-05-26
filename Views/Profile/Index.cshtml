@@ -1,0 +1,748 @@
+@model WebQuanLyGiaiDau_NhomTD.Models.ViewModels.ProfileViewModel
+
+@{
+    ViewData["Title"] = "Hồ Sơ Cá Nhân";
+}
+
+<style>
+    /* Profile Page Styles */
+    .profile-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        padding: 60px 0;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 0;
+    }
+
+    .profile-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image:
+            radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08) 2px, transparent 2px),
+            radial-gradient(circle at 80% 80%, rgba(255,255,255,0.05) 2px, transparent 2px);
+        background-size: 100px 100px, 150px 150px;
+        animation: float 40s ease-in-out infinite;
+    }
+
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        border: 5px solid rgba(255,255,255,0.3);
+        object-fit: cover;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    }
+
+    .profile-avatar:hover {
+        transform: scale(1.05);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    }
+
+    .profile-info {
+        color: white;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+    }
+
+    .profile-name {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    .profile-email {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 20px;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .profile-stats {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin-top: 30px;
+    }
+
+    .stat-item {
+        text-align: center;
+        background: rgba(255,255,255,0.1);
+        padding: 20px;
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+        min-width: 120px;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .profile-section {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+
+    .profile-section:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 3px solid #667eea;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .edit-btn {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .edit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .team-card, .tournament-card, .player-card {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+        border-left: 4px solid #667eea;
+        transition: all 0.3s ease;
+    }
+
+    .team-card:hover, .tournament-card:hover, .player-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .badge-custom {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 40px;
+        color: #6c757d;
+        font-style: italic;
+    }
+
+    .btn-group .btn {
+        margin-right: 5px;
+    }
+
+    .btn-group .btn:last-child {
+        margin-right: 0;
+    }
+
+    .edit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .search-input {
+        border-radius: 25px !important;
+        border: 2px solid #e9ecef;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@media (max-width: 768px) {
+        .profile-stats {
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .profile-name {
+            font-size: 2rem;
+        }
+
+        .profile-section {
+            padding: 20px;
+        }
+
+        .btn-group {
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .btn-group .btn {
+            margin-right: 0;
+            margin-bottom: 5px;
+        }
+
+        .edit-btn {
+            display: block;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    }
+</style>
+
+<!-- Profile Hero Section -->
+<div class="profile-hero">
+    <div class="container">
+        <div class="profile-info">
+            <div class="mb-4">
+                @if (!string.IsNullOrEmpty(Model.User.ProfilePictureUrl))
+                {
+                    <img src="@Model.User.ProfilePictureUrl" alt="Avatar" class="profile-avatar" />
+                }
+                else
+                {
+                    <div class="profile-avatar d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2);">
+                        <i class="bi bi-person-fill" style="font-size: 4rem; color: white;"></i>
+                    </div>
+                }
+            </div>
+
+            <h1 class="profile-name">@Model.User.FullName</h1>
+            <p class="profile-email">
+                <i class="bi bi-envelope me-2"></i>@Model.User.Email
+            </p>
+
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <span class="stat-number">@Model.Teams.Count</span>
+                    <div class="stat-label">Đội bóng</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">@Model.TournamentRegistrations.Count</span>
+                    <div class="stat-label">Giải đấu</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">@Model.Players.Count</span>
+                    <div class="stat-label">Cầu thủ</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">@Model.Statistics.Count</span>
+                    <div class="stat-label">Thống kê</div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <a asp-action="Edit" class="edit-btn me-3">
+                    <i class="bi bi-pencil me-2"></i>Chỉnh sửa hồ sơ
+                </a>
+                <a asp-controller="Account" asp-action="ChangePassword" class="edit-btn me-3" style="background: linear-gradient(135deg, #28a745, #20c997);">
+                    <i class="bi bi-shield-lock me-2"></i>Đổi mật khẩu
+                </a>
+                <a asp-controller="Teams" asp-action="Create" class="edit-btn" style="background: linear-gradient(135deg, #fd7e14, #e83e8c);">
+                    <i class="bi bi-plus-circle me-2"></i>Tạo đội bóng
+                </a>
+            </div>
+        </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Approved Tournaments Without Team Section -->
+        <div class="col-lg-6 mb-4">
+            <div class="profile-section">
+                <h3 class="section-title">
+                    <i class="bi bi-trophy-fill text-success"></i>
+                    Giải Đấu Chờ Xác Nhận Đội
+                </h3>
+
+                @if (Model.ApprovedTournamentsWithoutTeam.Any())
+                {
+                    @foreach (var tournament in Model.ApprovedTournamentsWithoutTeam)
+                    {
+                        <div class="tournament-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="mb-1">@tournament.Name</h5>
+                                    <p class="mb-1 text-muted">
+                                        @if (tournament.Sports != null)
+                                        {
+                                            <i class="bi bi-trophy me-1"></i>@tournament.Sports.Name
+                                        }
+                                    </p>
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar me-1"></i>
+                                        @tournament.StartDate.ToString("dd/MM/yyyy") -
+                                        @tournament.EndDate.ToString("dd/MM/yyyy")
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge-custom">@tournament.CalculatedStatus</span>
+                                    <div class="mt-2">
+                                        <a asp-controller="Tournament" asp-action="Details" asp-route-id="@tournament.Id"
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-controller="Tournament" asp-action="RegisterTeam" asp-route-id="@tournament.Id"
+                                           class="btn btn-outline-success btn-sm">
+                                            <i class="bi bi-plus-circle"></i>Tham gia
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="no-data">
+                        <i class="bi bi-trophy" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <p class="mt-3">Bạn chưa có giải đấu nào chờ xác nhận đội</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Teams Section -->
+        <div class="col-lg-6 mb-4">
+            <div class="profile-section">
+                <h3 class="section-title">
+                    <i class="bi bi-people-fill text-primary"></i>
+                    Đội Bóng Của Tôi
+                </h3>
+
+                @if (Model.Teams.Any())
+                {
+                    @foreach (var team in Model.Teams)
+                    {
+                        <div class="team-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1">@team.Name</h5>
+                                    <p class="mb-1 text-muted">
+                                        <i class="bi bi-person-badge me-1"></i>HLV: @team.Coach
+                                    </p>
+                                    <small class="text-muted">
+                                        <i class="bi bi-people me-1"></i>@team.Players.Count cầu thủ
+                                    </small>
+                                </div>
+                                <div class="btn-group">
+                                    <a asp-controller="Teams" asp-action="Details" asp-route-id="@team.TeamId"
+                                       class="btn btn-outline-primary btn-sm" title="Xem chi tiết">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-controller="Teams" asp-action="Edit" asp-route-id="@team.TeamId"
+                                       class="btn btn-outline-warning btn-sm" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-controller="Players" asp-action="Create" asp-route-teamId="@team.TeamId"
+                                       class="btn btn-outline-success btn-sm" title="Thêm cầu thủ">
+                                        <i class="bi bi-person-plus"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="no-data">
+                        <i class="bi bi-people" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <p class="mt-3">Bạn chưa tham gia đội bóng nào</p>
+                        <a asp-controller="Teams" asp-action="Create" class="btn btn-primary mt-2">
+                            <i class="bi bi-plus-circle me-2"></i>Tạo đội bóng đầu tiên
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Tournament Registrations Section -->
+        <div class="col-lg-6 mb-4">
+            <div class="profile-section">
+                <h3 class="section-title">
+                    <i class="bi bi-trophy-fill text-warning"></i>
+                    Giải Đấu Đã Đăng Ký
+                </h3>
+
+                @if (Model.TournamentRegistrations.Any())
+                {
+                    @foreach (var registration in Model.TournamentRegistrations)
+                    {
+                        <div class="tournament-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="mb-1">@registration.Tournament.Name</h5>
+                                    <p class="mb-1 text-muted">
+                                        @if (registration.Tournament.Sports != null)
+                                        {
+                                            <i class="bi bi-trophy me-1"></i>@registration.Tournament.Sports.Name
+                                        }
+                                    </p>
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar me-1"></i>
+                                        @registration.Tournament.StartDate.ToString("dd/MM/yyyy") -
+                                        @registration.Tournament.EndDate.ToString("dd/MM/yyyy")
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge-custom">@registration.Tournament.CalculatedStatus</span>
+                                    <div class="mt-2">
+                                        <a asp-controller="Tournament" asp-action="Details" asp-route-id="@registration.Tournament.Id"
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="no-data">
+                        <i class="bi bi-trophy" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <p class="mt-3">Bạn chưa đăng ký giải đấu nào</p>
+                        <a asp-controller="Tournament" asp-action="Index" class="btn btn-warning mt-2">
+                            <i class="bi bi-search me-2"></i>Tìm giải đấu
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Players and Statistics Row -->
+    <div class="row">
+        <!-- Players Section -->
+        <div class="col-lg-6 mb-4">
+            <div class="profile-section">
+                <h3 class="section-title">
+                    <i class="bi bi-person-fill text-success"></i>
+                    Cầu Thủ Của Tôi
+                </h3>
+
+                @if (Model.Players.Any())
+                {
+                    @foreach (var player in Model.Players)
+                    {
+                        <div class="player-card">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    @if (!string.IsNullOrEmpty(player.ImageUrl))
+                                    {
+                                        <img src="@player.ImageUrl" alt="@player.FullName"
+                                             class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div class="rounded-circle me-3 d-flex align-items-center justify-content-center"
+                                             style="width: 50px; height: 50px; background: #e9ecef;">
+                                            <i class="bi bi-person text-muted"></i>
+                                        </div>
+                                    }
+                                    <div>
+                                        <h6 class="mb-1">@player.FullName</h6>
+                                        <small class="text-muted">
+                                            <i class="bi bi-hash me-1"></i>Số áo: @player.Number
+                                        </small>
+                                        <br>
+                                        <small class="text-muted">
+                                            <i class="bi bi-geo-alt me-1"></i>@player.Position
+                                        </small>
+                                        @if (player.Team != null)
+                                        {
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="bi bi-people me-1"></i>@player.Team.Name
+                                            </small>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="btn-group">
+                                    <a asp-controller="Players" asp-action="Details" asp-route-id="@player.PlayerId"
+                                       class="btn btn-outline-success btn-sm" title="Xem chi tiết">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-controller="Players" asp-action="Edit" asp-route-id="@player.PlayerId"
+                                       class="btn btn-outline-warning btn-sm" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="no-data">
+                        <i class="bi bi-person" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <p class="mt-3">Bạn chưa có cầu thủ nào</p>
+                        <a asp-controller="Players" asp-action="Create" class="btn btn-success mt-2">
+                            <i class="bi bi-person-plus me-2"></i>Thêm cầu thủ
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="col-lg-6 mb-4">
+            <div class="profile-section">
+                <h3 class="section-title">
+                    <i class="bi bi-graph-up text-info"></i>
+                    Thống Kê Thi Đấu
+                </h3>
+
+                @if (Model.Statistics.Any())
+                {
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h4 class="text-primary mb-1">@Model.Statistics.Sum(s => s.Points)</h4>
+                                <small class="text-muted">Tổng điểm</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h4 class="text-success mb-1">@Model.Statistics.Count(s => s.Points > 0)</h4>
+                                <small class="text-muted">Trận ghi điểm</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Trận đấu</th>
+                                    <th>Điểm</th>
+                                    <th>Ngày</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var stat in Model.Statistics.Take(5))
+                                {
+                                    <tr>
+                                        <td>
+                                            <small>@stat.Match?.Tournament?.Name</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">@stat.Points</span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">@stat.Match?.MatchDate.ToString("dd/MM")</small>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (Model.Statistics.Count > 5)
+                    {
+                        <div class="text-center mt-3">
+                            <a asp-controller="Statistic" asp-action="Index" class="btn btn-outline-info btn-sm">
+                                Xem tất cả thống kê
+                            </a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="no-data">
+                        <i class="bi bi-graph-up" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <p class="mt-3">Chưa có thống kê thi đấu</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Add smooth scrolling to sections
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add loading animation for buttons
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (!this.classList.contains('btn-cancel')) {
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Đang xử lý...';
+                    this.disabled = true;
+
+                    // Re-enable after 3 seconds if still on page
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                    }, 3000);
+                }
+            });
+        });
+
+        // Add confirmation for delete actions
+        document.querySelectorAll('[data-action="delete"]').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                if (!confirm('Bạn có chắc chắn muốn xóa không?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // Add search functionality for teams and players
+        function addSearchFunctionality() {
+            const searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.placeholder = 'Tìm kiếm...';
+            searchInput.className = 'form-control mb-3 search-input';
+            searchInput.style.borderRadius = '25px';
+
+            // Add search to teams section
+            const teamsSections = document.querySelectorAll('.profile-section h3');
+            teamsSections.forEach(section => {
+                if (section.textContent.includes('Đội Bóng')) {
+                    const teamSearchInput = searchInput.cloneNode(true);
+                    teamSearchInput.placeholder = 'Tìm kiếm đội bóng...';
+                    section.parentNode.insertBefore(teamSearchInput, section.nextSibling);
+
+                    teamSearchInput.addEventListener('input', function() {
+                        const searchTerm = this.value.toLowerCase();
+                        const teamCards = document.querySelectorAll('.team-card');
+
+                        teamCards.forEach(card => {
+                            const teamName = card.querySelector('h5').textContent.toLowerCase();
+                            const coach = card.querySelector('p').textContent.toLowerCase();
+
+                            if (teamName.includes(searchTerm) || coach.includes(searchTerm)) {
+                                card.style.display = 'block';
+                                card.classList.add('fade-in');
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        });
+                    });
+                }
+
+                if (section.textContent.includes('Cầu Thủ')) {
+                    const playerSearchInput = searchInput.cloneNode(true);
+                    playerSearchInput.placeholder = 'Tìm kiếm cầu thủ...';
+                    section.parentNode.insertBefore(playerSearchInput, section.nextSibling);
+
+                    playerSearchInput.addEventListener('input', function() {
+                        const searchTerm = this.value.toLowerCase();
+                        const playerCards = document.querySelectorAll('.player-card');
+
+                        playerCards.forEach(card => {
+                            const playerName = card.querySelector('h6').textContent.toLowerCase();
+                            const position = card.querySelectorAll('small');
+                            let positionText = '';
+                            if (position.length > 0) {
+                                positionText = position[position.length - 1].textContent.toLowerCase();
+                            }
+
+                            if (playerName.includes(searchTerm) || positionText.includes(searchTerm)) {
+                                card.style.display = 'block';
+                                card.classList.add('fade-in');
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        });
+                    });
+                }
+            });
+        }
+
+        // Initialize search functionality when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            addSearchFunctionality();
+        });
+
+        // Add tooltip functionality
+        document.querySelectorAll('[title]').forEach(element => {
+            element.addEventListener('mouseenter', function() {
+                const tooltip = document.createElement('div');
+                tooltip.className = 'custom-tooltip';
+                tooltip.textContent = this.getAttribute('title');
+                tooltip.style.cssText = `
+                    position: absolute;
+                    background: #333;
+                    color: white;
+                    padding: 5px 10px;
+                    border-radius: 5px;
+                    font-size: 12px;
+                    z-index: 1000;
+                    pointer-events: none;
+                `;
+                document.body.appendChild(tooltip);
+
+                const rect = this.getBoundingClientRect();
+                tooltip.style.left = rect.left + 'px';
+                tooltip.style.top = (rect.top - 30) + 'px';
+            });
+
+            element.addEventListener('mouseleave', function() {
+                const tooltip = document.querySelector('.custom-tooltip');
+                if (tooltip) {
+                    tooltip.remove();
+                }
+            });
+        });
+    </script>
+}

@@ -177,6 +177,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -186,6 +189,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Gender")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
@@ -210,6 +216,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("ProfilePictureUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
@@ -307,12 +316,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.Property<string>("GroupName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("HighlightsVideoUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LiveStreamUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Location")
                         .HasColumnType("nvarchar(max)");
 
@@ -350,9 +353,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     b.Property<int>("TournamentId")
                         .HasColumnType("int");
-
-                    b.Property<string>("VideoDescription")
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

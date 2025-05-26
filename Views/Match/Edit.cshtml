@@ -55,29 +55,35 @@
             </div>
             <div class="card-body">
                 <div class="mb-3">
-                    <label asp-for="HighlightsVideoUrl" class="form-label fw-bold">
+                    <label class="form-label fw-bold">
                         <i class="bi bi-camera-video"></i> URL Video Highlights:
                     </label>
-                    <input asp-for="HighlightsVideoUrl" class="form-control" placeholder="https://www.youtube.com/watch?v=..." />
-                    <span asp-validation-for="HighlightsVideoUrl" class="text-danger"></span>
+                    @* <input asp-for="HighlightsVideoUrl" class="form-control" placeholder="https://www.youtube.com/watch?v=..." />
+                    <span asp-validation-for="HighlightsVideoUrl" class="text-danger"></span> *@
+                    <input type="url" class="form-control" placeholder="https://www.youtube.com/watch?v=..." disabled />
+                    <div class="form-text text-muted">Chức năng tạm thời không khả dụng</div>
                     <div class="form-text">Nhập URL video highlights của trận đấu từ YouTube</div>
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="LiveStreamUrl" class="form-label fw-bold">
+                    <label class="form-label fw-bold">
                         <i class="bi bi-broadcast"></i> URL Live Stream:
                     </label>
-                    <input asp-for="LiveStreamUrl" class="form-control" placeholder="https://www.youtube.com/watch?v=..." />
-                    <span asp-validation-for="LiveStreamUrl" class="text-danger"></span>
+                    @* <input asp-for="LiveStreamUrl" class="form-control" placeholder="https://www.youtube.com/watch?v=..." />
+                    <span asp-validation-for="LiveStreamUrl" class="text-danger"></span> *@
+                    <input type="url" class="form-control" placeholder="https://www.youtube.com/watch?v=..." disabled />
+                    <div class="form-text text-muted">Chức năng tạm thời không khả dụng</div>
                     <div class="form-text">Nhập URL live stream của trận đấu từ YouTube</div>
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="VideoDescription" class="form-label fw-bold">
+                    <label class="form-label fw-bold">
                         <i class="bi bi-card-text"></i> Mô tả Video:
                     </label>
-                    <textarea asp-for="VideoDescription" class="form-control" rows="3" placeholder="Mô tả về video..."></textarea>
-                    <span asp-validation-for="VideoDescription" class="text-danger"></span>
+                    @* <textarea asp-for="VideoDescription" class="form-control" rows="3" placeholder="Mô tả về video..."></textarea>
+                    <span asp-validation-for="VideoDescription" class="text-danger"></span> *@
+                    <textarea class="form-control" rows="3" placeholder="Mô tả về video..." disabled></textarea>
+                    <div class="form-text text-muted">Chức năng tạm thời không khả dụng</div>
                 </div>
             </div>
         </div>

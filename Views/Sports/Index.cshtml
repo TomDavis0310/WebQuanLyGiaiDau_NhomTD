@@ -73,7 +73,7 @@
         overflow: hidden;
     }
 
-    .stat-number {
+    .stat-number, .stat-number-static {
         font-size: 3rem;
         font-weight: 700;
         color: white;
@@ -618,8 +618,8 @@
             </div>
             <div class="col-lg-4 text-end">
                 <div class="hero-stats">
-                    <span class="stat-number">@(Model?.Count() ?? 0)</span>
-                    <div class="stat-label">Môn thể thao</div>
+                    <span class="stat-number-static">@(Model?.Count() ?? 0)</span>
+                    <div class="stat-label">MÔN THỂ THAO</div>
                 </div>
             </div>
         </div>

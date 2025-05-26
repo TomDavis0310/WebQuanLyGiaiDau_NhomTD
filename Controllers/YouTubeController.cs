@@ -96,9 +96,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     return Json(new { success = false, message = "Invalid live stream URL" });
                 }
 
-                match.HighlightsVideoUrl = highlightsUrl;
-                match.LiveStreamUrl = liveStreamUrl;
-                match.VideoDescription = description;
+                // match.HighlightsVideoUrl = highlightsUrl; // Tạm comment để fix migration
+                // match.LiveStreamUrl = liveStreamUrl; // Tạm comment để fix migration
+                // match.VideoDescription = description; // Tạm comment để fix migration
 
                 await _context.SaveChangesAsync();
 

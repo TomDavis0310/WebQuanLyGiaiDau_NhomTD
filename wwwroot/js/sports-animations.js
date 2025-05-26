@@ -42,7 +42,8 @@ function initSportsAnimations() {
 
 // Animated counter for statistics
 function initCounterAnimations() {
-    const counters = document.querySelectorAll('.stat-number');
+    // Only target elements with data-count attribute
+    const counters = document.querySelectorAll('.stat-number[data-count]');
 
     const observerOptions = {
         threshold: 0.5,
@@ -64,7 +65,18 @@ function initCounterAnimations() {
 }
 
 function animateCounter(element) {
-    const target = parseInt(element.getAttribute('data-count'));
+    const dataCount = element.getAttribute('data-count');
+    if (!dataCount) {
+        // If no data-count attribute, don't animate
+        return;
+    }
+
+    const target = parseInt(dataCount);
+    if (isNaN(target)) {
+        // If data-count is not a valid number, don't animate
+        return;
+    }
+
     const duration = 2000; // 2 seconds
     const step = target / (duration / 16); // 60fps
     let current = 0;

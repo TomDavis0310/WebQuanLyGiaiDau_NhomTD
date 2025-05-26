@@ -35,7 +35,7 @@
                         <thead class="table-dark">
                             <tr>
                                 <th>ID</th>
-                                <th>Đội</th>
+                                <th>Thông tin đội</th>
                                 <th>Giải đấu</th>
                                 <th>Ngày đăng ký</th>
                                 <th>Ghi chú</th>
@@ -48,7 +48,61 @@
                             {
                                 <tr>
                                     <td>@registration.Id</td>
-                                    <td>@registration.Team.Name</td>
+                                    <td>
+                                        <div class="team-info">
+                                            <div class="d-flex align-items-center mb-2">
+                                                @if (!string.IsNullOrEmpty(registration.Team.LogoUrl))
+                                                {
+                                                    <img src="@registration.Team.LogoUrl" alt="Logo" class="team-logo me-2" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                                }
+                                                <div>
+                                                    <strong>@registration.Team.Name</strong>
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-person-badge"></i>
+                                                        HLV: @(registration.Team.Coach ?? "Chưa có")
+                                                    </small>
+                                                </div>
+                                            </div>
+
+                                            <!-- Hiển thị danh sách cầu thủ -->
+                                            <div class="players-list">
+                                                <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#players-@registration.Id" aria-expanded="false">
+                                                    <i class="bi bi-people"></i> Xem cầu thủ (@(registration.Team.Players?.Count ?? 0))
+                                                </button>
+                                                <div class="collapse mt-2" id="players-@registration.Id">
+                                                    @if (registration.Team.Players != null && registration.Team.Players.Any())
+                                                    {
+                                                        <div class="card card-body bg-light">
+                                                            <div class="row">
+                                                                @foreach (var player in registration.Team.Players)
+                                                                {
+                                                                    <div class="col-md-6 mb-2">
+                                                                        <div class="d-flex align-items-center">
+                                                                            <i class="bi bi-person-circle me-2 text-primary"></i>
+                                                                            <div>
+                                                                                <strong>@player.FullName</strong>
+                                                                                <br>
+                                                                                <small class="text-muted">
+                                                                                    @player.Position
+                                                                                </small>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="alert alert-warning alert-sm">
+                                                            <i class="bi bi-exclamation-triangle"></i> Đội chưa có cầu thủ nào
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td>@registration.Tournament.Name</td>
                                     <td>@registration.RegistrationDate.ToString("dd/MM/yyyy")</td>
                                     <td>
@@ -79,31 +133,73 @@
                                         }
                                     </td>
                                     <td>
-                                        <div class="btn-group">
-                                            <form asp-action="UpdateTeamRegistrationStatus" method="post">
-                                                <input type="hidden" name="id" value="@registration.Id" />
-                                                
-                                                @if (registration.Status != "Approved")
-                                                {
-                                                    <button type="submit" name="status" value="Approved" class="btn btn-sm btn-success me-1">
+                                        <div class="btn-group-vertical">
+                                            <!-- Nút duyệt -->
+                                            @if (registration.Status != "Approved")
+                                            {
+                                                <form asp-action="UpdateTeamRegistrationStatus" method="post" class="mb-1">
+                                                    <input type="hidden" name="id" value="@registration.Id" />
+                                                    <input type="hidden" name="status" value="Approved" />
+                                                    <button type="submit" class="btn btn-sm btn-success">
                                                         <i class="bi bi-check-circle"></i> Duyệt
                                                     </button>
-                                                }
-                                                
-                                                @if (registration.Status != "Rejected")
-                                                {
-                                                    <button type="submit" name="status" value="Rejected" class="btn btn-sm btn-danger">
-                                                        <i class="bi bi-x-circle"></i> Từ chối
-                                                    </button>
-                                                }
-                                                
-                                                @if (registration.Status != "Pending" && registration.Status != "Approved" && registration.Status != "Rejected")
-                                                {
-                                                    <button type="submit" name="status" value="Pending" class="btn btn-sm btn-warning">
+                                                </form>
+                                            }
+
+                                            <!-- Nút từ chối với modal -->
+                                            @if (registration.Status != "Rejected")
+                                            {
+                                                <button type="button" class="btn btn-sm btn-danger mb-1" data-bs-toggle="modal" data-bs-target="#rejectModal-@registration.Id">
+                                                    <i class="bi bi-x-circle"></i> Từ chối
+                                                </button>
+
+                                                <!-- Modal từ chối -->
+                                                <div class="modal fade" id="rejectModal-@registration.Id" tabindex="-1">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">Từ chối đăng ký đội @registration.Team.Name</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                            </div>
+                                                            <form asp-action="UpdateTeamRegistrationStatus" method="post">
+                                                                <div class="modal-body">
+                                                                    <input type="hidden" name="id" value="@registration.Id" />
+                                                                    <input type="hidden" name="status" value="Rejected" />
+
+                                                                    <div class="mb-3">
+                                                                        <label for="adminNotes-@registration.Id" class="form-label">Lý do từ chối:</label>
+                                                                        <textarea class="form-control" id="adminNotes-@registration.Id" name="adminNotes" rows="3"
+                                                                                  placeholder="Nhập lý do từ chối đăng ký (sẽ được gửi qua email)..."></textarea>
+                                                                    </div>
+
+                                                                    <div class="alert alert-warning">
+                                                                        <i class="bi bi-exclamation-triangle"></i>
+                                                                        <strong>Lưu ý:</strong> Email thông báo sẽ được gửi tự động đến người đăng ký.
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                                                    <button type="submit" class="btn btn-danger">
+                                                                        <i class="bi bi-x-circle"></i> Xác nhận từ chối
+                                                                    </button>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+
+                                            <!-- Nút đặt chờ duyệt -->
+                                            @if (registration.Status != "Pending" && registration.Status != "Approved" && registration.Status != "Rejected")
+                                            {
+                                                <form asp-action="UpdateTeamRegistrationStatus" method="post">
+                                                    <input type="hidden" name="id" value="@registration.Id" />
+                                                    <input type="hidden" name="status" value="Pending" />
+                                                    <button type="submit" class="btn btn-sm btn-warning">
                                                         <i class="bi bi-clock"></i> Đặt chờ duyệt
                                                     </button>
-                                                }
-                                            </form>
+                                                </form>
+                                            }
                                         </div>
                                     </td>
                                 </tr>
