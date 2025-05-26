@@ -7,15 +7,18 @@
     using WebQuanLyGiaiDau_NhomTD.Models;
     using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
     using WebQuanLyGiaiDau_NhomTD.Models.ViewModels;
+    using WebQuanLyGiaiDau_NhomTD.Services;
 
     [Authorize]
     public class MatchController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IYouTubeService _youtubeService;
 
-        public MatchController(ApplicationDbContext context)
+        public MatchController(ApplicationDbContext context, IYouTubeService youtubeService)
         {
             _context = context;
+            _youtubeService = youtubeService;
         }
 
         // GET: Match
@@ -61,8 +64,8 @@
 
             var match = await _context.Matches
                 .Include(m => m.Tournament)
-                .Include(m => m.Statistics)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (match == null)
             {
                 return NotFound();
@@ -73,140 +76,43 @@
                 .Where(s => s.MatchId == id)
                 .ToListAsync();
 
-            // Create virtual match sets (for basketball 5v5 NBA, 4 quarters)
-            var matchSets = new List<dynamic>();
-            var random = new Random();
+            var matchViewModel = MatchViewModel.FromMatch(match);
+            matchViewModel.Statistics = statistics;
+            matchViewModel.MatchStatus = match.CalculatedStatus;
+            matchViewModel.MatchEndTime = await CalculateMatchEndTime(match.MatchDate, match.TournamentId);
 
-            // For NBA 5v5, we'll simulate 4 quarters
-            int totalScoreTeamA = match.ScoreTeamA ?? 0;
-            int totalScoreTeamB = match.ScoreTeamB ?? 0;
+            // Get YouTube video information if available - Tạm comment để fix migration
+            // if (!string.IsNullOrEmpty(match.HighlightsVideoUrl))
+            // {
+            //     var highlightsVideoId = _youtubeService.ExtractVideoIdFromUrl(match.HighlightsVideoUrl);
+            //     if (!string.IsNullOrEmpty(highlightsVideoId))
+            //     {
+            //         var highlightsVideo = await _youtubeService.GetVideoDetailsAsync(highlightsVideoId);
+            //         ViewBag.HighlightsVideo = highlightsVideo;
+            //     }
+            // }
 
-            // Distribute total score across 4 quarters
-            int[] quarterScoresTeamA = new int[4];
-            int[] quarterScoresTeamB = new int[4];
+            // if (!string.IsNullOrEmpty(match.LiveStreamUrl)) // Tạm comment để fix migration
+            // {
+            //     var liveStreamVideoId = _youtubeService.ExtractVideoIdFromUrl(match.LiveStreamUrl);
+            //     if (!string.IsNullOrEmpty(liveStreamVideoId))
+            //     {
+            //         var liveStreamVideo = await _youtubeService.GetVideoDetailsAsync(liveStreamVideoId);
+            //         ViewBag.LiveStreamVideo = liveStreamVideo;
+            //     }
+            // }
 
-            if (totalScoreTeamA > 0 || totalScoreTeamB > 0)
+            // Get recommended videos based on tournament and sport
+            if (match.Tournament != null && match.Tournament.Sports != null)
             {
-                // Xử lý trường hợp đặc biệt khi tổng điểm nhỏ hơn 15
-                if (totalScoreTeamA < 15)
-                {
-                    // Nếu tổng điểm nhỏ hơn 15, gán tất cả cho quý đầu tiên
-                    quarterScoresTeamA[0] = totalScoreTeamA;
-                    totalScoreTeamA = 0;
-                }
-
-                if (totalScoreTeamB < 15)
-                {
-                    // Nếu tổng điểm nhỏ hơn 15, gán tất cả cho quý đầu tiên
-                    quarterScoresTeamB[0] = totalScoreTeamB;
-                    totalScoreTeamB = 0;
-                }
-
-                // Distribute scores across quarters
-                for (int i = 0; i < 3; i++) // First 3 quarters
-                {
-                    // Chỉ phân phối điểm nếu còn điểm và chưa được gán ở trên
-                    if (i == 0 && quarterScoresTeamA[0] > 0)
-                    {
-                        // Quý đầu tiên đã được gán ở trên, bỏ qua
-                    }
-                    else if (totalScoreTeamA >= 15)
-                    {
-                        quarterScoresTeamA[i] = random.Next(15, Math.Min(35, totalScoreTeamA));
-                        totalScoreTeamA -= quarterScoresTeamA[i];
-                    }
-                    else if (totalScoreTeamA > 0)
-                    {
-                        // Nếu còn điểm nhưng < 15, gán tất cả cho quý hiện tại
-                        quarterScoresTeamA[i] = totalScoreTeamA;
-                        totalScoreTeamA = 0;
-                    }
-
-                    // Tương tự cho đội B
-                    if (i == 0 && quarterScoresTeamB[0] > 0)
-                    {
-                        // Quý đầu tiên đã được gán ở trên, bỏ qua
-                    }
-                    else if (totalScoreTeamB >= 15)
-                    {
-                        quarterScoresTeamB[i] = random.Next(15, Math.Min(35, totalScoreTeamB));
-                        totalScoreTeamB -= quarterScoresTeamB[i];
-                    }
-                    else if (totalScoreTeamB > 0)
-                    {
-                        // Nếu còn điểm nhưng < 15, gán tất cả cho quý hiện tại
-                        quarterScoresTeamB[i] = totalScoreTeamB;
-                        totalScoreTeamB = 0;
-                    }
-                }
-
-                // Last quarter gets the remainder
-                quarterScoresTeamA[3] = totalScoreTeamA;
-                quarterScoresTeamB[3] = totalScoreTeamB;
+                var recommendedVideos = await _youtubeService.GetRecommendedVideosAsync(
+                    match.Tournament.Name,
+                    match.Tournament.Sports.Name,
+                    5);
+                ViewBag.RecommendedVideos = recommendedVideos;
             }
 
-            // Find the best players for each quarter
-            for (int quarter = 0; quarter < 4; quarter++)
-            {
-                string bestPlayerName = "Chưa xác định";
-                string bestPlayerTeam = "";
-                int bestPlayerPoints = 0;
-
-                if (statistics.Any())
-                {
-                    // For simplicity, we'll pick a random player from the top performers
-                    var topPlayers = statistics.OrderByDescending(s => s.Points).Take(5).ToList();
-                    if (topPlayers.Any())
-                    {
-                        var bestPlayer = topPlayers[random.Next(topPlayers.Count)];
-                        bestPlayerName = bestPlayer.PlayerName;
-                        bestPlayerTeam = bestPlayer.PlayerName.Contains(match.TeamA) ? match.TeamA : match.TeamB;
-                        // Kiểm tra nếu điểm của cầu thủ xuất sắc nhất < 5
-                        if (bestPlayer.Points < 5)
-                        {
-                            bestPlayerPoints = bestPlayer.Points;
-                        }
-                        else
-                        {
-                            bestPlayerPoints = random.Next(5, Math.Min(15, bestPlayer.Points));
-                        }
-                    }
-                }
-                else if (match.CalculatedStatus != "Upcoming")
-                {
-                    // If no statistics but match is completed or in progress, generate a random best player
-                    bestPlayerName = $"Cầu thủ {random.Next(1, 10)}";
-                    bestPlayerTeam = random.Next(2) == 0 ? match.TeamA : match.TeamB;
-                    bestPlayerPoints = random.Next(5, 15);
-                }
-
-                matchSets.Add(new
-                {
-                    SetNumber = quarter + 1,
-                    ScoreTeamA = quarterScoresTeamA[quarter],
-                    ScoreTeamB = quarterScoresTeamB[quarter],
-                    BestPlayerName = bestPlayerName,
-                    BestPlayerTeam = bestPlayerTeam,
-                    BestPlayerPoints = bestPlayerPoints
-                });
-            }
-
-            // Get player scoring records for this match
-            var playerScorings = await _context.PlayerScorings
-                .Include(ps => ps.Player)
-                .ThenInclude(p => p.Team)
-                .Where(ps => ps.MatchId == id)
-                .OrderByDescending(ps => ps.ScoringTime)
-                .ToListAsync();
-
-            ViewBag.PlayerScorings = playerScorings;
-            ViewBag.MatchSets = matchSets;
-            ViewBag.MatchStatus = match.CalculatedStatus;
-
-            // Tính toán thời gian kết thúc trận đấu dựa trên loại giải đấu
-            ViewBag.MatchEndTime = await CalculateMatchEndTime(match.MatchDate, match.TournamentId);
-
-            return View(match);
+            return View(matchViewModel);
         }
 
         // GET: Match/Create

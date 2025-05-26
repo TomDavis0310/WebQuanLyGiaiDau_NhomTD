@@ -7,7 +7,7 @@ using WebQuanLyGiaiDau_NhomTD;
 var builder = WebApplication.CreateBuilder(args);
 
 // Đăng ký ApplicationDbContext với DI container
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddDbContext<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Đăng ký Identity với ApplicationUser thay vì IdentityUser
@@ -16,7 +16,34 @@ builder.Services.AddDefaultIdentity<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUs
     options.SignIn.RequireConfirmedAccount = false;
 })
 .AddRoles<IdentityRole>() // Add role management
-.AddEntityFrameworkStores<ApplicationDbContext>();
+.AddEntityFrameworkStores<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContext>();
+
+// Thêm Google Authentication
+var googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID")
+    ?? builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET")
+    ?? builder.Configuration["Authentication:Google:ClientSecret"];
+
+// Only add Google authentication if credentials are properly configured
+if (!string.IsNullOrEmpty(googleClientId) &&
+    !string.IsNullOrEmpty(googleClientSecret) &&
+    googleClientId != "YOUR_GOOGLE_CLIENT_ID_HERE" &&
+    googleClientSecret != "YOUR_GOOGLE_CLIENT_SECRET_HERE")
+{
+    builder.Services.AddAuthentication()
+        .AddGoogle(googleOptions =>
+        {
+            googleOptions.ClientId = googleClientId;
+            googleOptions.ClientSecret = googleClientSecret;
+            googleOptions.CallbackPath = "/signin-google";
+        });
+
+    Console.WriteLine("✅ Google OAuth đã được cấu hình thành công!");
+}
+else
+{
+    Console.WriteLine("⚠️  Google OAuth chưa được cấu hình. Vui lòng xem hướng dẫn trong GOOGLE_OAUTH_SETUP.md");
+}
 
 // Đăng ký MVC và Razor Pages (cho Identity)
 builder.Services.AddControllersWithViews();
@@ -24,12 +51,14 @@ builder.Services.AddRazorPages();
 
 // Đăng ký các services
 builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.TournamentScheduleService>();
+builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.IYouTubeService, WebQuanLyGiaiDau_NhomTD.Services.YouTubeService>();
+builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.ITournamentEmailService, WebQuanLyGiaiDau_NhomTD.Services.TournamentEmailService>();
 
 // Add authorization policies
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin));
-    options.AddPolicy("UserOnly", policy => policy.RequireRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User));
+    // Removed UserOnly policy - all authenticated users have same access
 });
 
 var app = builder.Build();
@@ -46,10 +75,7 @@ using (var scope = app.Services.CreateScope())
         roleManager.CreateAsync(new IdentityRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)).GetAwaiter().GetResult();
     }
 
-    if (!roleManager.RoleExistsAsync(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User).GetAwaiter().GetResult())
-    {
-        roleManager.CreateAsync(new IdentityRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)).GetAwaiter().GetResult();
-    }
+    // Removed User role creation - no longer needed
 
     // Create admin user
     string adminEmail = "admin@example.com";
@@ -73,27 +99,7 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    // Create a regular user
-    string userEmail = "user@example.com";
-    string userPassword = "User123!";
-
-    if (userManager.FindByEmailAsync(userEmail).GetAwaiter().GetResult() == null)
-    {
-        var regularUser = new WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser
-        {
-            UserName = userEmail,
-            Email = userEmail,
-            EmailConfirmed = true,
-            FullName = "Regular User"
-        };
-
-        var result = userManager.CreateAsync(regularUser, userPassword).GetAwaiter().GetResult();
-
-        if (result.Succeeded)
-        {
-            userManager.AddToRoleAsync(regularUser, WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User).GetAwaiter().GetResult();
-        }
-    }
+    // Removed regular user creation - users will register themselves without specific roles
 
     // Seed basketball tournament data
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -142,7 +148,7 @@ app.MapRazorPages();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var dbContext = services.GetRequiredService<ApplicationDbContext>();
+    var dbContext = services.GetRequiredService<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContext>();
 
     try
     {

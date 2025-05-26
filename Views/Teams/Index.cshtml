@@ -25,7 +25,7 @@
         </form>
     </div>
     <div class="col-md-6 text-end">
-        @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin) || User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User))
+        @if (User.Identity.IsAuthenticated)
         {
             <a asp-action="Create" class="btn btn-success">➕ Thêm Đội Mới</a>
         }
@@ -50,7 +50,7 @@
                 <td>@Html.DisplayFor(modelItem => item.Coach)</td>
                 <td class="text-center">
                     <a asp-action="Details" asp-route-id="@item.TeamId" class="btn btn-sm btn-info me-1">🔍 Xem</a>
-                    @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin) || User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User))
+                    @if (User.Identity.IsAuthenticated)
                     {
                         <a asp-action="Edit" asp-route-id="@item.TeamId" class="btn btn-sm btn-warning me-1">✏️ Sửa</a>
                         <a asp-action="Delete" asp-route-id="@item.TeamId" class="btn btn-sm btn-danger">🗑️ Xóa</a>

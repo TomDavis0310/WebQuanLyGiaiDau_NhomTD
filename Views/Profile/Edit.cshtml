@@ -1,0 +1,421 @@
+@model WebQuanLyGiaiDau_NhomTD.Models.ViewModels.EditProfileViewModel
+
+@{
+    ViewData["Title"] = "Chỉnh Sửa Hồ Sơ";
+}
+
+<style>
+    /* Edit Profile Styles */
+    .edit-profile-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        padding: 60px 0;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 0;
+    }
+
+    .edit-profile-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image:
+            radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08) 2px, transparent 2px),
+            radial-gradient(circle at 80% 80%, rgba(255,255,255,0.05) 2px, transparent 2px);
+        background-size: 100px 100px, 150px 150px;
+        animation: float 40s ease-in-out infinite;
+    }
+
+    .edit-form-container {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border: 1px solid rgba(0,0,0,0.05);
+        position: relative;
+        z-index: 2;
+        margin-top: -50px;
+    }
+
+    .form-floating {
+        margin-bottom: 20px;
+    }
+
+    .form-floating > .form-control {
+        border-radius: 15px;
+        border: 2px solid #e9ecef;
+        padding: 1rem 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-floating > .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .form-floating > label {
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .profile-picture-section {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 30px;
+        background: #f8f9fa;
+        border-radius: 15px;
+        border: 2px dashed #dee2e6;
+        transition: all 0.3s ease;
+    }
+
+    .profile-picture-section:hover {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.05);
+    }
+
+    .current-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid #fff;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        object-fit: cover;
+        margin-bottom: 20px;
+    }
+
+    .avatar-placeholder {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid #fff;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+
+    .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    .file-input-wrapper input[type=file] {
+        position: absolute;
+        left: -9999px;
+    }
+
+    .file-input-label {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 10px 25px;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-block;
+        font-weight: 500;
+    }
+
+    .file-input-label:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .btn-cancel {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-cancel:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .hero-title {
+        color: white;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-title h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    .hero-title p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .success-message {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        border: none;
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    @@media (max-width: 768px) {
+        .edit-form-container {
+            padding: 30px 20px;
+            margin-top: -30px;
+        }
+
+        .hero-title h1 {
+            font-size: 2rem;
+        }
+
+        .btn-save, .btn-cancel {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    }
+</style>
+
+<!-- Edit Profile Hero Section -->
+<div class="edit-profile-hero">
+    <div class="container">
+        <div class="hero-title">
+            <h1><i class="bi bi-person-gear me-3"></i>Chỉnh Sửa Hồ Sơ</h1>
+            <p>Cập nhật thông tin cá nhân của bạn</p>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="edit-form-container">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="success-message">
+                        <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+                    </div>
+                }
+
+                <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <!-- Profile Picture Section -->
+                    <div class="profile-picture-section">
+                        <h5 class="mb-3">Ảnh đại diện</h5>
+
+                        @if (!string.IsNullOrEmpty(Model.CurrentProfilePicture))
+                        {
+                            <img src="@Model.CurrentProfilePicture" alt="Current Avatar" class="current-avatar" />
+                        }
+                        else
+                        {
+                            <div class="avatar-placeholder">
+                                <i class="bi bi-person-fill" style="font-size: 3rem; color: #6c757d;"></i>
+                            </div>
+                        }
+
+                        <div class="file-input-wrapper">
+                            <input type="file" id="profilePicture" name="profilePicture" accept="image/*" />
+                            <label for="profilePicture" class="file-input-label">
+                                <i class="bi bi-camera me-2"></i>Chọn ảnh mới
+                            </label>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">Chấp nhận file JPG, PNG. Tối đa 5MB.</small>
+                        </div>
+                        @if (ViewData.ModelState["profilePicture"]?.Errors.Count > 0)
+                        {
+                            <div class="text-danger mt-2">
+                                @foreach (var error in ViewData.ModelState["profilePicture"].Errors)
+                                {
+                                    <small>@error.ErrorMessage</small><br />
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Form Fields -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="FullName" class="form-control" placeholder="Họ và tên" />
+                                <label asp-for="FullName">Họ và tên</label>
+                                <span asp-validation-for="FullName" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="Email" class="form-control" placeholder="Email" readonly />
+                                <label asp-for="Email">Email</label>
+                                <small class="text-muted">Email không thể thay đổi</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="Số điện thoại" />
+                                <label asp-for="PhoneNumber">Số điện thoại</label>
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="Address" class="form-control" placeholder="Địa chỉ" />
+                                <label asp-for="Address">Địa chỉ</label>
+                                <span asp-validation-for="Address" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="DateOfBirth" class="form-control" />
+                                <label asp-for="DateOfBirth">Ngày sinh</label>
+                                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select asp-for="Gender" class="form-control">
+                                    <option value="">Chọn giới tính</option>
+                                    <option value="Nam">Nam</option>
+                                    <option value="Nữ">Nữ</option>
+                                    <option value="Khác">Khác</option>
+                                </select>
+                                <label asp-for="Gender">Giới tính</label>
+                                <span asp-validation-for="Gender" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-floating">
+                        <input asp-for="Age" class="form-control" placeholder="Tuổi" />
+                        <label asp-for="Age">Tuổi</label>
+                        <span asp-validation-for="Age" class="text-danger"></span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn-save me-3">
+                            <i class="bi bi-check-lg me-2"></i>Lưu thay đổi
+                        </button>
+                        <a asp-action="Index" class="btn-cancel me-3">
+                            <i class="bi bi-x-lg me-2"></i>Hủy bỏ
+                        </a>
+                        <a asp-controller="Account" asp-action="ChangePassword" class="btn" style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 15px 40px; border-radius: 50px; font-weight: 600; font-size: 1.1rem; text-decoration: none; display: inline-block;">
+                            <i class="bi bi-shield-lock me-2"></i>Đổi mật khẩu
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        // Preview selected image
+        document.getElementById('profilePicture').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate file size (5MB max)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File quá lớn! Vui lòng chọn file nhỏ hơn 5MB.');
+                    this.value = '';
+                    return;
+                }
+
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Chỉ chấp nhận file JPG, JPEG, PNG!');
+                    this.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const currentAvatar = document.querySelector('.current-avatar');
+                    const avatarPlaceholder = document.querySelector('.avatar-placeholder');
+
+                    if (currentAvatar) {
+                        currentAvatar.src = e.target.result;
+                    } else if (avatarPlaceholder) {
+                        avatarPlaceholder.innerHTML = `<img src="${e.target.result}" alt="Preview" class="current-avatar" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover;" />`;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const fullName = document.querySelector('#FullName').value.trim();
+            const phoneNumber = document.querySelector('#PhoneNumber').value.trim();
+
+            if (!fullName) {
+                alert('Vui lòng nhập họ và tên!');
+                e.preventDefault();
+                return;
+            }
+
+            if (phoneNumber && !/^[0-9+\-\s()]+$/.test(phoneNumber)) {
+                alert('Số điện thoại không hợp lệ!');
+                e.preventDefault();
+                return;
+            }
+        });
+
+        // Auto-format phone number
+        document.querySelector('#PhoneNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                if (value.startsWith('84')) {
+                    value = '+84 ' + value.substring(2);
+                } else if (value.startsWith('0')) {
+                    value = value.substring(1);
+                    value = '+84 ' + value;
+                }
+            }
+            e.target.value = value;
+        });
+    </script>
+}

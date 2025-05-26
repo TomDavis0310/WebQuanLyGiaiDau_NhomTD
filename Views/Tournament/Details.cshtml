@@ -372,7 +372,7 @@
 
                             <!-- Lịch thi đấu content -->
                             <div class="tab-pane fade" id="schedule-content" role="tabpanel" aria-labelledby="schedule-tab">
-                                @if (User.IsInRole(SD.Role_Admin) || User.IsInRole(SD.Role_User))
+                                @if (User.Identity.IsAuthenticated)
                                 {
                                     <div class="mb-3">
                                         <a asp-action="GenerateSchedule" asp-route-id="@Model.Id" class="btn btn-primary">
@@ -491,7 +491,7 @@
                                     <div class="alert alert-info">
                                         <i class="bi bi-info-circle"></i> Chưa có trận đấu nào được lên lịch cho giải đấu này.
 
-                                        @if (User.IsInRole(SD.Role_Admin) || User.IsInRole(SD.Role_User))
+                                        @if (User.Identity.IsAuthenticated)
                                         {
                                             <div class="mt-3">
                                                 <a asp-action="GenerateSchedule" asp-route-id="@Model.Id" class="btn btn-primary">
@@ -589,14 +589,69 @@
                             }
                         </div>
                         <div>
-                            @if (User.IsInRole(SD.Role_User) && Model.CalculatedStatus == "Mở đăng ký")
+                            @if (User.Identity.IsAuthenticated && !User.IsInRole(SD.Role_Admin))
                             {
-                                <a asp-action="Register" asp-route-id="@Model.Id" class="btn btn-success me-2">
-                                    <i class="bi bi-person-plus"></i> Đăng Ký Tham Gia
+                                var isApproved = ViewBag.IsUserApproved as bool? ?? false;
+                                var hasTeamForTournament = ViewBag.HasTeamForTournament as bool? ?? false;
+                                var userHasTeams = ViewBag.UserHasTeams as bool? ?? false;
+
+                                @if (Model.CalculatedStatus == "Mở đăng ký")
+                                {
+                                    @if (!userHasTeams)
+                                    {
+                                        <!-- Hiển thị thông báo yêu cầu tạo đội trước -->
+                                        <div class="alert alert-warning mb-3">
+                                            <i class="bi bi-exclamation-triangle"></i>
+                                            <strong>Yêu cầu:</strong> Bạn phải tạo đội bóng trước khi đăng ký giải đấu.
+                                            <div class="mt-2">
+                                                <a asp-controller="Teams" asp-action="Create" class="btn btn-warning btn-sm">
+                                                    <i class="bi bi-plus-circle"></i> Tạo Đội Bóng Ngay
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <!-- Disable các nút đăng ký -->
+                                        <button class="btn btn-success me-2" disabled title="Bạn cần tạo đội bóng trước">
+                                            <i class="bi bi-person-plus"></i> Đăng Ký Tham Gia
+                                        </button>
+                                        <button class="btn btn-primary me-2" disabled title="Bạn cần tạo đội bóng trước">
+                                            <i class="bi bi-people-fill"></i> Đăng Ký Đội
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <!-- Hiển thị thông tin yêu cầu -->
+                                        <div class="alert alert-info mb-3">
+                                            <i class="bi bi-info-circle"></i>
+                                            <strong>Lưu ý:</strong> Đội bóng cần có ít nhất
+                                            @(Model.Name.Contains("3v3") ? "3" : "5") cầu thủ để tham gia giải đấu này.
+                                        </div>
+
+                                        <a asp-action="Register" asp-route-id="@Model.Id" class="btn btn-success me-2">
+                                            <i class="bi bi-person-plus"></i> Đăng Ký Tham Gia
+                                        </a>
+                                        <a asp-action="RegisterTeam" asp-route-id="@Model.Id" class="btn btn-primary me-2">
+                                            <i class="bi bi-people-fill"></i> Đăng Ký Đội
+                                        </a>
+                                    }
+                                }
+
+                                @if (isApproved && !hasTeamForTournament && (Model.CalculatedStatus == "Mở đăng ký" || Model.CalculatedStatus == "Kết thúc đăng ký"))
+                                {
+                                    <a asp-action="CreateTeamForTournament" asp-route-id="@Model.Id" class="btn btn-warning me-2">
+                                        <i class="bi bi-people-plus"></i> Tạo Đội Bóng
+                                    </a>
+                                }
+
+                                <a asp-action="MyApprovedTournaments" class="btn btn-info me-2">
+                                 <i class="bi bi-trophy"></i> Giải Đấu Của Tôi
                                 </a>
-                                <a asp-action="RegisterTeam" asp-route-id="@Model.Id" class="btn btn-primary me-2">
-                                    <i class="bi bi-people-fill"></i> Đăng Ký Đội
-                                </a>
+                                @if (ViewBag.IsUserApproved != null && (bool)ViewBag.IsUserApproved && (Model.CalculatedStatus == "Mở đăng ký" || Model.CalculatedStatus == "Kết thúc đăng ký"))
+                                {
+                                    <a asp-action="RegisterTeam" asp-route-id="@Model.Id" class="btn btn-success me-2">
+                                        <i class="bi bi-plus-circle"></i> Tham Gia Giải Đấu
+                                    </a>
+                                }
                             }
                             @if (User.IsInRole(SD.Role_Admin))
                             {

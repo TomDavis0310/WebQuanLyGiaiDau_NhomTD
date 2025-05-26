@@ -1,25 +1,48 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Hệ Thống Quản Lý Giải Đấu</title>
+    <title>@ViewData["Title"] - Thể Thao 24/7 | Nền Tảng Giải Đấu Hàng Đầu</title>
+    <meta name="description" content="Nền tảng quản lý giải đấu thể thao 24/7 hàng đầu Việt Nam. Tham gia ngay để trải nghiệm thể thao đỉnh cao!" />
+    <meta name="keywords" content="thể thao, giải đấu, bóng đá, bóng rổ, tournament, sports, 24/7" />
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap">
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Roboto:wght@300;400;500;700;900&family=Orbitron:wght@400;700;900&display=swap">
     <link rel="stylesheet" href="~/css/sports-theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/rules.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/youtube-integration.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WebQuanLyGiaiDau_NhomTD.styles.css" asp-append-version="true" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico">
 </head>
-<body>
+<body class="sports-body">
+    <!-- Enhanced Page Loader -->
+    <div class="page-loader sports-24-7">
+        <div class="loading-spinner energy-button"></div>
+        <div class="loading-text">🚀 Đang tải Thể Thao 24/7...</div>
+    </div>
+
+    <!-- Loading Overlay for AJAX -->
+    <div class="loading-overlay">
+        <div class="loading-spinner energy-button"></div>
+    </div>
 
     <header>
-        <nav class="navbar navbar-expand-lg sports-navbar sticky-top">
-            <div class="container">
+        <nav class="navbar navbar-expand-lg sports-nav-enhanced sticky-top" id="mainNavbar">
+            <div class="container-fluid px-3">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-trophy-fill"></i>Hệ Thống Giải Đấu
+                    <i class="bi bi-lightning-charge-fill"></i>
+                    <span class="brand-text">Thể Thao 24/7</span>
+                    <div class="live-indicator-mini">
+                        <div class="pulse-dot"></div>
+                        <span>LIVE</span>
+                    </div>
                 </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
@@ -27,116 +50,146 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="navbar-collapse collapse d-lg-inline-flex justify-content-between">
+                <div class="navbar-collapse collapse d-lg-flex justify-content-between">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <!-- Trang chủ luôn hiển thị cho tất cả người dùng -->
-                        <li class="nav-item">
+                        <li class="nav-item nav-item-enhanced">
                             <a class="nav-link" asp-controller="Home" asp-action="Index">
-                                <i class="bi bi-house-door"></i> Trang chủ
+                                Trang chủ
                             </a>
                         </li>
 
                         <!-- Tin tức thể thao luôn hiển thị cho tất cả người dùng -->
-                        <li class="nav-item">
+                        <li class="nav-item nav-item-enhanced">
                             <a class="nav-link" asp-controller="News" asp-action="Index">
-                                <i class="bi bi-newspaper"></i> Tin tức thể thao
+                                Tin tức
                             </a>
                         </li>
 
                         <!-- Luật thi đấu luôn hiển thị cho tất cả người dùng -->
-                        <li class="nav-item">
+                        <li class="nav-item nav-item-enhanced">
                             <a class="nav-link" asp-controller="Rules" asp-action="Index">
-                                <i class="bi bi-book"></i> Luật thi đấu
+                                Luật thi đấu
                             </a>
                         </li>
 
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
                             <!-- Môn thể thao - hiển thị sau khi đăng nhập -->
-                            <li class="nav-item">
+                            <li class="nav-item nav-item-enhanced">
                                 <a class="nav-link" asp-controller="Sports" asp-action="Index">
-                                    <i class="bi bi-dribbble"></i> Môn thể thao
+                                    Môn thể thao
                                 </a>
                             </li>
 
                             <!-- Giải đấu - hiển thị sau khi đăng nhập -->
-                            <li class="nav-item">
+                            <li class="nav-item nav-item-enhanced">
                                 <a class="nav-link" asp-controller="Tournament" asp-action="Index">
-                                    <i class="bi bi-trophy"></i> Giải đấu
+                                    Giải đấu
                                 </a>
                             </li>
 
                             @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
                             {
                                 <!-- Admin-specific navigation -->
-                                <li class="nav-item dropdown">
+                                <li class="nav-item nav-item-enhanced dropdown">
                                     <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" data-bs-toggle="dropdown">
-                                        <i class="bi bi-gear"></i> Quản lý
+                                        Admin
                                     </a>
                                     <ul class="dropdown-menu" aria-labelledby="adminDropdown">
                                         <li>
                                             <a class="dropdown-item" asp-controller="Teams" asp-action="Index">
-                                                <i class="bi bi-people-fill"></i> Đội bóng
+                                                Đội bóng
                                             </a>
                                         </li>
                                         <li>
                                             <a class="dropdown-item" asp-controller="Players" asp-action="Index">
-                                                <i class="bi bi-person-fill"></i> Cầu thủ
+                                                Cầu thủ
                                             </a>
                                         </li>
                                         <li>
                                             <a class="dropdown-item" asp-controller="Match" asp-action="Index">
-                                                <i class="bi bi-calendar-event"></i> Trận đấu
+                                                Trận đấu
                                             </a>
                                         </li>
-
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Tournament" asp-action="Create">
+                                                Tạo giải đấu
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Teams" asp-action="Create">
+                                                Tạo đội bóng
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
                                         <li>
                                             <a class="dropdown-item" asp-controller="News" asp-action="Index">
-                                                <i class="bi bi-newspaper"></i> Quản lý tin tức
+                                                Tin tức
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="YouTube" asp-action="Index">
+                                                YouTube
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="YouTube" asp-action="Demo">
+                                                Demo YouTube
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="YouTube" asp-action="Search">
+                                                Tìm kiếm Video
                                             </a>
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
                                             <a class="dropdown-item" asp-controller="Tournament" asp-action="ManageRegistrations">
-                                                <i class="bi bi-person-check"></i> Đăng ký người dùng
+                                                Duyệt đăng ký giải đấu
                                             </a>
                                         </li>
                                         <li>
                                             <a class="dropdown-item" asp-controller="Tournament" asp-action="ManageTeamRegistrations">
-                                                <i class="bi bi-people-check"></i> Đăng ký đội
+                                                Duyệt đăng ký đội
                                             </a>
                                         </li>
                                     </ul>
                                 </li>
                             }
 
-                            @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User))
+                            @if (User.Identity.IsAuthenticated && !User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
                             {
-                                <!-- User-specific navigation -->
-                                <li class="nav-item dropdown">
+                                <!-- Regular user navigation - available to all authenticated users -->
+                                <li class="nav-item nav-item-enhanced dropdown">
                                     <a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-bs-toggle="dropdown">
-                                        <i class="bi bi-person-gear"></i> Quản lý
+                                        Cá nhân
                                     </a>
                                     <ul class="dropdown-menu" aria-labelledby="userDropdown">
                                         <li>
                                             <a class="dropdown-item" asp-controller="Teams" asp-action="Index">
-                                                <i class="bi bi-people-fill"></i> Đội bóng
+                                                Đội bóng
                                             </a>
                                         </li>
                                         <li>
                                             <a class="dropdown-item" asp-controller="Tournament" asp-action="Index">
-                                                <i class="bi bi-trophy"></i> Giải đấu
+                                                Giải đấu
                                             </a>
                                         </li>
                                         <li>
                                             <a class="dropdown-item" asp-controller="Tournament" asp-action="MyRegistrations">
-                                                <i class="bi bi-list-check"></i> Đăng ký giải đấu
+                                                Đăng ký giải đấu
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Tournament" asp-action="MyApprovedTournaments">
+                                                Giải đấu của tôi
                                             </a>
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
                                             <a class="dropdown-item" asp-controller="Home" asp-action="UserGuide">
-                                                <i class="bi bi-question-circle"></i> Hướng dẫn sử dụng
+                                                Hướng dẫn sử dụng
                                             </a>
                                         </li>
                                     </ul>
@@ -148,7 +201,7 @@
                             <!-- Navigation for non-authenticated users -->
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Home" asp-action="Privacy">
-                                    <i class="bi bi-shield-check"></i> Chính sách
+                                    Chính sách
                                 </a>
                             </li>
                         }
@@ -162,39 +215,56 @@
         </nav>
     </header>
 
-    <div class="container mt-4">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    <main role="main" class="main-content">
+        @RenderBody()
+    </main>
 
-    <footer class="sports-footer mt-5">
+    <footer class="sports-footer sports-24-7">
         <div class="container">
             <div class="row">
-                <div class="col-md-6">
-                    <h5 class="mb-3">Hệ Thống Quản Lý Giải Đấu</h5>
-                    <p class="mb-0">Nền tảng quản lý giải đấu thể thao toàn diện, dễ sử dụng và hiệu quả.</p>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h5>Thể Thao 24/7</h5>
+                    <p class="mb-4">Nền tảng giải đấu thể thao năng động nhất Việt Nam! Trải nghiệm thể thao đỉnh cao 24/7 cùng chúng tôi!</p>
+                    <div class="social-links">
+                        <a href="#" class="me-3" data-bs-toggle="tooltip" title="Facebook">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <a href="#" class="me-3" data-bs-toggle="tooltip" title="YouTube">
+                            <i class="bi bi-youtube"></i>
+                        </a>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <h5 class="mb-3">Liên kết</h5>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5>Liên kết</h5>
                     <ul class="list-unstyled">
-                        <li><a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door me-2"></i>Trang chủ</a></li>
-                        <li><a asp-controller="News" asp-action="Index"><i class="bi bi-newspaper me-2"></i>Tin tức thể thao</a></li>
-                        <li><a asp-controller="Rules" asp-action="Index"><i class="bi bi-book me-2"></i>Luật thi đấu</a></li>
-                        <li><a asp-controller="Home" asp-action="Privacy"><i class="bi bi-shield-check me-2"></i>Chính sách</a></li>
+                        <li><a asp-controller="Home" asp-action="Index" class="energy-button">Trang chủ</a></li>
+                        <li><a asp-controller="News" asp-action="Index" class="energy-button">Tin tức</a></li>
+                        <li><a asp-controller="Rules" asp-action="Index" class="energy-button">Luật thi đấu</a></li>
+                        <li><a asp-controller="Home" asp-action="Privacy" class="energy-button">Chính sách</a></li>
                     </ul>
                 </div>
-                <div class="col-md-3">
-                    <h5 class="mb-3">Liên hệ</h5>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h5>Dịch vụ</h5>
                     <ul class="list-unstyled">
-                        <li><i class="bi bi-envelope me-2"></i>support@giaidau.com</li>
-                        <li><i class="bi bi-telephone me-2"></i>(+84) 123 456 789</li>
+                        <li><a href="#" class="energy-button">Giải đấu LIVE</a></li>
+                        <li><a href="#" class="energy-button">Đội hình siêu sao</a></li>
+                        <li><a href="#" class="energy-button">Lịch thi đấu</a></li>
+                        <li><a href="#" class="energy-button">Thống kê</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h5>Liên hệ</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="mailto:support@thethao247.com" class="energy-button">support@thethao247.com</a></li>
+                        <li><a href="tel:+84123456789" class="energy-button">(+84) 123 456 789</a></li>
+                        <li><a href="#" class="energy-button">Hà Nội, Việt Nam</a></li>
+                        <li><a href="#" class="energy-button">24/7 Hỗ trợ</a></li>
                     </ul>
                 </div>
             </div>
-            <hr class="mt-4 mb-4" style="border-color: rgba(255,255,255,0.1);">
-            <div class="text-center">
-                &copy; 2025 - Hệ Thống Quản Lý Giải Đấu - Mọi quyền được bảo lưu
+            <hr class="footer-divider">
+            <div class="footer-bottom">
+                <p>&copy; 2025 Thể Thao 24/7 - Nền tảng giải đấu năng động #1 Việt Nam. Mọi quyền được bảo lưu.</p>
             </div>
         </div>
     </footer>
@@ -202,6 +272,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/sports-animations.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 
 </body>
