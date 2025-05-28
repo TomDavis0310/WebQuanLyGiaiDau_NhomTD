@@ -63,9 +63,11 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
         {
             get
             {
-                if (MatchDate < DateTime.Now)
+                DateTime matchDateTime = MatchDate.Date + (MatchTime ?? TimeSpan.Zero);
+
+                if (matchDateTime < DateTime.Now)
                     return "Completed";
-                else if (MatchDate.Date == DateTime.Now.Date)
+                else if (matchDateTime >= DateTime.Now.AddHours(-2) && matchDateTime <= DateTime.Now.AddHours(2))
                     return "InProgress";
                 else
                     return "Upcoming";

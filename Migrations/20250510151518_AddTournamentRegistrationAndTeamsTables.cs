@@ -19,36 +19,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                 nullable: false,
                 defaultValue: "Open");
 
-            // Tạo bảng TournamentRegistrations
-            migrationBuilder.CreateTable(
-                name: "TournamentRegistrations",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    TournamentId = table.Column<int>(type: "int", nullable: false),
-                    RegistrationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TournamentRegistrations", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_TournamentRegistrations_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_TournamentRegistrations_Tournaments_TournamentId",
-                        column: x => x.TournamentId,
-                        principalTable: "Tournaments",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             // Tạo bảng TournamentTeams
             migrationBuilder.CreateTable(
                 name: "TournamentTeams",
@@ -79,18 +49,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            // Tạo index cho TournamentRegistrations
-            migrationBuilder.CreateIndex(
-                name: "IX_TournamentRegistrations_TournamentId",
-                table: "TournamentRegistrations",
-                column: "TournamentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TournamentRegistrations_UserId",
-                table: "TournamentRegistrations",
-                column: "UserId");
-
             // Tạo index cho TournamentTeams
+            // Index cho TournamentRegistrations đã được tạo ở migration trước đó
             migrationBuilder.CreateIndex(
                 name: "IX_TournamentTeams_TeamId",
                 table: "TournamentTeams",
@@ -109,11 +69,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
             migrationBuilder.DropTable(
                 name: "TournamentTeams");
 
-            // Xóa bảng TournamentRegistrations
-            migrationBuilder.DropTable(
-                name: "TournamentRegistrations");
-
             // Xóa cột RegistrationStatus từ bảng Tournaments
+            // Bảng TournamentRegistrations được xóa ở migration trước đó nếu rollback
             migrationBuilder.DropColumn(
                 name: "RegistrationStatus",
                 table: "Tournaments");

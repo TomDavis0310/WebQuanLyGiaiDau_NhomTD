@@ -91,10 +91,15 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             if (!User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var userTeams = _context.TournamentTeams
-                    .Where(tt => tt.Team.Players.Any(p => p.UserId == userId))
-                    .Select(tt => tt.Team)
-                    .Distinct()
+                
+                // Get teams where user is a player
+                var playerTeamIds = _context.Players
+                    .Where(p => p.UserId == userId)
+                    .Select(p => p.TeamId)
+                    .ToList();
+                    
+                var userTeams = _context.Teams
+                    .Where(t => t.Coach == userId || playerTeamIds.Contains(t.TeamId))
                     .ToList();
 
                 ViewData["TeamId"] = new SelectList(userTeams, "TeamId", "Name");
@@ -202,8 +207,16 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             {
                 // Kiểm tra xem cầu thủ này có thuộc đội của người dùng hiện tại không
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var isTeamOwner = await _context.TournamentTeams
-                    .AnyAsync(tt => tt.TeamId == player.TeamId && tt.Team.Players.Any(p => p.UserId == userId));
+                
+                // Kiểm tra xem người dùng có phải là huấn luyện viên của đội không
+                var isCoach = await _context.Teams
+                    .AnyAsync(t => t.TeamId == player.TeamId && t.Coach == userId);
+                    
+                // Kiểm tra xem người dùng có phải là thành viên của đội không
+                var isPlayer = await _context.Players
+                    .AnyAsync(p => p.TeamId == player.TeamId && p.UserId == userId);
+                    
+                var isTeamOwner = isCoach || isPlayer;
 
                 if (!isTeamOwner)
                 {
@@ -212,11 +225,24 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 }
 
                 // Nếu không phải Admin, chỉ hiển thị các đội mà họ sở hữu
-                var userTeams = _context.TournamentTeams
-                    .Where(tt => tt.Team.Players.Any(p => p.UserId == userId))
-                    .Select(tt => tt.Team)
-                    .Distinct()
-                    .ToList();
+                // Get teams where user is coach
+                var coachTeamIds = await _context.Teams
+                    .Where(t => t.Coach == userId)
+                    .Select(t => t.TeamId)
+                    .ToListAsync();
+                    
+                // Get teams where user is a player
+                var playerTeamIds = await _context.Players
+                    .Where(p => p.UserId == userId)
+                    .Select(p => p.TeamId)
+                    .ToListAsync();
+                    
+                // Combine the two lists
+                var userTeamIds = coachTeamIds.Union(playerTeamIds).ToList();
+                
+                var userTeams = await _context.Teams
+                    .Where(t => userTeamIds.Contains(t.TeamId))
+                    .ToListAsync();
 
                 ViewData["TeamId"] = new SelectList(userTeams, "TeamId", "Name", player.TeamId);
             }
@@ -305,8 +331,16 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             {
                 // Kiểm tra xem cầu thủ này có thuộc đội của người dùng hiện tại không
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var isTeamOwner = await _context.TournamentTeams
-                    .AnyAsync(tt => tt.TeamId == player.TeamId && tt.Team.Players.Any(p => p.UserId == userId));
+                
+                // Kiểm tra xem người dùng có phải là huấn luyện viên của đội không
+                var isCoach = await _context.Teams
+                    .AnyAsync(t => t.TeamId == player.TeamId && t.Coach == userId);
+                    
+                // Kiểm tra xem người dùng có phải là thành viên của đội không
+                var isPlayer = await _context.Players
+                    .AnyAsync(p => p.TeamId == player.TeamId && p.UserId == userId);
+                    
+                var isTeamOwner = isCoach || isPlayer;
 
                 if (!isTeamOwner)
                 {
@@ -350,12 +384,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             }
             catch (Exception ex)
             {
-                // Handle any other exceptions
-                var player = await _context.Players
-                    .Include(p => p.Team)
-                    .FirstOrDefaultAsync(m => m.PlayerId == id);
-                ViewData["error"] = "Lỗi khi xóa cầu thủ: " + ex.Message;
-                return View(player);
+                // Log the error
+                Console.WriteLine("Error deleting player: " + ex.Message);
+                return RedirectToAction(nameof(Index));
             }
         }
 

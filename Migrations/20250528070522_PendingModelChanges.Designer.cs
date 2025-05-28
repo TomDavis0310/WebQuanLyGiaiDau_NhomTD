@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebQuanLyGiaiDau_NhomTD.Models;
 
@@ -11,9 +12,11 @@ using WebQuanLyGiaiDau_NhomTD.Models;
 namespace WebQuanLyGiaiDau_NhomTD.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250528070522_PendingModelChanges")]
+    partial class PendingModelChanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1105,7 +1108,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.Team", "Team")
                         .WithMany()
                         .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.NoAction) // Changed from Cascade to NoAction
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser", "User")

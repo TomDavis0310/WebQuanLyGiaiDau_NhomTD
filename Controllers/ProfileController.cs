@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -33,15 +33,28 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return NotFound();
             }
 
-            // Get user's teams (teams where user is coach or has players)
+            // Get user's teams (teams where user is coach)
             var currentUser = await _userManager.GetUserAsync(User);
             var userTeams = await _context.Teams
                 .Where(t => t.Coach == currentUser.FullName ||
                            t.Coach == userId ||
-                           t.Coach == User.Identity.Name ||
-                           t.Players.Any(p => p.UserId == userId))
+                           t.Coach == User.Identity.Name)
                 .Include(t => t.Players)
                 .ToListAsync();
+                
+            // Get teams where user is a player
+            var userPlayerTeamIds = await _context.Players
+                .Where(p => p.UserId == userId)
+                .Select(p => p.TeamId)
+                .ToListAsync();
+                
+            var userPlayerTeams = await _context.Teams
+                .Where(t => userPlayerTeamIds.Contains(t.TeamId))
+                .Include(t => t.Players)
+                .ToListAsync();
+                
+            // Combine the two lists
+            userTeams = userTeams.Union(userPlayerTeams).ToList();
 
             // Get user's tournament registrations
             var userTournamentRegistrations = await _context.TournamentRegistrations
@@ -85,8 +98,23 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 .Select(tr => tr.TournamentId)
                 .ToListAsync();
 
+            // Get teams where user is coach
+            var coachTeamIds = await _context.Teams
+                .Where(t => t.Coach == userId)
+                .Select(t => t.TeamId)
+                .ToListAsync();
+                
+            // Get teams where user is a player
+            var playerTeamIds = await _context.Players
+                .Where(p => p.UserId == userId)
+                .Select(p => p.TeamId)
+                .ToListAsync();
+                
+            // Combine the two lists
+            var userTeams = coachTeamIds.Union(playerTeamIds).ToList();
+
             var tournamentsWithTeam = await _context.TournamentTeams
-                .Where(tt => approvedTournaments.Contains(tt.TournamentId) && tt.Team.UserId == userId)
+                .Where(tt => approvedTournaments.Contains(tt.TournamentId) && userTeams.Contains(tt.TeamId))
                 .Select(tt => tt.TournamentId)
                 .ToListAsync();
 

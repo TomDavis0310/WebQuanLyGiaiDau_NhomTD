@@ -235,7 +235,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                         column: x => x.TeamId,
                         principalTable: "Teams",
                         principalColumn: "TeamId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.NoAction);
                 });
 
             // Tạo bảng MatchDetail
