@@ -1,10 +1,11 @@
-@model WebQuanLyGiaiDau_NhomTD.Models.Match
+@model WebQuanLyGiaiDau_NhomTD.Models.MatchViewModel
 
 @{
     ViewData["Title"] = "Chi Tiết Trận Đấu";
-    var matchSets = ViewBag.MatchSets as List<dynamic>;
-    var matchStatus = ViewBag.MatchStatus as string;
-    var matchEndTime = ViewBag.MatchEndTime as DateTime?;
+    // Using properties from MatchViewModel now
+    var matchSets = Model.MatchSets;
+    var matchStatus = Model.MatchStatus;
+    var matchEndTime = Model.MatchEndTime;
     var playerScorings = ViewBag.PlayerScorings as List<WebQuanLyGiaiDau_NhomTD.Models.PlayerScoring>;
     var highlightsVideo = ViewBag.HighlightsVideo as WebQuanLyGiaiDau_NhomTD.Models.YouTubeVideo;
     var liveStreamVideo = ViewBag.LiveStreamVideo as WebQuanLyGiaiDau_NhomTD.Models.YouTubeVideo;
@@ -84,15 +85,14 @@
                         </dd>
 
                         <dt class="col-sm-3 fw-bold">Thời Gian Kết Thúc:</dt>
-                        <dd class="col-sm-9">
-                            @{
+                        <dd class="col-sm-9">                            @{
                                 string endTimeDisplay = "15:15";
                                 if (Model.Tournament != null && (Model.Tournament.Name.Contains("5v5") || Model.Tournament.Name.Contains("5 vs 5")))
                                 {
                                     endTimeDisplay = "16:08";
                                 }
                             }
-                            @(matchEndTime?.ToString("HH:mm") ?? endTimeDisplay)
+                            @Model.MatchEndTime.ToString("HH:mm")
                         </dd>
 
                         <dt class="col-sm-3 fw-bold">Giải Đấu:</dt>

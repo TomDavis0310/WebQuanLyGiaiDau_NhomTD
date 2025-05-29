@@ -5,29 +5,32 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
     public class MatchViewModel
     {
         public int Id { get; set; }
-        public string TeamA { get; set; }
-        public string TeamB { get; set; }
+        public string TeamA { get; set; } = string.Empty;
+        public string TeamB { get; set; } = string.Empty;
         public int? ScoreTeamA { get; set; }
         public int? ScoreTeamB { get; set; }
         public DateTime MatchDate { get; set; }
+        public TimeSpan? MatchTime { get; set; } // Added to match view usage
+        public string? Location { get; set; }     // Added to match view usage
         public string Status { get; set; } = "Upcoming"; // "Upcoming", "InProgress", "Completed"
         public int TournamentId { get; set; }
-        public Tournament Tournament { get; set; }
-        public List<Statistic> Statistics { get; set; }
-        public List<dynamic> MatchSets { get; set; }
-        public string MatchStatus { get; set; }
-        public DateTime MatchEndTime { get; set; }
+        public Tournament? Tournament { get; set; }
+        public List<Statistic> Statistics { get; set; } = new List<Statistic>();
+        public List<dynamic> MatchSets { get; set; } = new List<dynamic>();
+        public string MatchStatus { get; set; } = string.Empty;
+        public DateTime MatchEndTime { get; set; } = DateTime.Now;
 
         // Convert from Match to MatchViewModel
         public static MatchViewModel FromMatch(Match match)
         {
-            var random = new Random();
-            var matchViewModel = new MatchViewModel
+            var random = new Random();            var matchViewModel = new MatchViewModel
             {
                 Id = match.Id,
                 TeamA = match.TeamA,
                 TeamB = match.TeamB,
                 MatchDate = match.MatchDate,
+                MatchTime = match.MatchTime,
+                Location = match.Location,
                 TournamentId = match.TournamentId,
                 Tournament = match.Tournament,
                 // Set default values for new properties
@@ -37,8 +40,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
                          (match.MatchDate.Date == DateTime.Now.Date ? "InProgress" : "Upcoming"),
                 Statistics = new List<Statistic>(),
                 MatchSets = new List<dynamic>(),
-                MatchStatus = "",
-                MatchEndTime = DateTime.Now
+                MatchStatus = match.CalculatedStatus,
+                MatchEndTime = match.MatchDate.Add(match.MatchTime ?? TimeSpan.FromHours(1))
             };
 
             // Create virtual match sets (for basketball 5v5 NBA, 4 quarters)

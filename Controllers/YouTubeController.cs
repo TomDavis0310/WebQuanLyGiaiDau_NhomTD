@@ -36,16 +36,25 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return View(new YouTubeSearchResponse());
             }
 
-            var request = new YouTubeSearchRequest
+            try
             {
-                Query = query,
-                MaxResults = maxResults,
-                Type = type
-            };
+                var request = new YouTubeSearchRequest
+                {
+                    Query = query,
+                    MaxResults = maxResults,
+                    Type = type
+                };
 
-            var result = await _youtubeService.SearchVideosAsync(request);
-            ViewBag.Query = query;
-            return View(result);
+                var result = await _youtubeService.SearchVideosAsync(request);
+                ViewBag.Query = query;
+                return View(result);
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "YouTube API is not available. Please check your API key configuration.";
+                ViewBag.Query = query;
+                return View(new YouTubeSearchResponse());
+            }
         }
 
         // GET: YouTube/SearchHighlights
@@ -56,8 +65,15 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return Json(new { success = false, message = "Query is required" });
             }
 
-            var result = await _youtubeService.SearchHighlightsAsync(query, maxResults);
-            return Json(new { success = true, data = result });
+            try
+            {
+                var result = await _youtubeService.SearchHighlightsAsync(query, maxResults);
+                return Json(new { success = true, data = result });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "YouTube API is not available. Please check your API key configuration." });
+            }
         }
 
         // GET: YouTube/SearchLiveStreams
@@ -68,8 +84,15 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return Json(new { success = false, message = "Query is required" });
             }
 
-            var result = await _youtubeService.SearchLiveStreamsAsync(query, maxResults);
-            return Json(new { success = true, data = result });
+            try
+            {
+                var result = await _youtubeService.SearchLiveStreamsAsync(query, maxResults);
+                return Json(new { success = true, data = result });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "YouTube API is not available. Please check your API key configuration." });
+            }
         }
 
         // POST: YouTube/UpdateMatchVideo
@@ -85,20 +108,27 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     return Json(new { success = false, message = "Match not found" });
                 }
 
-                // Validate YouTube URLs
-                if (!string.IsNullOrEmpty(highlightsUrl) && !_youtubeService.IsValidYouTubeUrl(highlightsUrl))
+                try
                 {
-                    return Json(new { success = false, message = "Invalid highlights URL" });
+                    // Validate YouTube URLs
+                    if (!string.IsNullOrEmpty(highlightsUrl) && !_youtubeService.IsValidYouTubeUrl(highlightsUrl))
+                    {
+                        return Json(new { success = false, message = "Invalid highlights URL" });
+                    }
+
+                    if (!string.IsNullOrEmpty(liveStreamUrl) && !_youtubeService.IsValidYouTubeUrl(liveStreamUrl))
+                    {
+                        return Json(new { success = false, message = "Invalid live stream URL" });
+                    }
+                }
+                catch (Exception)
+                {
+                    return Json(new { success = false, message = "YouTube API is not available. Please check your API key configuration." });
                 }
 
-                if (!string.IsNullOrEmpty(liveStreamUrl) && !_youtubeService.IsValidYouTubeUrl(liveStreamUrl))
-                {
-                    return Json(new { success = false, message = "Invalid live stream URL" });
-                }
-
-                // match.HighlightsVideoUrl = highlightsUrl; // Tạm comment để fix migration
-                // match.LiveStreamUrl = liveStreamUrl; // Tạm comment để fix migration
-                // match.VideoDescription = description; // Tạm comment để fix migration
+               match.HighlightsVideoUrl = highlightsUrl;
+               match.LiveStreamUrl = liveStreamUrl;
+               match.VideoDescription = description;
 
                 await _context.SaveChangesAsync();
 
@@ -118,13 +148,20 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return Json(new { success = false, message = "Video ID is required" });
             }
 
-            var video = await _youtubeService.GetVideoDetailsAsync(videoId);
-            if (video == null)
+            try
             {
-                return Json(new { success = false, message = "Video not found" });
-            }
+                var video = await _youtubeService.GetVideoDetailsAsync(videoId);
+                if (video == null)
+                {
+                    return Json(new { success = false, message = "Video not found" });
+                }
 
-            return Json(new { success = true, data = video });
+                return Json(new { success = true, data = video });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "YouTube API is not available. Please check your API key configuration." });
+            }
         }
 
         // GET: YouTube/GetRecommendedVideos

@@ -808,7 +808,6 @@ html {
     right: 0;
     bottom: 0;
     background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    animation: float 20s ease-in-out infinite;
 }
 
 .sports-hero::after {
@@ -819,7 +818,6 @@ html {
     right: 0;
     bottom: 0;
     background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.05) 50%, transparent 70%);
-    animation: shimmer 3s ease-in-out infinite;
 }
 
 .sports-hero .container {
@@ -2790,12 +2788,7 @@ html {
 
 /* ===== ENHANCED 24/7 SPORTS ANIMATIONS ===== */
 
-/* Dynamic Background Animations */
-@keyframes sportsGradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
+/* Background animations removed for static design */
 
 @keyframes energyPulse {
     0%, 100% {
@@ -2845,16 +2838,10 @@ html {
     to { transform: rotate(360deg) scale(1.1); }
 }
 
-@keyframes sportsWave {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-
 /* Enhanced Sports Elements */
 .sports-24-7 {
     background: var(--gradient-sports);
     background-size: 400% 400%;
-    animation: sportsGradientShift 8s ease infinite;
 }
 
 
@@ -2878,11 +2865,9 @@ html {
     content: '';
     position: absolute;
     top: 0;
-    left: -100%;
-    width: 100%;
+    left: -100%;    width: 100%;
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.4), transparent);
-    animation: sportsWave 2s infinite;
 }
 
 /* 24/7 Live Indicator */
@@ -2904,11 +2889,9 @@ html {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
-    width: 100%;
+    left: 0;    width: 100%;
     height: 100%;
     background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
-    animation: sportsWave 3s infinite;
 }
 
 .live-indicator .pulse-dot {
@@ -3094,8 +3077,7 @@ html {
 
 /* User dropdown styling */
 .dropdown-menu {
-    background: linear-gradient(135deg, rgba(26, 35, 126, 0.95) 0%, rgba(255, 107, 53, 0.1) 100%);
-    backdrop-filter: blur(20px);
+    background: linear-gradient(135deg, rgb(26, 35, 126) 0%, rgb(59, 73, 155) 100%);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
@@ -3180,28 +3162,6 @@ html {
     min-height: 100vh;
     display: flex;
     align-items: center;
-}
-
-.sports-hero-enhanced::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    animation: float 20s ease-in-out infinite;
-}
-
-.sports-hero-enhanced::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
-    animation: sportsWave 4s ease-in-out infinite;
 }
 
 /* Enhanced Navigation Styles */

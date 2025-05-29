@@ -1,4 +1,4 @@
-﻿namespace WebQuanLyGiaiDau_NhomTD.Models
+﻿﻿namespace WebQuanLyGiaiDau_NhomTD.Models
 {
     using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
     using Microsoft.CodeAnalysis.Elfie.Diagnostics;
@@ -11,6 +11,24 @@
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Configure the SportDetail entity to use NO ACTION for delete behavior
+            modelBuilder.Entity<SportDetail>()
+                .HasOne(sd => sd.Tournament)
+                .WithMany()
+                .HasForeignKey(sd => sd.TournamentId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<SportDetail>()
+                .HasOne(sd => sd.Sport)
+                .WithMany()
+                .HasForeignKey(sd => sd.SportId)
+                .OnDelete(DeleteBehavior.NoAction);
+        }
 
         public DbSet<Team> Teams { get; set; }
         public DbSet<Player> Players { get; set; }

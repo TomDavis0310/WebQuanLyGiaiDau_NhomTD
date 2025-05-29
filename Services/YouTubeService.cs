@@ -18,9 +18,10 @@ namespace WebQuanLyGiaiDau_NhomTD.Services
             _logger = logger;
 
             var apiKey = _configuration["YouTube:ApiKey"];
-            if (string.IsNullOrEmpty(apiKey))
+            if (string.IsNullOrEmpty(apiKey) || apiKey == "YOUR_YOUTUBE_API_KEY_HERE")
             {
-                throw new InvalidOperationException("YouTube API key is not configured");
+                _logger.LogWarning("YouTube API key is not configured or is using a placeholder value. YouTube features will be disabled.");
+                return; // Early return to avoid initializing the YouTube service
             }
 
             _youtubeService = new Google.Apis.YouTube.v3.YouTubeService(new BaseClientService.Initializer()
@@ -34,6 +35,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Services
         {
             try
             {
+                if (_youtubeService == null)
+                {
+                    _logger.LogWarning("YouTube service is not initialized. Cannot search videos.");
+                    return new YouTubeSearchResponse();
+                }
+
                 var searchListRequest = _youtubeService.Search.List("snippet");
                 searchListRequest.Q = request.Query;
                 searchListRequest.MaxResults = request.MaxResults;
@@ -76,6 +83,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Services
         {
             try
             {
+                if (_youtubeService == null)
+                {
+                    _logger.LogWarning("YouTube service is not initialized. Cannot get video details.");
+                    return null;
+                }
+
                 var videoRequest = _youtubeService.Videos.List("snippet,statistics,contentDetails,liveStreamingDetails");
                 videoRequest.Id = videoId;
 
@@ -231,7 +244,10 @@ namespace WebQuanLyGiaiDau_NhomTD.Services
 
         public void Dispose()
         {
-            _youtubeService?.Dispose();
+            if (_youtubeService != null)
+            {
+                _youtubeService.Dispose();
+            }
         }
     }
 }

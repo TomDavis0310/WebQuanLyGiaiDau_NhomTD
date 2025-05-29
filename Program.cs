@@ -3,17 +3,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
 using WebQuanLyGiaiDau_NhomTD;
+using System.Threading;
 
-// Define the seeding method here so it's accessible within the try block if needed as a local function,
-// or keep it outside if it's cleaner. For this change, keeping its definition at the end is fine.
+var builder = WebApplication.CreateBuilder(args);
 
-try
-{
-    var builder = WebApplication.CreateBuilder(args);
-
-    // Đăng ký ApplicationDbContext với DI container
-    builder.Services.AddDbContext<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("ApplicationDbContextConnection")));
+// Đăng ký ApplicationDbContext với DI container
+builder.Services.AddDbContext<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ApplicationDbContextConnection")));
 
     // Đăng ký Identity với ApplicationUser thay vì IdentityUser
     builder.Services.AddDefaultIdentity<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser>(options =>
@@ -48,6 +44,8 @@ try
     else
     {
         Console.WriteLine("⚠️  Google OAuth chưa được cấu hình. Vui lòng xem hướng dẫn trong GOOGLE_OAUTH_SETUP.md");
+        Console.WriteLine("   Đăng nhập bằng Google sẽ không hoạt động cho đến khi bạn cấu hình thông tin xác thực.");
+        Console.WriteLine("   Bạn vẫn có thể đăng nhập bằng tài khoản cục bộ.");
     }
 
     // Đăng ký MVC và Razor Pages (cho Identity)
@@ -153,7 +151,40 @@ try
         // This inner try-catch is for DB structure check specific errors
         try
         {
-            dbContext.Database.EnsureCreated();
+            // Check if the database exists
+            Console.WriteLine("Kiểm tra cơ sở dữ liệu...");
+            bool dbExists = dbContext.Database.CanConnect();
+            
+            if (!dbExists)
+            {
+                Console.WriteLine("Cơ sở dữ liệu không tồn tại. Đang tạo cơ sở dữ liệu mới...");
+                try
+                {
+                    dbContext.Database.EnsureCreated();
+                    Console.WriteLine("Đã tạo cơ sở dữ liệu thành công.");
+                }
+                catch (Exception createEx)
+                {
+                    Console.WriteLine($"Lỗi khi tạo cơ sở dữ liệu: {createEx.Message}");
+                    throw; // Re-throw to stop the application
+                }
+            }
+            else
+            {
+                Console.WriteLine("Cơ sở dữ liệu đã tồn tại.");
+            }
+            
+            // Apply migrations
+            try
+            {
+                Console.WriteLine("Đang áp dụng migrations...");
+                dbContext.Database.Migrate();
+                Console.WriteLine("Migrations đã được áp dụng thành công.");
+            }
+            catch (Exception migrationEx)
+            {
+                Console.WriteLine($"Lỗi khi áp dụng migrations: {migrationEx.Message}");
+            }
             Console.WriteLine("Kiểm tra cấu trúc cơ sở dữ liệu...");
             // ... (rest of the database check logic, including its own try-catch for TournamentFormats)
             bool tournamentFormatsTableExists = false;
@@ -177,15 +208,26 @@ try
                         )
                     END
                 ");
-                dbContext.Database.ExecuteSqlRaw(@"
-                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE name = 'TournamentFormatId' AND object_id = OBJECT_ID('Tournaments'))
-                    BEGIN
-                        ALTER TABLE [dbo].[Tournaments]
-                        ADD [TournamentFormatId] [int] NULL,
-                            [MaxTeams] [int] NULL,
-                            [TeamsPerGroup] [int] NULL
-                    END
-                ");
+                // Check if Tournaments table exists before trying to alter it
+                try
+                {
+                    dbContext.Database.ExecuteSqlRaw(@"
+                        IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Tournaments')
+                        BEGIN
+                            IF NOT EXISTS (SELECT * FROM sys.columns WHERE name = 'TournamentFormatId' AND object_id = OBJECT_ID('Tournaments'))
+                            BEGIN
+                                ALTER TABLE [dbo].[Tournaments]
+                                ADD [TournamentFormatId] [int] NULL,
+                                    [MaxTeams] [int] NULL,
+                                    [TeamsPerGroup] [int] NULL
+                            END
+                        END
+                    ");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Lỗi khi cập nhật bảng Tournaments: {ex.Message}");
+                }
                 Console.WriteLine("Đã tạo bảng TournamentFormats và cập nhật bảng Tournaments.");
             }
             Console.WriteLine("Cấu trúc cơ sở dữ liệu đã sẵn sàng.");
@@ -193,19 +235,79 @@ try
         catch (Exception ex)
         {
             Console.WriteLine($"Lỗi khi kiểm tra cơ sở dữ liệu: {ex.ToString()}"); // Log full exception
-        }
-    }
-
+            
+            // Check if this is a connection issue
+            if (ex.ToString().Contains("A network-related or instance-specific error") || 
+                ex.ToString().Contains("Cannot open database") ||
+                ex.ToString().Contains("Login failed"))
+            {
+                Console.WriteLine("Có vẻ như có vấn đề với kết nối cơ sở dữ liệu. Vui lòng kiểm tra:");
+                Console.WriteLine("1. SQL Server đã được cài đặt và đang chạy");
+                Console.WriteLine("2. Chuỗi kết nối trong appsettings.json là chính xác");
+                Console.WriteLine("3. Người dùng Windows hiện tại có quyền truy cập SQL Server");
+                Console.WriteLine("4. Cơ sở dữ liệu 'WebQuanLyGiaiDau_NhomTD' đã tồn tại hoặc người dùng có quyền tạo cơ sở dữ liệu mới");
+            }
+        }    }    
     Console.WriteLine("Hoàn tất cấu hình pipeline và kiểm tra DB. Sẵn sàng chạy app.Run().");
-    app.Run();
-    Console.WriteLine("App đã chạy xong (nếu app.Run() trả về)."); // Should not be reached for web apps
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"CRITICAL STARTUP FAILURE (OUTERMOST CATCH): {ex.ToString()}");
-    // Environment.Exit(1); // Force exit with an error code
-    throw; // Rethrow to ensure dotnet watch sees the failure
-}
+    
+    // Add a special route to keep the application running
+    app.MapGet("/ping", () => "Application is running");
+    
+    // Add shutdown protection
+    app.Lifetime.ApplicationStopping.Register(() => 
+    {
+        Console.WriteLine("Application is being stopped. Reason may be:");
+        Console.WriteLine("1. Manual shutdown requested");
+        Console.WriteLine("2. Host environment shutdown");
+        Console.WriteLine("3. Unhandled exception in the application");
+    });
+    
+    // Add a cancellation token source to prevent immediate shutdown
+    var cts = new CancellationTokenSource();
+    Console.CancelKeyPress += (sender, e) => {
+        e.Cancel = true;
+        cts.Cancel();
+        Console.WriteLine("Cancellation requested by user. Application will shut down.");
+    };
+
+    // Log that we're about to run
+    Console.WriteLine("Hoàn tất cấu hình pipeline và kiểm tra DB. Sẵn sàng chạy app.Run().");
+
+    // Run the application with a hosted service to keep it alive
+    var hostTask = app.RunAsync();
+
+    // Add a background task to periodically check that the app is still running
+    Task.Run(async () => {
+        try {
+            Console.WriteLine("Starting background health check task...");
+            while (!cts.Token.IsCancellationRequested)
+            {
+                await Task.Delay(30000, cts.Token); // Check every 30 seconds
+                Console.WriteLine("Application health check: Running");
+            }
+        }
+        catch (OperationCanceledException) {
+            Console.WriteLine("Health check task was canceled.");
+        }
+        catch (Exception ex) {
+            Console.WriteLine($"Error in health check task: {ex.Message}");
+        }
+    });
+
+    // Wait for the app to shut down or user cancellation
+    try
+    {
+        Console.WriteLine("Application is now running. Press Ctrl+C to stop.");
+        await hostTask;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Exception from host: {ex.Message}");
+    }
+    finally
+    {
+        Console.WriteLine("Application has stopped.");
+    }
 
 // Method to seed two basketball tournaments (definition remains outside)
 static void SeedTwoBasketballTournaments(ApplicationDbContext context)
