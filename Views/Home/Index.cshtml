@@ -5,7 +5,7 @@
 <!-- Enhanced 24/7 Sports Hero Section -->
 <div class="sports-hero-enhanced sports-24-7" id="hero-section">
     <!-- Live Sports Indicator -->
-    <div class="live-indicator position-absolute" style="top: 20px; right: 20px; z-index: 10;">
+    <div class="live-indicator position-absolute" style="top: 11px; right: 11px; z-index: 10; transform: scale(0.56);">
         <div class="pulse-dot"></div>
         <span>LIVE 24/7</span>
     </div>
@@ -15,152 +15,130 @@
     <div class="hero-waves"></div>
 
     <div class="container">
-        <div class="row align-items-center min-vh-100">
+        <div class="row align-items-center min-vh-50">
             <div class="col-lg-6 text-center text-lg-start hero-content">
-                <div class="hero-badge animate-bounce-in energy-button" data-delay="0.2">
-                    <i class="bi bi-trophy-fill me-2"></i>
-                    Nền tảng Thể Thao #1 Việt Nam
+                <div class="hero-badge animate-bounce-in energy-button" data-delay="0.2" style="transform: scale(0.56);">
+                    <i class="bi bi-trophy"></i>
+                    <span>Nền tảng Thể Thao #1</span>
                 </div>
-
-                <h1 class="hero-title animate-slide-up dynamic-entrance" data-delay="0.4">
-                    <span class="text-gradient sports-wave">Thể Thao 24/7</span><br>
-                    <span class="typing-text" data-text="Giải Đấu Không Giới Hạn">Giải Đấu Không Giới Hạn</span>
+                <h1 class="hero-title animate-fade-up" data-delay="0.3">
+                    <span class="text-gradient">Thể Thao 24/7</span>
+                    <br><span style="font-size: 75%;">Giải Đấu Không Giới Hạn</span>
                 </h1>
-
-                <p class="hero-subtitle animate-slide-up" data-delay="0.6">
-                    🏆 Nền tảng giải đấu thể thao năng động nhất Việt Nam!
-                    ⚡ Tham gia ngay để trải nghiệm thể thao đỉnh cao 24/7 cùng hàng nghìn vận động viên chuyên nghiệp.
+                <p class="hero-subtitle animate-fade-up" data-delay="0.4">
+                    Tham gia ngay hôm nay để trải nghiệm những giải đấu thể thao hàng đầu với hàng nghìn vận động viên chuyên nghiệp và bán chuyên từ khắp Việt Nam
                 </p>
-
-                <div class="hero-stats animate-slide-up" data-delay="0.8">
-                    <div class="stat-item champion-card">
-                        <div class="stat-number stats-animated" data-count="500">0</div>
-                        <div class="stat-label">🏆 Giải đấu LIVE</div>
+                
+                <!-- Stats Counter -->
+                <div class="hero-stats animate-fade-up" data-delay="0.5">
+                    <div class="stat-item">
+                        <div class="stat-number">80+</div>
+                        <div class="stat-label">Giải đấu</div>
                     </div>
-                    <div class="stat-item champion-card">
-                        <div class="stat-number stats-animated" data-count="1200">0</div>
-                        <div class="stat-label">⚽ Đội thi đấu</div>
+                    <div class="stat-item">
+                        <div class="stat-number">1500+</div>
+                        <div class="stat-label">Đội tham gia</div>
                     </div>
-                    <div class="stat-item champion-card">
-                        <div class="stat-number stats-animated" data-count="8500">0</div>
-                        <div class="stat-label">🥇 Vận động viên</div>
+                    <div class="stat-item">
+                        <div class="stat-number">7000+</div>
+                        <div class="stat-label">Vận động viên</div>
                     </div>
                 </div>
-
-                @if (User.Identity == null || !User.Identity.IsAuthenticated)
-                {
-                    <div class="hero-buttons animate-slide-up" data-delay="1.0">
-                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-sports-primary btn-sports-xl hero-btn-primary energy-button">
-                            <i class="bi bi-rocket-takeoff"></i>
-                            <span>🚀 Tham Gia Ngay</span>
-                            <div class="btn-shine"></div>
-                        </a>
-                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-sports-outline btn-sports-xl hero-btn-secondary energy-button">
-                            <i class="bi bi-star-fill"></i>
-                            <span>⭐ Đăng Ký VIP</span>
-                        </a>
-                    </div>
-                }
-                else
-                {
-                    <div class="hero-buttons animate-slide-up" data-delay="1.0">
-                        <a asp-controller="Sports" asp-action="Index" class="btn btn-sports-primary btn-sports-xl hero-btn-primary energy-button">
-                            <i class="bi bi-fire"></i>
-                            <span>🔥 Khám Phá Thể Thao</span>
-                            <div class="btn-shine"></div>
-                        </a>
-                        <a asp-controller="Tournament" asp-action="Index" class="btn btn-sports-outline btn-sports-xl hero-btn-secondary energy-button">
-                            <i class="bi bi-trophy-fill"></i>
-                            <span>🏆 Giải Đấu HOT</span>
-                        </a>
-                    </div>
-                }
-            </div>
-
-            <div class="col-lg-6 d-none d-lg-block hero-visual">
-                <div class="logo-container animate-float-3d" data-delay="0.5">
-                    <div class="logo-glow"></div>
-                    <img src="/images/Logomain.png" alt="Logo" class="img-fluid main-logo" loading="lazy">
-                    <div class="logo-particles"></div>
+                
+                <!-- CTA Buttons -->
+                <div class="hero-buttons animate-fade-up" data-delay="0.6">
+                    <a href="#" class="hero-btn-primary energy-button">
+                        <i class="bi bi-trophy-fill"></i>
+                        Xem giải đấu
+                    </a>
+                    <a href="#" class="hero-btn-secondary">
+                        <i class="bi bi-people-fill"></i>
+                        Tạo đội
+                    </a>
                 </div>
             </div>
-        </div>
-
-        <!-- Scroll Indicator -->
-        <div class="scroll-indicator animate-bounce">
-            <div class="scroll-arrow">
-                <i class="bi bi-chevron-down"></i>
+            <div class="col-lg-6 d-none d-lg-block">
+                <div class="position-relative" style="transform: scale(0.56);">
+                    <img src="/images/sports/basketball-hero.png" class="img-fluid animate-float" alt="Basketball Tournament" style="max-width: 100%;">
+                    <div class="floating-badge-1 animate-float" data-delay="0.3" style="transform: scale(0.56);">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                        <span>Thi đấu ngay</span>
+                    </div>
+                    <div class="floating-badge-2 animate-float" data-delay="0.5" style="transform: scale(0.56);">
+                        <i class="bi bi-award-fill"></i>
+                        <span>Giải thưởng lớn</span>
+                    </div>
+                </div>
             </div>
-            <span>Khám phá thêm</span>
         </div>
     </div>
 </div>
 
 <!-- How It Works Section -->
-<section class="how-it-works-section py-5" id="how-it-works">
+<section class="how-it-works-section py-4" id="how-it-works">
     <div class="container">
-        <div class="text-center mb-5 section-header">
-            <div class="section-badge animate-fade-in-up">
+        <div class="text-center mb-4 section-header">
+            <div class="section-badge animate-fade-in-up" style="transform: scale(0.75);">
                 <i class="bi bi-lightbulb me-2"></i>Quy trình đơn giản
             </div>
-            <h2 class="animate-fade-in-up" data-delay="0.1">Cách Thức Hoạt Động</h2>
-            <p class="text-muted animate-fade-in-up" data-delay="0.2">
+            <h2 class="animate-fade-in-up" data-delay="0.1" style="font-size: 1.8rem;">Cách Thức Hoạt Động</h2>
+            <p class="text-muted animate-fade-in-up" data-delay="0.2" style="font-size: 0.9rem;">
                 Chỉ với 4 bước đơn giản, bạn có thể tham gia và tổ chức giải đấu một cách hiệu quả
             </p>
         </div>
 
-        <div class="row g-4">
+        <div class="row g-3">
             <div class="col-lg-3 col-md-6 step-item" data-step="1">
-                <div class="step-card animate-scale-in" data-delay="0.1">
+                <div class="step-card animate-scale-in" data-delay="0.1" style="transform: scale(0.75); margin: 0 auto;">
                     <div class="step-number">01</div>
                     <div class="step-icon">
                         <i class="bi bi-person-plus-fill"></i>
                     </div>
-                    <h4>Đăng ký tài khoản</h4>
-                    <p>Tạo tài khoản miễn phí và hoàn thiện thông tin cá nhân</p>
+                    <h4 style="font-size: 1.2rem;">Đăng ký tài khoản</h4>
+                    <p style="font-size: 0.85rem;">Tạo tài khoản miễn phí và hoàn thiện thông tin cá nhân</p>
                     <div class="step-progress"></div>
                 </div>
             </div>
 
             <div class="col-lg-3 col-md-6 step-item" data-step="2">
-                <div class="step-card animate-scale-in" data-delay="0.2">
+                <div class="step-card animate-scale-in" data-delay="0.2" style="transform: scale(0.75); margin: 0 auto;">
                     <div class="step-number">02</div>
                     <div class="step-icon">
                         <i class="bi bi-people-fill"></i>
                     </div>
-                    <h4>Tạo đội bóng</h4>
-                    <p>Thành lập đội bóng và mời các thành viên tham gia</p>
+                    <h4 style="font-size: 1.2rem;">Tạo đội bóng</h4>
+                    <p style="font-size: 0.85rem;">Thành lập đội bóng và mời các thành viên tham gia</p>
                     <div class="step-progress"></div>
                 </div>
             </div>
 
             <div class="col-lg-3 col-md-6 step-item" data-step="3">
-                <div class="step-card animate-scale-in" data-delay="0.3">
+                <div class="step-card animate-scale-in" data-delay="0.3" style="transform: scale(0.75); margin: 0 auto;">
                     <div class="step-number">03</div>
                     <div class="step-icon">
                         <i class="bi bi-trophy-fill"></i>
                     </div>
-                    <h4>Đăng ký giải đấu</h4>
-                    <p>Chọn giải đấu phù hợp và đăng ký tham gia</p>
+                    <h4 style="font-size: 1.2rem;">Đăng ký giải đấu</h4>
+                    <p style="font-size: 0.85rem;">Chọn giải đấu phù hợp và đăng ký tham gia</p>
                     <div class="step-progress"></div>
                 </div>
             </div>
 
             <div class="col-lg-3 col-md-6 step-item" data-step="4">
-                <div class="step-card animate-scale-in" data-delay="0.4">
+                <div class="step-card animate-scale-in" data-delay="0.4" style="transform: scale(0.75); margin: 0 auto;">
                     <div class="step-number">04</div>
                     <div class="step-icon">
                         <i class="bi bi-play-circle-fill"></i>
                     </div>
-                    <h4>Thi đấu & Thắng</h4>
-                    <p>Tham gia thi đấu và theo dõi kết quả trực tiếp</p>
+                    <h4 style="font-size: 1.2rem;">Thi đấu & Thắng</h4>
+                    <p style="font-size: 0.85rem;">Tham gia thi đấu và theo dõi kết quả trực tiếp</p>
                     <div class="step-progress"></div>
                 </div>
             </div>
         </div>
 
         <!-- Process Flow Animation -->
-        <div class="process-flow animate-fade-in-up" data-delay="0.5">
+        <div class="process-flow animate-fade-in-up" data-delay="0.5" style="transform: scale(0.75); margin: 0 auto;">
             <svg class="flow-line" viewBox="0 0 1200 100">
                 <path class="flow-path" d="M50,50 Q300,10 550,50 T1050,50" stroke-dasharray="10,5"/>
             </svg>
@@ -563,8 +541,6 @@
         </div>
     </div>
 </section>
-
-
 
 <!-- Enhanced JavaScript for Homepage Interactions -->
 <script>

@@ -36,9 +36,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             // Get user's teams (teams where user is coach)
             var currentUser = await _userManager.GetUserAsync(User);
             var userTeams = await _context.Teams
-                .Where(t => t.Coach == currentUser.FullName ||
-                           t.Coach == userId ||
-                           t.Coach == User.Identity.Name)
+                .Where(t => t.UserId == currentUser.Id)
                 .Include(t => t.Players)
                 .ToListAsync();
                 

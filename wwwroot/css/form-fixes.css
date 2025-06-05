@@ -33,3 +33,46 @@
     border-color: #1a237e !important;
     box-shadow: 0 0 0 0.25rem rgba(26, 35, 126, 0.25) !important;
 }
+
+/* Dropdown fixes */
+.dropdown {
+    position: relative !important;
+}
+
+/* Fix dropdown positioning */
+.dropdown-menu {
+    position: absolute !important;
+    transform: translate3d(0px, 38px, 0px) !important;
+    top: 0 !important;
+    left: auto !important;
+    will-change: transform !important;
+}
+
+/* Fix for click interaction */
+.dropdown-toggle {
+    cursor: pointer;
+}
+
+/* Ensure dropdowns appear above other elements */
+.dropdown-menu.show {
+    display: block !important;
+    z-index: 2000 !important;
+}
+
+/* Fix for touch devices */
+@media (pointer: coarse) {
+    .dropdown-toggle,
+    .dropdown-item {
+        padding: 0.75rem 1rem !important; /* Larger tap target */
+    }
+    
+    .dropdown-menu {
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2) !important;
+    }
+}
+
+/* Prevent dropdown from being hidden by other elements */
+body .dropdown-menu.show {
+    opacity: 1 !important;
+    visibility: visible !important;
+}

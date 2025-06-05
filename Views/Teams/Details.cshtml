@@ -1,8 +1,11 @@
 ﻿@model WebQuanLyGiaiDau_NhomTD.Models.Team
 @using WebQuanLyGiaiDau_NhomTD.Models.UserModel
+@using System.Security.Claims
 
 @{
     ViewData["Title"] = "Chi Tiết Đội Bóng";
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var isTeamOwner = !string.IsNullOrEmpty(Model.UserId) && Model.UserId == userId;
 }
 
 @if (TempData["SuccessMessage"] != null)
@@ -68,22 +71,30 @@
     </div>
 
     <div class="mt-4 d-flex justify-content-between">
-        @if (User.IsInRole(SD.Role_Admin))
+        @if (User.IsInRole(SD.Role_Admin) || isTeamOwner)
         {
             <a asp-action="Edit" asp-route-id="@Model?.TeamId" class="btn btn-warning">
                 ✏️ Chỉnh Sửa
             </a>
         }
-        <a asp-action="Index" class="btn btn-outline-secondary">
-            ↩️ Quay Lại Danh Sách
-        </a>
+        <div>
+            @if (User.Identity.IsAuthenticated && !isTeamOwner)
+            {
+                <a asp-action="AssignTeamToCurrentUser" asp-route-id="@Model?.TeamId" class="btn btn-primary me-2">
+                    🔐 Gán đội cho tôi
+                </a>
+            }
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                ↩️ Quay Lại Danh Sách
+            </a>
+        </div>
     </div>
 </div>
 
 <div class="container bg-light shadow rounded p-4 mt-4 mb-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="text-primary">Danh Sách Cầu Thủ:</h5>
-        @if (User.Identity.IsAuthenticated)
+        @if (User.Identity.IsAuthenticated && (User.IsInRole(SD.Role_Admin) || isTeamOwner))
         {
             <a asp-action="AddPlayer" asp-route-teamId="@Model?.TeamId" class="btn btn-success">
                 ➕ Thêm Cầu Thủ
@@ -144,7 +155,7 @@
                                     <a asp-controller="Players" asp-action="Details" asp-route-id="@player.PlayerId" class="btn btn-sm btn-info me-1">
                                         🔍 Xem
                                     </a>
-                                    @if (User.Identity.IsAuthenticated)
+                                    @if (User.Identity.IsAuthenticated && (User.IsInRole(SD.Role_Admin) || isTeamOwner))
                                     {
                                         <a asp-action="EditPlayer" asp-route-id="@player.PlayerId" asp-route-teamId="@(Model?.TeamId)" class="btn btn-sm btn-warning me-1">
                                             ✏️ Sửa

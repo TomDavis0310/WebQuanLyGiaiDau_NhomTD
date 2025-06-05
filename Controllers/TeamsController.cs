@@ -86,24 +86,53 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             {
                 try
                 {
-                    // Set current user as coach if not provided
+                    // Set current user as the team owner
+                    var currentUser = await _userManager.GetUserAsync(User);
+                    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    
+                    // Ensure we have a valid user
+                    if (string.IsNullOrEmpty(userId))
+                    {
+                        ModelState.AddModelError(string.Empty, "Không thể xác định người dùng hiện tại.");
+                        return View(team);
+                    }
+                    
+                    // Set coach name if not provided
                     if (string.IsNullOrWhiteSpace(team.Coach))
                     {
-                        var currentUser = await _userManager.GetUserAsync(User);
-                        team.Coach = currentUser?.FullName ?? User.Identity.Name ?? "Unknown";
+                        team.Coach = currentUser?.FullName ?? User.Identity?.Name ?? "Unknown Coach";
                     }
 
-                    // Set the UserId
-                    team.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-                    // Xử lý tải lên logo nếu có
+                    // Set user ID for the team - ensure it's set correctly
+                    team.UserId = userId;
+                    
+                    // Process logo upload if provided
                     if (logoFile != null && logoFile.Length > 0)
                     {
+                        // Validate file type
+                        string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
+                        string fileExtension = Path.GetExtension(logoFile.FileName).ToLowerInvariant();
+                        
+                        if (!allowedExtensions.Contains(fileExtension))
+                        {
+                            ModelState.AddModelError("logoFile", "Chỉ chấp nhận các file hình ảnh: .jpg, .jpeg, .png, .gif");
+                            return View(team);
+                        }
+                        
+                        // Validate file size (max 5MB)
+                        if (logoFile.Length > 5 * 1024 * 1024)
+                        {
+                            ModelState.AddModelError("logoFile", "Kích thước file không được vượt quá 5MB");
+                            return View(team);
+                        }
+                        
                         team.LogoUrl = await SaveImage(logoFile);
                     }
 
                     _context.Add(team);
                     await _context.SaveChangesAsync();
+                    
+                    TempData["SuccessMessage"] = "Đội bóng đã được tạo thành công!";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
@@ -167,19 +196,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return NotFound();
             }
 
-            // Kiểm tra quyền: Admin có thể sửa tất cả, người dùng thường chỉ có thể sửa đội của mình
-            if (!User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+            // Use the CanUserManageTeam method to check permissions consistently
+            bool canEdit = await CanUserManageTeam(team.TeamId);
+            if (!canEdit)
             {
-                // Kiểm tra xem đội này có thuộc về người dùng hiện tại không
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var isTeamOwner = await _context.TournamentTeams
-                    .AnyAsync(tt => tt.TeamId == id && tt.Team.Players.Any(p => p.UserId == userId));
-
-                if (!isTeamOwner)
-                {
-                    TempData["ErrorMessage"] = "Bạn không có quyền chỉnh sửa đội này.";
-                    return RedirectToAction(nameof(Index));
-                }
+                TempData["ErrorMessage"] = "Bạn không có quyền chỉnh sửa đội này.";
+                return RedirectToAction(nameof(Details), new { id = team.TeamId });
             }
 
             return View(team);
@@ -191,33 +213,56 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Edit(int id, [Bind("TeamId,Name,Coach")] Team team, IFormFile logoFile)
+        public async Task<IActionResult> Edit(int id, [Bind("TeamId,Name,Coach,LogoUrl,UserId")] Team team, IFormFile logoFile)
         {
             if (id != team.TeamId)
             {
                 return NotFound();
             }
 
+            // Get the existing team to check permissions and preserve data
+            var existingTeam = await _context.Teams
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.TeamId == id);
+
+            if (existingTeam == null)
+            {
+                return NotFound();
+            }
+
+            // Check if user has permission to edit this team
+            if (!User.IsInRole(SD.Role_Admin))
+            {
+                bool canEdit = await CanUserManageTeam(id);
+                if (!canEdit)
+                {
+                    TempData["ErrorMessage"] = "Bạn không có quyền chỉnh sửa đội này.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
+            // Preserve the original UserId
+            team.UserId = existingTeam.UserId;
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // Lấy thông tin đội bóng hiện tại để giữ lại URL logo nếu không có logo mới
-                    var existingTeam = await _context.Teams.AsNoTracking().FirstOrDefaultAsync(t => t.TeamId == id);
-
-                    // Xử lý tải lên logo mới nếu có
+                    // Process new logo if uploaded
                     if (logoFile != null && logoFile.Length > 0)
                     {
                         team.LogoUrl = await SaveImage(logoFile);
                     }
-                    else if (existingTeam != null)
+                    else
                     {
-                        // Giữ lại URL logo cũ nếu không có logo mới
+                        // Keep existing logo if no new one was uploaded
                         team.LogoUrl = existingTeam.LogoUrl;
                     }
 
                     _context.Update(team);
                     await _context.SaveChangesAsync();
+                    
+                    TempData["SuccessMessage"] = "Đội bóng đã được cập nhật thành công!";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
@@ -255,19 +300,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return NotFound();
             }
 
-            // Kiểm tra quyền: Admin có thể xóa tất cả, người dùng thường chỉ có thể xóa đội của mình
-            if (!User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+            // Use the CanUserManageTeam method to check permissions consistently
+            bool canDelete = await CanUserManageTeam(team.TeamId);
+            if (!canDelete)
             {
-                // Kiểm tra xem đội này có thuộc về người dùng hiện tại không
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var isTeamOwner = await _context.TournamentTeams
-                    .AnyAsync(tt => tt.TeamId == id && tt.Team.Players.Any(p => p.UserId == userId));
-
-                if (!isTeamOwner)
-                {
-                    TempData["ErrorMessage"] = "Bạn không có quyền xóa đội này.";
-                    return RedirectToAction(nameof(Index));
-                }
+                TempData["ErrorMessage"] = "Bạn không có quyền xóa đội này.";
+                return RedirectToAction(nameof(Details), new { id = team.TeamId });
             }
 
             return View(team);
@@ -281,38 +319,60 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         {
             try
             {
-                var team = await _context.Teams.FindAsync(id);
-                if (team != null)
+                var team = await _context.Teams
+                    .Include(t => t.Players)
+                    .FirstOrDefaultAsync(t => t.TeamId == id);
+                
+                if (team == null)
                 {
-                    // Check if there are any players in this team
-                    var hasPlayers = await _context.Players
-                        .AnyAsync(p => p.TeamId == id);
-
-                    // Check if there are any matches for this team
-                    var hasMatches = await _context.Matches
-                        .AnyAsync(m => m.TeamA == team.Name || m.TeamB == team.Name);
-
-                    if (hasPlayers || hasMatches)
-                    {
-                        // If there are related records, return to the delete view with an error message
-                        ViewData["error"] = "Không thể xóa đội bóng này vì có cầu thủ hoặc trận đấu liên quan.";
-                        team = await _context.Teams
-                            .FirstOrDefaultAsync(m => m.TeamId == id);
-                        return View(team);
-                    }
-
-                    _context.Teams.Remove(team);
-                    await _context.SaveChangesAsync();
+                    return NotFound();
                 }
+
+                // Check if user has permission to delete
+                if (!User.IsInRole(SD.Role_Admin))
+                {
+                    bool canDelete = await CanUserManageTeam(id);
+                    if (!canDelete)
+                    {
+                        TempData["ErrorMessage"] = "Bạn không có quyền xóa đội này.";
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
+
+                // Check if there are any matches for this team
+                var hasMatches = await _context.Matches
+                    .AnyAsync(m => m.TeamAId == id || m.TeamBId == id);
+
+                // Check if this team is registered in any tournaments
+                var isInTournament = await _context.TournamentTeams
+                    .AnyAsync(tt => tt.TeamId == id);
+
+                if (hasMatches || isInTournament)
+                {
+                    TempData["ErrorMessage"] = "Không thể xóa đội bóng này vì đã có trận đấu hoặc đã đăng ký giải đấu.";
+                    return RedirectToAction(nameof(Delete), new { id = id });
+                }
+
+                // Delete all players associated with this team
+                if (team.Players != null && team.Players.Any())
+                {
+                    _context.Players.RemoveRange(team.Players);
+                }
+
+                // Now delete the team
+                _context.Teams.Remove(team);
+                await _context.SaveChangesAsync();
+                
+                TempData["SuccessMessage"] = "Đội bóng đã được xóa thành công!";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                // Handle any other exceptions
-                var team = await _context.Teams
-                    .FirstOrDefaultAsync(m => m.TeamId == id);
-                ViewData["error"] = "Lỗi khi xóa đội bóng: " + ex.Message;
-                return View(team);
+                // Log the error
+                Console.WriteLine($"Error deleting team {id}: {ex.Message}");
+                
+                TempData["ErrorMessage"] = "Đã xảy ra lỗi khi xóa đội bóng. Vui lòng thử lại sau.";
+                return RedirectToAction(nameof(Delete), new { id = id });
             }
         }
 
@@ -330,19 +390,30 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return true;
             }
 
-            // Check if user is the coach/owner of the team
+            // Get current user ID
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentUser = await _userManager.GetUserAsync(User);
-
-            // Check if user created this team (coach field contains user's name or ID)
-            var team = await _context.Teams.FindAsync(teamId);
-            if (team != null)
+            if (string.IsNullOrEmpty(userId))
             {
-                // Check if coach field matches user's name or ID
-                if (team.Coach == currentUser?.FullName || team.Coach == userId || team.Coach == User.Identity.Name)
-                {
-                    return true;
-                }
+                return false;
+            }
+
+            // Check if user is the owner of the team (primary check)
+            var team = await _context.Teams.FindAsync(teamId);
+            if (team != null && team.UserId == userId)
+            {
+                return true;
+            }
+            
+            // If team doesn't have an owner yet but user is a coach, allow management
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (team != null && string.IsNullOrEmpty(team.UserId) && 
+                (team.Coach == currentUser?.FullName || team.Coach == userId || team.Coach == User.Identity.Name))
+            {
+                // Auto-assign team to this user
+                team.UserId = userId;
+                _context.Update(team);
+                await _context.SaveChangesAsync();
+                return true;
             }
 
             // Alternative check: if user has players in this team
@@ -378,107 +449,96 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> AddPlayer([Bind("FullName,Position,Number,TeamId")] Player player, IFormFile imageFile)
+        public async Task<IActionResult> AddPlayer([Bind("FullName,Position,Number,TeamId")] Player player, IFormFile imageUrl)
         {
-            // Lưu teamId để sử dụng trong trường hợp lỗi
-            int teamId = player.TeamId;
-
-            try
+            if (ModelState.IsValid)
             {
-                // Kiểm tra đội bóng có tồn tại không
-                var team = await _context.Teams.FindAsync(player.TeamId);
-                if (team == null)
+                try
                 {
-                    TempData["ErrorMessage"] = "Đội bóng không tồn tại.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                // Check if user can manage this team
-                if (!await CanUserManageTeam(teamId))
-                {
-                    TempData["ErrorMessage"] = "Bạn không có quyền thêm cầu thủ vào đội này.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                // Kiểm tra số áo có hợp lệ không
-                if (player.Number < 0 || player.Number > 99)
-                {
-                    TempData["ErrorMessage"] = "Số áo phải từ 0 đến 99.";
-                    return RedirectToAction(nameof(AddPlayer), new { teamId = player.TeamId });
-                }
-
-                // Kiểm tra số áo đã tồn tại trong đội chưa
-                bool numberExists = await _context.Players
-                    .AnyAsync(p => p.TeamId == player.TeamId && p.Number == player.Number);
-
-                if (numberExists)
-                {
-                    TempData["ErrorMessage"] = $"Số áo {player.Number} đã được sử dụng trong đội {team.Name}.";
-                    return RedirectToAction(nameof(AddPlayer), new { teamId = player.TeamId });
-                }
-
-                // Kiểm tra tên cầu thủ không được để trống
-                if (string.IsNullOrWhiteSpace(player.FullName))
-                {
-                    TempData["ErrorMessage"] = "Vui lòng nhập họ tên cầu thủ.";
-                    return RedirectToAction(nameof(AddPlayer), new { teamId = player.TeamId });
-                }
-
-                // Kiểm tra vị trí không được để trống
-                if (string.IsNullOrWhiteSpace(player.Position))
-                {
-                    TempData["ErrorMessage"] = "Vui lòng nhập vị trí thi đấu.";
-                    return RedirectToAction(nameof(AddPlayer), new { teamId = player.TeamId });
-                }
-
-                if (ModelState.IsValid)
-                {
-                    try
+                    // Get the team to check permissions
+                    var team = await _context.Teams.FindAsync(player.TeamId);
+                    if (team == null)
                     {
-                        // Xử lý tải lên hình ảnh nếu có
-                        if (imageFile != null && imageFile.Length > 0)
-                        {
-                            player.ImageUrl = await SavePlayerImage(imageFile);
-                        }
+                        return NotFound();
+                    }
 
-                        // Set UserId for the player
-                        player.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-                        _context.Add(player);
-                        await _context.SaveChangesAsync();
-
-                        // Thêm thông báo thành công
-                        TempData["SuccessMessage"] = $"Đã thêm cầu thủ {player.FullName} vào đội {team.Name} thành công.";
-
+                    // Check if user has permission to add players to this team
+                    if (!await CanUserManageTeam(player.TeamId))
+                    {
+                        TempData["ErrorMessage"] = "Bạn không có quyền thêm cầu thủ vào đội này.";
                         return RedirectToAction(nameof(Details), new { id = player.TeamId });
                     }
-                    catch (Exception ex)
+
+                    // Validate player position
+                    string[] validPositions = { "Point Guard", "Shooting Guard", "Small Forward", "Power Forward", "Center", "PG", "SG", "SF", "PF", "C" };
+                    if (!string.IsNullOrEmpty(player.Position) && !validPositions.Contains(player.Position))
                     {
-                        TempData["ErrorMessage"] = "Lỗi khi lưu dữ liệu: " + ex.Message;
-                        Console.WriteLine("Lỗi thêm cầu thủ: " + ex.ToString());
-                        return RedirectToAction(nameof(AddPlayer), new { teamId = player.TeamId });
+                        ModelState.AddModelError("Position", "Vị trí không hợp lệ. Các vị trí hợp lệ: Point Guard, Shooting Guard, Small Forward, Power Forward, Center, PG, SG, SF, PF, C");
+                        ViewData["TeamId"] = player.TeamId;
+                        ViewData["TeamName"] = team.Name;
+                        return View(player);
                     }
+
+                    // Validate jersey number
+                    if (player.Number < 0 || player.Number > 99)
+                    {
+                        ModelState.AddModelError("Number", "Số áo phải nằm trong khoảng từ 0 đến 99.");
+                        ViewData["TeamId"] = player.TeamId;
+                        ViewData["TeamName"] = team.Name;
+                        return View(player);
+                    }
+
+                    // Set the current user ID - ensure it's properly set
+                    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    if (!string.IsNullOrEmpty(userId))
+                    {
+                        player.UserId = userId;
+                    }
+                    
+                    // Process player image if provided
+                    if (imageUrl != null && imageUrl.Length > 0)
+                    {
+                        // Validate file type
+                        string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
+                        string fileExtension = Path.GetExtension(imageUrl.FileName).ToLowerInvariant();
+                        
+                        if (!allowedExtensions.Contains(fileExtension))
+                        {
+                            ModelState.AddModelError("imageUrl", "Chỉ chấp nhận các file hình ảnh: .jpg, .jpeg, .png, .gif");
+                            ViewData["TeamId"] = player.TeamId;
+                            ViewData["TeamName"] = team.Name;
+                            return View(player);
+                        }
+                        
+                        // Validate file size (max 5MB)
+                        if (imageUrl.Length > 5 * 1024 * 1024)
+                        {
+                            ModelState.AddModelError("imageUrl", "Kích thước file không được vượt quá 5MB");
+                            ViewData["TeamId"] = player.TeamId;
+                            ViewData["TeamName"] = team.Name;
+                            return View(player);
+                        }
+                        
+                        player.ImageUrl = await SavePlayerImage(imageUrl);
+                    }
+
+                    _context.Add(player);
+                    await _context.SaveChangesAsync();
+                    
+                    TempData["SuccessMessage"] = "Cầu thủ đã được thêm thành công!";
+                    return RedirectToAction(nameof(Details), new { id = player.TeamId });
                 }
-                else
+                catch (Exception ex)
                 {
-                    // Log lỗi validation
-                    var errors = string.Join("; ", ModelState.Values
-                        .SelectMany(v => v.Errors)
-                        .Select(e => e.ErrorMessage));
-
-                    TempData["ErrorMessage"] = "Lỗi dữ liệu: " + errors;
-                    Console.WriteLine("Lỗi validation: " + errors);
-
-                    return RedirectToAction(nameof(AddPlayer), new { teamId = player.TeamId });
+                    ModelState.AddModelError(string.Empty, "Lỗi khi thêm cầu thủ: " + ex.Message);
                 }
             }
-            catch (Exception ex)
-            {
-                // Xử lý ngoại lệ không mong muốn
-                Console.WriteLine("Lỗi không mong muốn: " + ex.ToString());
-                TempData["ErrorMessage"] = "Đã xảy ra lỗi: " + ex.Message;
-                return RedirectToAction(nameof(AddPlayer), new { teamId = teamId });
-            }
+
+            // If we got this far, something failed, redisplay form
+            var teamInfo = await _context.Teams.FindAsync(player.TeamId);
+            ViewData["TeamId"] = player.TeamId;
+            ViewData["TeamName"] = teamInfo?.Name ?? "Unknown Team";
+            return View(player);
         }
 
         // GET: Teams/EditPlayer/5
@@ -518,7 +578,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> EditPlayer(int id, [Bind("PlayerId,FullName,Position,Number,TeamId")] Player player, IFormFile imageFile)
+        public async Task<IActionResult> EditPlayer(int id, [Bind("PlayerId,FullName,Position,Number,TeamId")] Player player, IFormFile imageUrl)
         {
             // Lưu teamId để sử dụng trong trường hợp lỗi
             int teamId = player.TeamId;
@@ -590,9 +650,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     try
                     {
                         // Xử lý tải lên ảnh mới nếu có
-                        if (imageFile != null && imageFile.Length > 0)
+                        if (imageUrl != null && imageUrl.Length > 0)
                         {
-                            player.ImageUrl = await SavePlayerImage(imageFile);
+                            player.ImageUrl = await SavePlayerImage(imageUrl);
                         }
                         else
                         {
@@ -825,6 +885,67 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 Console.WriteLine("Lỗi khi lưu ảnh cầu thủ: " + ex.Message);
                 throw new Exception("Lỗi khi lưu ảnh cầu thủ: " + ex.Message);
             }
+        }
+
+        // Method to allow users to claim ownership of a team if they meet criteria
+        [Authorize]
+        public async Task<IActionResult> AssignTeamToCurrentUser(int id)
+        {
+            var team = await _context.Teams
+                .Include(t => t.Players)
+                .FirstOrDefaultAsync(t => t.TeamId == id);
+                
+            if (team == null)
+            {
+                return NotFound();
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["ErrorMessage"] = "Không thể xác định người dùng hiện tại.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Admin can claim any team
+            if (User.IsInRole(SD.Role_Admin))
+            {
+                team.UserId = userId;
+                _context.Update(team);
+                await _context.SaveChangesAsync();
+                
+                TempData["SuccessMessage"] = $"Đội {team.Name} đã được gán cho tài khoản của bạn.";
+                return RedirectToAction(nameof(Details), new { id = team.TeamId });
+            }
+            
+            // Check if team already has an owner
+            if (!string.IsNullOrEmpty(team.UserId))
+            {
+                TempData["ErrorMessage"] = $"Đội {team.Name} đã có chủ sở hữu.";
+                return RedirectToAction(nameof(Details), new { id = team.TeamId });
+            }
+            
+            // Check if current user is coach
+            var currentUser = await _userManager.GetUserAsync(User);
+            bool isCoach = team.Coach == currentUser?.FullName || team.Coach == userId || team.Coach == User.Identity.Name;
+            
+            // Check if user has players in this team
+            bool hasPlayers = team.Players != null && team.Players.Any(p => p.UserId == userId);
+            
+            if (isCoach || hasPlayers)
+            {
+                team.UserId = userId;
+                _context.Update(team);
+                await _context.SaveChangesAsync();
+                
+                TempData["SuccessMessage"] = $"Đội {team.Name} đã được gán cho tài khoản của bạn.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Bạn không đủ quyền để gán đội này cho mình.";
+            }
+            
+            return RedirectToAction(nameof(Details), new { id = team.TeamId });
         }
     }
 }

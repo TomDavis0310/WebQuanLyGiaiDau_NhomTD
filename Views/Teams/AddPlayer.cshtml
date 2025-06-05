@@ -50,7 +50,7 @@
 
             <div class="mb-3">
                 <label class="form-label fw-semibold">Ảnh Cầu Thủ</label>
-                <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                <input asp-for="ImageUrl" type="file" name="imageUrl" class="form-control" accept="image/*" />
                 <small class="text-muted">Chọn ảnh đại diện cho cầu thủ (không bắt buộc)</small>
             </div>
 
@@ -93,7 +93,7 @@
                 }
 
                 // Kiểm tra kích thước file ảnh nếu có
-                var fileInput = $('input[name="imageFile"]')[0];
+                var fileInput = $('input[name="imageUrl"]')[0];
                 if (fileInput && fileInput.files.length > 0) {
                     var fileSize = fileInput.files[0].size; // kích thước tính bằng byte
                     var maxSize = 5 * 1024 * 1024; // 5MB
@@ -109,7 +109,7 @@
             });
 
             // Hiển thị xem trước ảnh khi chọn file
-            $('input[name="imageFile"]').change(function() {
+            $('input[name="imageUrl"]').change(function() {
                 if (this.files && this.files[0]) {
                     var reader = new FileReader();
 
@@ -119,7 +119,7 @@
                         if (previewContainer.length === 0) {
                             // Tạo mới nếu chưa có
                             var newPreview = '<div class="image-preview mt-2 mb-2"><p>Ảnh đã chọn:</p><img src="' + e.target.result + '" class="img-thumbnail" style="max-height: 150px;" /></div>';
-                            $('input[name="imageFile"]').after(newPreview);
+                            $('input[name="imageUrl"]').after(newPreview);
                         } else {
                             // Cập nhật nếu đã có
                             previewContainer.find('img').attr('src', e.target.result);

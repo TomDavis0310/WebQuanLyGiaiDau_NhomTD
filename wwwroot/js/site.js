@@ -4,7 +4,73 @@
 $(document).ready(function() {
     // Initialize all components
     initializeApp();
+    
+    // Initialize scrollable navbar
+    initializeScrollableNavbar();
+    
+    // Fix for user profile dropdown
+    fixUserProfileDropdown();
 });
+
+// Fix user profile dropdown issues
+function fixUserProfileDropdown() {
+    // Ensure Bootstrap dropdown is properly initialized
+    var userDropdown = document.getElementById('userDropdown');
+    if (userDropdown) {
+        var dropdownInstance = new bootstrap.Dropdown(userDropdown);
+        
+        // Add click handler to ensure dropdown works properly
+        $(userDropdown).on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropdownInstance.toggle();
+        });
+    }
+    
+    // Also fix any .user-profile-dropdown elements that might not have proper ID
+    $('.user-profile-dropdown').each(function() {
+        var $this = $(this);
+        var dropdownInstance = new bootstrap.Dropdown($this[0]);
+        
+        // Add click handler to ensure dropdown works properly
+        $this.on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropdownInstance.toggle();
+        });
+    });
+}
+
+// Initialize horizontal scrolling for navbar with many items
+function initializeScrollableNavbar() {
+    const navbarNav = document.querySelector('.navbar-nav.me-auto');
+    
+    if (navbarNav) {
+        // Add scroll hint indicators
+        const scrollContainer = document.createElement('div');
+        scrollContainer.className = 'navbar-scroll-container';
+        navbarNav.parentNode.insertBefore(scrollContainer, navbarNav);
+        scrollContainer.appendChild(navbarNav);
+        
+        // Check if scrolling is needed
+        const checkScroll = () => {
+            if (navbarNav.scrollWidth > navbarNav.clientWidth) {
+                scrollContainer.classList.add('has-overflow');
+            } else {
+                scrollContainer.classList.remove('has-overflow');
+            }
+        };
+        
+        // Initialize and listen for window resize
+        checkScroll();
+        window.addEventListener('resize', checkScroll);
+        
+        // Add scroll buttons for mobile
+        if (window.innerWidth < 1200) {
+            // Add scroll buttons implementation if needed
+        }
+    }
+}
 
 function initializeApp() {
     // Core functionality
@@ -310,11 +376,9 @@ function initializeLoadingStates() {
         $('.loading-overlay').fadeOut(200);
     });
 
-    // Page load animations
+    // Add loaded class to body on window load
     $(window).on('load', function() {
-        $('.page-loader').fadeOut(500, function() {
-            $('body').addClass('loaded');
-        });
+        $('body').addClass('loaded');
     });
 }
 
@@ -405,19 +469,6 @@ const additionalCSS = `
 
         @keyframes fadeOut {
             to { opacity: 0; transform: translateX(100%); }
-        }
-
-        .page-loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .loading-overlay {

@@ -11,6 +11,7 @@ using WebQuanLyGiaiDau_NhomTD.Models;
 using WebQuanLyGiaiDau_NhomTD.Services;
 using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 
 namespace WebQuanLyGiaiDau_NhomTD.Controllers
 {
@@ -19,12 +20,14 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         private readonly ApplicationDbContext _context;
         private readonly TournamentScheduleService _scheduleService;
         private readonly ITournamentEmailService _emailService;
+        private readonly UserManager<Models.ApplicationUser> _userManager;
 
-        public TournamentController(ApplicationDbContext context, WebQuanLyGiaiDau_NhomTD.Services.TournamentScheduleService scheduleService, ITournamentEmailService emailService)
+        public TournamentController(ApplicationDbContext context, WebQuanLyGiaiDau_NhomTD.Services.TournamentScheduleService scheduleService, ITournamentEmailService emailService, UserManager<Models.ApplicationUser> userManager)
         {
             _context = context;
             _scheduleService = scheduleService;
             _emailService = emailService;
+            _userManager = userManager;
         }
 
         // GET: Tournament/GenerateSchedule
@@ -318,7 +321,15 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 ViewBag.UserHasTeams = userHasTeams;
             }
 
-            ViewBag.Teams = teams;
+            var teamtournament = await _context.TournamentTeams.Where(tt => tt.TournamentId == tournament.Id).ToListAsync();
+            var displayteam = new List<Team>();
+            foreach(var teamT in teamtournament) 
+            {
+                var team = await _context.Teams.Where(t => t.TeamId == teamT.TeamId).FirstOrDefaultAsync();
+                displayteam.Add(team);
+
+            }
+            ViewBag.Teams = displayteam;
             ViewBag.Matches = matches;
             ViewBag.TeamRankings = teamRankings;
             ViewBag.MatchStatus = matchStatus;
@@ -1551,7 +1562,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return NotFound();
             }
 
-            registration.Status = status;
+            // Ensure status is never null - use a default value if it is
+            registration.Status = string.IsNullOrEmpty(status) ? "Pending" : status;
             _context.Update(registration);
             await _context.SaveChangesAsync();
 
@@ -1589,13 +1601,14 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             }
 
             var oldStatus = registration.Status;
-            registration.Status = status;
+            // Ensure status is never null - use a default value if it is
+            registration.Status = string.IsNullOrEmpty(status) ? "Pending" : status;
             registration.Notes = adminNotes;
             _context.Update(registration);
             await _context.SaveChangesAsync();
 
             // Gửi email thông báo nếu trạng thái thay đổi
-            if (oldStatus != status && (status == "Approved" || status == "Rejected"))
+            if (oldStatus != registration.Status && (registration.Status == "Approved" || registration.Status == "Rejected"))
             {
                 try
                 {
@@ -1609,7 +1622,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                             .Select(p => p.FullName)
                             .ToListAsync();
 
-                        if (status == "Approved")
+                        if (registration.Status == "Approved")
                         {
                             await _emailService.SendTeamRegistrationApprovedAsync(
                                 teamCoach.Email,
@@ -1618,7 +1631,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                                 registration.Tournament.Name
                             );
                         }
-                        else if (status == "Rejected")
+                        else if (registration.Status == "Rejected")
                         {
                             string reason = string.IsNullOrEmpty(adminNotes) ? "Không đáp ứng yêu cầu của giải đấu" : adminNotes;
                             await _emailService.SendTeamRegistrationRejectedAsync(
@@ -1676,9 +1689,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             }
 
             // Lấy danh sách đội của người dùng hiện tại
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = _userManager.GetUserAsync(User).Result.Id;
             var userTeams = await _context.Teams
-                .Where(t => t.Coach != null && userId != null && t.Coach.Contains(userId)) // Kiểm tra null trước khi sử dụng Contains
+                .Where(t => t.Coach != null && userId != null && userId==t.UserId) // Kiểm tra null trước khi sử dụng Contains
                 .ToListAsync();
 
             ViewBag.TeamId = new SelectList(userTeams, "TeamId", "Name");
@@ -1716,7 +1729,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             }
 
             // VALIDATION: Kiểm tra user có quyền đăng ký đội này không
-            if (team.Coach != userId)
+            if (team.UserId != userId)
             {
                 TempData["ErrorMessage"] = "Bạn không có quyền đăng ký đội này.";
                 return RedirectToAction(nameof(Details), new { id = tournament.Id });
