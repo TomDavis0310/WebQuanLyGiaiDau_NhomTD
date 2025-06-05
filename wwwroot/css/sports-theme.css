@@ -290,7 +290,6 @@ html {
     box-shadow: var(--shadow-2xl);
     padding: var(--space-3);
     margin-top: var(--space-2);
-    backdrop-filter: blur(20px);
     min-width: 250px;
     opacity: 1 !important;
     transform: none !important;
@@ -3082,6 +3081,15 @@ html {
     border-radius: 12px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     padding: 0.5rem;
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.2s linear;
+}
+
+.dropdown:hover .dropdown-menu {
+    visibility: visible;
+    opacity: 1;
 }
 
 .dropdown-item {
