@@ -7,35 +7,62 @@
 
 <h1 class="text-center text-primary mt-4">📋 Danh Sách Đội Bóng</h1>
 
-@if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
-{
-    <div class="text-end mb-3">
-        <a asp-action="Create" class="btn btn-success">➕ Thêm Đội Mới</a>
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form asp-action="Index" method="get" class="d-flex">
+            <div class="input-group">
+                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="form-control" placeholder="Tìm kiếm đội bóng..." />
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Tìm
+                </button>
+                @if (!string.IsNullOrEmpty((string)ViewData["CurrentFilter"]))
+                {
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Xóa bộ lọc
+                    </a>
+                }
+            </div>
+        </form>
     </div>
-}
+    <div class="col-md-6 text-end">
+        @if (User.Identity.IsAuthenticated)
+        {
+            <a asp-action="Create" class="btn btn-success">➕ Thêm Đội Mới</a>
+        }
+    </div>
+</div>
 
 <table class="table table-hover table-bordered shadow">
     <thead class="table-dark text-center">
         <tr>
-            <th>@Html.DisplayNameFor(model => model.First().Name)</th>
-            <th>@Html.DisplayNameFor(model => model.First().Coach)</th>
+            <th>Tên Đội</th>
+            <th>Huấn Luyện Viên</th>
             <th>Hành Động</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @if (Model != null && Model.Any())
         {
+            foreach (var item in Model)
+            {
             <tr class="align-middle">
                 <td>@Html.DisplayFor(modelItem => item.Name)</td>
                 <td>@Html.DisplayFor(modelItem => item.Coach)</td>
                 <td class="text-center">
                     <a asp-action="Details" asp-route-id="@item.TeamId" class="btn btn-sm btn-info me-1">🔍 Xem</a>
-                    @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+                    @if (User.Identity.IsAuthenticated)
                     {
                         <a asp-action="Edit" asp-route-id="@item.TeamId" class="btn btn-sm btn-warning me-1">✏️ Sửa</a>
                         <a asp-action="Delete" asp-route-id="@item.TeamId" class="btn btn-sm btn-danger">🗑️ Xóa</a>
                     }
                 </td>
+            </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="3" class="text-center">Không tìm thấy đội bóng nào.</td>
             </tr>
         }
     </tbody>

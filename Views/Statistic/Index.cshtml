@@ -29,7 +29,12 @@
         @foreach (var item in Model)
         {
             <tr class="align-middle">
-                <td>@Html.DisplayFor(modelItem => item.PlayerName)</td>
+                <td>
+                    <a asp-controller="Tournament" asp-action="FindPlayerByName" asp-route-playerName="@item.PlayerName" asp-route-tournamentId="@item.Match.TournamentId" class="text-decoration-none">
+                        @Html.DisplayFor(modelItem => item.PlayerName)
+                        <small class="d-block text-muted"><i class="bi bi-info-circle"></i> Nhấn để xem chi tiết</small>
+                    </a>
+                </td>
                 <td class="text-center">@Html.DisplayFor(modelItem => item.Points)</td>
                 <td class="text-center">@Html.DisplayFor(modelItem => item.Assists)</td>
                 <td class="text-center">@Html.DisplayFor(modelItem => item.Rebounds)</td>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -22,10 +23,28 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Players
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            var applicationDbContext = _context.Players.Include(p => p.Team);
-            return View(await applicationDbContext.ToListAsync());
+            var playersQuery = _context.Players
+                .Include(p => p.Team)
+                .AsQueryable();
+
+            // Áp dụng tìm kiếm nếu có
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                searchString = searchString.ToLower();
+                playersQuery = playersQuery.Where(p =>
+                    p.FullName.ToLower().Contains(searchString) ||
+                    (p.Position != null && p.Position.ToLower().Contains(searchString)) ||
+                    (p.Team != null && p.Team.Name.ToLower().Contains(searchString)));
+            }
+
+            var players = await playersQuery.ToListAsync();
+
+            // Lưu searchString để hiển thị lại trong form
+            ViewData["CurrentFilter"] = searchString;
+
+            return View(players);
         }
 
         // GET: Players/Details/5
@@ -65,10 +84,31 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Players/Create
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize] // Allow all authenticated users
         public IActionResult Create()
         {
-            ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "Name");
+            // Nếu không phải Admin, chỉ hiển thị các đội mà họ sở hữu
+            if (!User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                
+                // Get teams where user is a player
+                var playerTeamIds = _context.Players
+                    .Where(p => p.UserId == userId)
+                    .Select(p => p.TeamId)
+                    .ToList();
+                    
+                var userTeams = _context.Teams
+                    .Where(t => t.Coach == userId || playerTeamIds.Contains(t.TeamId))
+                    .ToList();
+
+                ViewData["TeamId"] = new SelectList(userTeams, "TeamId", "Name");
+            }
+            else
+            {
+                ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "Name");
+            }
+
             return View();
         }
 
@@ -77,7 +117,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> Create([Bind("PlayerId,FullName,Position,Number,TeamId")] Player player, IFormFile imageFile)
         {
             if (ModelState.IsValid)
@@ -88,6 +128,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     if (imageFile != null && imageFile.Length > 0)
                     {
                         player.ImageUrl = await SaveImage(imageFile);
+                    }
+
+                    // Nếu người dùng không phải Admin, lưu UserId
+                    if (!User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+                    {
+                        player.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                     }
 
                     _context.Add(player);
@@ -106,24 +152,43 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // Phương thức lưu hình ảnh
         private async Task<string> SaveImage(IFormFile image)
         {
-            var savePath = Path.Combine("wwwroot/images/players", image.FileName);
-
-            // Đảm bảo thư mục tồn tại
-            var directory = Path.GetDirectoryName(savePath);
-            if (!Directory.Exists(directory))
+            try
             {
-                Directory.CreateDirectory(directory);
-            }
+                // Đảm bảo tên file không chứa ký tự đặc biệt
+                string fileName = Path.GetFileName(image.FileName);
+                // Thêm timestamp để tránh trùng tên file
+                string uniqueFileName = DateTime.Now.Ticks + "_" + fileName;
 
-            using (var fileStream = new FileStream(savePath, FileMode.Create))
-            {
-                await image.CopyToAsync(fileStream);
+                // Tạo đường dẫn đầy đủ
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "players");
+
+                // Đảm bảo thư mục tồn tại
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Lưu file
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(fileStream);
+                }
+
+                // Trả về đường dẫn tương đối để lưu vào database
+                return "/images/players/" + uniqueFileName;
             }
-            return "/images/players/" + image.FileName;
+            catch (Exception ex)
+            {
+                // Log lỗi
+                Console.WriteLine("Lỗi khi lưu ảnh: " + ex.Message);
+                throw;
+            }
         }
 
         // GET: Players/Edit/5
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -131,12 +196,61 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return NotFound();
             }
 
-            var player = await _context.Players.FindAsync(id);
+            var player = await _context.Players.Include(p => p.Team).FirstOrDefaultAsync(p => p.PlayerId == id);
             if (player == null)
             {
                 return NotFound();
             }
-            ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "Name", player.TeamId);
+
+            // Kiểm tra quyền: Admin có thể sửa tất cả, người dùng thường chỉ có thể sửa cầu thủ trong đội của họ
+            if (!User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+            {
+                // Kiểm tra xem cầu thủ này có thuộc đội của người dùng hiện tại không
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                
+                // Kiểm tra xem người dùng có phải là huấn luyện viên của đội không
+                var isCoach = await _context.Teams
+                    .AnyAsync(t => t.TeamId == player.TeamId && t.Coach == userId);
+                    
+                // Kiểm tra xem người dùng có phải là thành viên của đội không
+                var isPlayer = await _context.Players
+                    .AnyAsync(p => p.TeamId == player.TeamId && p.UserId == userId);
+                    
+                var isTeamOwner = isCoach || isPlayer;
+
+                if (!isTeamOwner)
+                {
+                    TempData["ErrorMessage"] = "Bạn không có quyền chỉnh sửa cầu thủ này.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Nếu không phải Admin, chỉ hiển thị các đội mà họ sở hữu
+                // Get teams where user is coach
+                var coachTeamIds = await _context.Teams
+                    .Where(t => t.Coach == userId)
+                    .Select(t => t.TeamId)
+                    .ToListAsync();
+                    
+                // Get teams where user is a player
+                var playerTeamIds = await _context.Players
+                    .Where(p => p.UserId == userId)
+                    .Select(p => p.TeamId)
+                    .ToListAsync();
+                    
+                // Combine the two lists
+                var userTeamIds = coachTeamIds.Union(playerTeamIds).ToList();
+                
+                var userTeams = await _context.Teams
+                    .Where(t => userTeamIds.Contains(t.TeamId))
+                    .ToListAsync();
+
+                ViewData["TeamId"] = new SelectList(userTeams, "TeamId", "Name", player.TeamId);
+            }
+            else
+            {
+                ViewData["TeamId"] = new SelectList(_context.Teams, "TeamId", "Name", player.TeamId);
+            }
+
             return View(player);
         }
 
@@ -145,7 +259,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> Edit(int id, [Bind("PlayerId,FullName,Position,Number,TeamId")] Player player, IFormFile imageFile)
         {
             if (id != player.PlayerId)
@@ -196,7 +310,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // GET: Players/Delete/5
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -212,13 +326,36 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return NotFound();
             }
 
+            // Kiểm tra quyền: Admin có thể xóa tất cả, người dùng thường chỉ có thể xóa cầu thủ trong đội của họ
+            if (!User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+            {
+                // Kiểm tra xem cầu thủ này có thuộc đội của người dùng hiện tại không
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                
+                // Kiểm tra xem người dùng có phải là huấn luyện viên của đội không
+                var isCoach = await _context.Teams
+                    .AnyAsync(t => t.TeamId == player.TeamId && t.Coach == userId);
+                    
+                // Kiểm tra xem người dùng có phải là thành viên của đội không
+                var isPlayer = await _context.Players
+                    .AnyAsync(p => p.TeamId == player.TeamId && p.UserId == userId);
+                    
+                var isTeamOwner = isCoach || isPlayer;
+
+                if (!isTeamOwner)
+                {
+                    TempData["ErrorMessage"] = "Bạn không có quyền xóa cầu thủ này.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
             return View(player);
         }
 
         // POST: Players/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        [Authorize] // Allow all authenticated users
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             try
@@ -247,12 +384,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             }
             catch (Exception ex)
             {
-                // Handle any other exceptions
-                var player = await _context.Players
-                    .Include(p => p.Team)
-                    .FirstOrDefaultAsync(m => m.PlayerId == id);
-                ViewData["error"] = "Lỗi khi xóa cầu thủ: " + ex.Message;
-                return View(player);
+                // Log the error
+                Console.WriteLine("Error deleting player: " + ex.Message);
+                return RedirectToAction(nameof(Index));
             }
         }
 

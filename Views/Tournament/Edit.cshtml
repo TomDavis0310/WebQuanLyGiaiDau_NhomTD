@@ -25,6 +25,12 @@
             </div>
 
             <div class="form-group mb-3">
+                <label asp-for="Location" class="form-label fw-bold">Địa Điểm</label>
+                <input asp-for="Location" class="form-control" placeholder="Nhập địa điểm tổ chức giải đấu" />
+                <span asp-validation-for="Location" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
                 <label asp-for="StartDate" class="form-label fw-bold">Ngày Bắt Đầu</label>
                 <input asp-for="StartDate" type="date" class="form-control" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
                 <span asp-validation-for="StartDate" class="text-danger"></span>
@@ -40,6 +46,30 @@
                 <label asp-for="SportsId" class="form-label fw-bold">Môn Thể Thao</label>
                 <select asp-for="SportsId" class="form-select" asp-items="ViewBag.Sports"></select>
                 <span asp-validation-for="SportsId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="TournamentFormatId" class="form-label fw-bold">Thể Thức Thi Đấu</label>
+                <select name="TournamentFormatId" id="TournamentFormatId" class="form-select" asp-items="ViewBag.TournamentFormats">
+                    <option value="">-- Chọn Thể Thức Thi Đấu --</option>
+                </select>
+                <div id="formatDescription" class="form-text mt-2"></div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="MaxTeams" class="form-label fw-bold">Số Lượng Đội Tối Đa</label>
+                <input type="number" name="MaxTeams" id="MaxTeams" class="form-control" value="@(Model.MaxTeams ?? 8)" min="2" max="32" />
+                <div class="form-text">Số lượng đội tối đa có thể tham gia giải đấu</div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="RegistrationStatus" class="form-label fw-bold">Trạng Thái Đăng Ký</label>
+                <select asp-for="RegistrationStatus" class="form-select">
+                    <option value="Open">Mở đăng ký</option>
+                    <option value="Closed">Đóng đăng ký</option>
+                    <option value="Completed">Đã kết thúc</option>
+                </select>
+                <span asp-validation-for="RegistrationStatus" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-4">
@@ -72,4 +102,52 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        $(document).ready(function() {
+            // Lấy thông tin chi tiết về các thể thức thi đấu
+            var formatDetails = [
+                @foreach (var format in ViewBag.FormatDetails)
+                {
+                    <text>
+                    {
+                        id: @format.Id,
+                        name: "@format.Name",
+                        description: "@format.Description",
+                        scoringRules: "@format.ScoringRules",
+                        winnerDetermination: "@format.WinnerDetermination"
+                    },
+                    </text>
+                }
+            ];
+
+            // Hiển thị thông tin chi tiết khi chọn thể thức thi đấu
+            function updateFormatDescription() {
+                var formatId = $("#TournamentFormatId").val();
+                if (formatId) {
+                    var format = formatDetails.find(f => f.id == formatId);
+                    if (format) {
+                        var html = `<div class="alert alert-info">
+                            <h6 class="fw-bold">${format.name}</h6>
+                            <p>${format.description}</p>
+                            <hr>
+                            <p><strong>Quy tắc tính điểm:</strong> ${format.scoringRules}</p>
+                            <p><strong>Cách xác định đội chiến thắng:</strong> ${format.winnerDetermination}</p>
+                        </div>`;
+                        $("#formatDescription").html(html);
+
+                        // Không cần xử lý hiển thị/ẩn trường số đội mỗi bảng nữa
+                    }
+                } else {
+                    $("#formatDescription").html("");
+                }
+            }
+
+            // Hiển thị thông tin ban đầu
+            updateFormatDescription();
+
+            // Cập nhật khi thay đổi lựa chọn
+            $("#TournamentFormatId").change(updateFormatDescription);
+        });
+    </script>
 }

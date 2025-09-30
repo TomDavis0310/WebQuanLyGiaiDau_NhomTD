@@ -7,7 +7,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
         public int Id { get; set; }
 
         [Required]
-        public string PlayerName { get; set; }
+        public required string PlayerName { get; set; }
 
         public int Points { get; set; }
         public int Assists { get; set; }
@@ -17,6 +17,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
         public int MatchId { get; set; }
 
         // Navigation
-        public Match Match { get; set; }
+        public Match? Match { get; set; }
     }
 }

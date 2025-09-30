@@ -17,11 +17,7 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
-        if (User.Identity.IsAuthenticated)
-        {
-            // Redirect to Sports/Index for all authenticated users
-            return RedirectToAction("Index", "Sports");
-        }
+        // Không chuyển hướng người dùng đã đăng nhập để họ có thể xem tin tức ở trang chủ
         return View();
     }
 
@@ -31,13 +27,14 @@ public class HomeController : Controller
         return View();
     }
 
-    [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_User)]
-    public IActionResult UserDashboard()
+    // Removed UserDashboard - no longer needed as all users have same access level
+
+    public IActionResult Privacy()
     {
         return View();
     }
 
-    public IActionResult Privacy()
+    public IActionResult UserGuide()
     {
         return View();
     }

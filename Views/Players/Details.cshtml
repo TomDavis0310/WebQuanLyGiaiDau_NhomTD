@@ -24,16 +24,43 @@
             <h5 class="text-primary mb-3">Thông Tin Cầu Thủ:</h5>
             <dl class="row">
                 <dt class="col-sm-3 fw-bold">Họ Tên:</dt>
-                <dd class="col-sm-9">@Html.DisplayFor(model => model.FullName)</dd>
+                <dd class="col-sm-9">
+                    @if (!string.IsNullOrEmpty(Model.FullName))
+                    {
+                        @Html.DisplayFor(model => model.FullName)
+                    }
+                    else
+                    {
+                        <span class="text-muted">Chưa xác định</span>
+                    }
+                </dd>
 
                 <dt class="col-sm-3 fw-bold">Vị Trí:</dt>
-                <dd class="col-sm-9">@Html.DisplayFor(model => model.Position)</dd>
+                <dd class="col-sm-9">
+                    @if (!string.IsNullOrEmpty(Model.Position))
+                    {
+                        @Html.DisplayFor(model => model.Position)
+                    }
+                    else
+                    {
+                        <span class="text-muted">Chưa xác định</span>
+                    }
+                </dd>
 
                 <dt class="col-sm-3 fw-bold">Số Áo:</dt>
                 <dd class="col-sm-9">@Html.DisplayFor(model => model.Number)</dd>
 
                 <dt class="col-sm-3 fw-bold">Đội Bóng:</dt>
-                <dd class="col-sm-9">@Html.DisplayFor(model => model.Team.Name)</dd>
+                <dd class="col-sm-9">
+                    @if (Model.Team != null)
+                    {
+                        @Html.DisplayFor(model => model.Team.Name)
+                    }
+                    else
+                    {
+                        <span class="text-muted">Chưa xác định</span>
+                    }
+                </dd>
             </dl>
         </div>
     </div>
@@ -55,7 +82,19 @@
                     <div class="card bg-success text-white">
                         <div class="card-body">
                             <h5 class="card-title">Điểm/Trận</h5>
-                            <p class="card-text display-6">@(ViewData["AvgPoints"] != null ? Math.Round((double)ViewData["AvgPoints"], 1) : 0)</p>
+                            <p class="card-text display-6">
+                                @{
+                                    double avgPoints = 0;
+                                    if (ViewData["AvgPoints"] != null && ViewData["AvgPoints"].ToString() != null)
+                                    {
+                                        if (double.TryParse(ViewData["AvgPoints"].ToString(), out double pointsResult))
+                                        {
+                                            avgPoints = Math.Round(pointsResult, 1);
+                                        }
+                                    }
+                                }
+                                @avgPoints
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -63,7 +102,19 @@
                     <div class="card bg-info text-white">
                         <div class="card-body">
                             <h5 class="card-title">Kiến Tạo/Trận</h5>
-                            <p class="card-text display-6">@(ViewData["AvgAssists"] != null ? Math.Round((double)ViewData["AvgAssists"], 1) : 0)</p>
+                            <p class="card-text display-6">
+                                @{
+                                    double avgAssists = 0;
+                                    if (ViewData["AvgAssists"] != null && ViewData["AvgAssists"].ToString() != null)
+                                    {
+                                        if (double.TryParse(ViewData["AvgAssists"].ToString(), out double assistsResult))
+                                        {
+                                            avgAssists = Math.Round(assistsResult, 1);
+                                        }
+                                    }
+                                }
+                                @avgAssists
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -71,7 +122,19 @@
                     <div class="card bg-warning text-dark">
                         <div class="card-body">
                             <h5 class="card-title">Bắt Bóng/Trận</h5>
-                            <p class="card-text display-6">@(ViewData["AvgRebounds"] != null ? Math.Round((double)ViewData["AvgRebounds"], 1) : 0)</p>
+                            <p class="card-text display-6">
+                                @{
+                                    double avgRebounds = 0;
+                                    if (ViewData["AvgRebounds"] != null && ViewData["AvgRebounds"].ToString() != null)
+                                    {
+                                        if (double.TryParse(ViewData["AvgRebounds"].ToString(), out double reboundsResult))
+                                        {
+                                            avgRebounds = Math.Round(reboundsResult, 1);
+                                        }
+                                    }
+                                }
+                                @avgRebounds
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -103,7 +166,19 @@
                         @foreach (var stat in playerStats)
                         {
                             <tr>
-                                <td>@stat.Match.TeamA vs @stat.Match.TeamB</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(stat.Match.TeamA) && !string.IsNullOrEmpty(stat.Match.TeamB))
+                                    {
+                                        <a asp-controller="Match" asp-action="Details" asp-route-id="@stat.MatchId" class="text-decoration-none">
+                                            @(stat.Match.TeamA + " vs " + stat.Match.TeamB)
+                                            <small class="d-block text-muted"><i class="bi bi-info-circle"></i> Nhấn để xem chi tiết trận đấu</small>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Chưa xác định</span>
+                                    }
+                                </td>
                                 <td class="text-center">@stat.Points</td>
                                 <td class="text-center">@stat.Assists</td>
                                 <td class="text-center">@stat.Rebounds</td>

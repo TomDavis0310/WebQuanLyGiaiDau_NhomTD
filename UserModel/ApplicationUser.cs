@@ -1,14 +1,13 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations;
+﻿// This file is deprecated. Use WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser instead.
+// Keeping this file for backward compatibility.
+
+using WebQuanLyGiaiDau_NhomTD.Models;
 
 namespace WebQuanLyGiaiDau_NhomTD.Models.UserModel
 {
-    public class ApplicationUser : IdentityUser
+    // This class is deprecated. Use WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser instead.
+    public class ApplicationUser : Models.ApplicationUser
     {
-        [Required]
-        public string FullName { get; set; }
-        public string? Address { get; set; }
-        public string? Age { get; set; }
-
+        // This class inherits from the main ApplicationUser class
     }
 }
