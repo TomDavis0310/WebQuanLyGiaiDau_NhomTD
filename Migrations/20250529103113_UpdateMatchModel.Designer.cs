@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebQuanLyGiaiDau_NhomTD.Models;
 
@@ -11,9 +12,11 @@ using WebQuanLyGiaiDau_NhomTD.Models;
 namespace WebQuanLyGiaiDau_NhomTD.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250529103113_UpdateMatchModel")]
+    partial class UpdateMatchModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1244,13 +1247,13 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.Sports", "Sport")
                         .WithMany()
                         .HasForeignKey("SportId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.Tournament", "Tournament")
                         .WithMany()
                         .HasForeignKey("TournamentId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Sport");

@@ -98,8 +98,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Services
             // Tạo các trận đấu vòng đầu tiên
             for (int i = 0; i < matchesInFirstRound; i++)
             {
-                Team teamA = i < teamCount ? teams[i] : null;
-                Team teamB = (teamCount - 1 - i) < teamCount && (teamCount - 1 - i) >= 0 ? teams[teamCount - 1 - i] : null;
+                Team? teamA = i < teamCount ? teams[i] : null;
+                Team? teamB = (teamCount - 1 - i) < teamCount && (teamCount - 1 - i) >= 0 ? teams[teamCount - 1 - i] : null;
 
                 // Nếu không đủ đội, một số trận sẽ có bye (đội tự động vào vòng sau)
                 if (teamA == null && teamB == null)

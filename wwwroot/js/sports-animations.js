@@ -7,7 +7,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initScrollAnimations();
     initNavbarEffects();
     initTypingEffect();
-    initParticleEffects();
+    // Removed particle effects for static background
+    // initParticleEffects();
 });
 
 // Main sports animations initialization
@@ -208,40 +209,16 @@ function initTypingEffect() {
 }
 
 // Particle effects for hero section
+// Particle effects have been disabled for static background
 function initParticleEffects() {
-    const heroSection = document.querySelector('.sports-hero-enhanced');
-    if (!heroSection) return;
-
-    // Create floating particles
-    for (let i = 0; i < 20; i++) {
-        createParticle(heroSection);
-    }
+    // Function disabled to remove animated background
+    return;
 }
 
+// Particle creation has been disabled
 function createParticle(container) {
-    const particle = document.createElement('div');
-    particle.className = 'floating-particle';
-    particle.style.cssText = `
-        position: absolute;
-        width: ${Math.random() * 6 + 2}px;
-        height: ${Math.random() * 6 + 2}px;
-        background: rgba(255, 255, 255, ${Math.random() * 0.5 + 0.2});
-        border-radius: 50%;
-        pointer-events: none;
-        left: ${Math.random() * 100}%;
-        top: ${Math.random() * 100}%;
-        animation: float ${Math.random() * 10 + 10}s infinite linear;
-        z-index: 1;
-    `;
-
-    container.appendChild(particle);
-
-    // Remove particle after animation
-    setTimeout(() => {
-        if (particle.parentNode) {
-            particle.parentNode.removeChild(particle);
-        }
-    }, 20000);
+    // Function disabled to remove animated background
+    return;
 }
 
 // Smooth scrolling for anchor links
@@ -258,26 +235,9 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Add CSS for floating particles animation and navbar effects
+// Add CSS for navbar effects only (removed floating particles)
 const style = document.createElement('style');
 style.textContent = `
-    @keyframes float {
-        0% {
-            transform: translateY(100vh) rotate(0deg);
-            opacity: 0;
-        }
-        10% {
-            opacity: 1;
-        }
-        90% {
-            opacity: 1;
-        }
-        100% {
-            transform: translateY(-100px) rotate(360deg);
-            opacity: 0;
-        }
-    }
-
     .typing-cursor {
         animation: blink 1s infinite;
         color: var(--primary-color);
@@ -301,12 +261,6 @@ style.textContent = `
         width: 100%;
         height: 100%;
         background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        animation: wave 3s infinite;
-    }
-
-    @keyframes wave {
-        0% { left: -100%; }
-        100% { left: 100%; }
     }
 
     /* Enhanced Navbar Animations */

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿﻿﻿﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebQuanLyGiaiDau_NhomTD.Models
@@ -42,15 +42,15 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
         [Display(Name = "Địa Điểm Thi Đấu")]
         public string? Location { get; set; }
 
-        // YouTube video URLs for highlights and live stream - Tạm comment để fix migration
-        // [Display(Name = "Video Highlights")]
-        // public string? HighlightsVideoUrl { get; set; }
+        // YouTube video URLs for highlights and live stream
+        [Display(Name = "Video Highlights")]
+        public string? HighlightsVideoUrl { get; set; }
 
-        // [Display(Name = "Live Stream URL")]
-        // public string? LiveStreamUrl { get; set; }
+        [Display(Name = "Live Stream URL")]
+        public string? LiveStreamUrl { get; set; }
 
-        // [Display(Name = "Mô tả Video")]
-        // public string? VideoDescription { get; set; }
+        [Display(Name = "Mô tả Video")]
+        public string? VideoDescription { get; set; }
 
         // Match status: "Upcoming", "InProgress", "Completed"
         // This property doesn't exist in the database
@@ -63,9 +63,11 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
         {
             get
             {
-                if (MatchDate < DateTime.Now)
+                DateTime matchDateTime = MatchDate.Date + (MatchTime ?? TimeSpan.Zero);
+
+                if (matchDateTime < DateTime.Now)
                     return "Completed";
-                else if (MatchDate.Date == DateTime.Now.Date)
+                else if (matchDateTime >= DateTime.Now.AddHours(-2) && matchDateTime <= DateTime.Now.AddHours(2))
                     return "InProgress";
                 else
                     return "Upcoming";

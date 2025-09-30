@@ -3,43 +3,41 @@
 @inject SignInManager<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser> SignInManager
 @inject UserManager<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser> UserManager
 
-<ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))
 {
     var user = await UserManager.GetUserAsync(User);
-    <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle user-profile-dropdown" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            @(user?.FullName ?? user?.UserName ?? "Người dùng")
-        </a>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-            <li>
-                <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
-                    Hồ sơ cá nhân
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item" asp-controller="Profile" asp-action="Edit">
-                    Chỉnh sửa hồ sơ
-                </a>
-            </li>
-            <li><hr class="dropdown-divider"></li>
-            <li>
-                <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                    <button id="logout" type="submit" class="dropdown-item">
-                        Đăng xuất
-                    </button>
-                </form>
-            </li>
-        </ul>
-    </li>
+    <a class="nav-link dropdown-toggle user-profile-dropdown" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        @(user?.FullName ?? user?.UserName ?? "Người dùng")
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+        <li>
+            <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
+                Hồ sơ cá nhân
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" asp-controller="Profile" asp-action="Edit">
+                Chỉnh sửa hồ sơ
+            </a>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+            <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                <button id="logout" type="submit" class="dropdown-item">
+                    Đăng xuất
+                </button>
+            </form>
+        </li>
+    </ul>
 }
 else
 {
-    <a class="btn btn-sports-outline me-2" id="login" asp-area="Identity" asp-page="/Account/Login">
-        Đăng nhập
-    </a>
-    <a class="btn btn-sports-primary" id="register" asp-area="Identity" asp-page="/Account/Register">
-        Đăng ký
-    </a>
+    <div class="d-flex">
+        <a class="btn btn-sports-outline me-2" id="login" asp-area="Identity" asp-page="/Account/Login">
+            Đăng nhập
+        </a>
+        <a class="btn btn-sports-primary" id="register" asp-area="Identity" asp-page="/Account/Register">
+            Đăng ký
+        </a>
+    </div>
 }
-</ul>

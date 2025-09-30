@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
 using WebQuanLyGiaiDau_NhomTD;
+using System.Threading;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,208 +11,306 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Đăng ký Identity với ApplicationUser thay vì IdentityUser
-builder.Services.AddDefaultIdentity<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser>(options =>
-{
-    options.SignIn.RequireConfirmedAccount = false;
-})
-.AddRoles<IdentityRole>() // Add role management
-.AddEntityFrameworkStores<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContext>();
-
-// Thêm Google Authentication
-var googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID")
-    ?? builder.Configuration["Authentication:Google:ClientId"];
-var googleClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET")
-    ?? builder.Configuration["Authentication:Google:ClientSecret"];
-
-// Only add Google authentication if credentials are properly configured
-if (!string.IsNullOrEmpty(googleClientId) &&
-    !string.IsNullOrEmpty(googleClientSecret) &&
-    googleClientId != "YOUR_GOOGLE_CLIENT_ID_HERE" &&
-    googleClientSecret != "YOUR_GOOGLE_CLIENT_SECRET_HERE")
-{
-    builder.Services.AddAuthentication()
-        .AddGoogle(googleOptions =>
-        {
-            googleOptions.ClientId = googleClientId;
-            googleOptions.ClientSecret = googleClientSecret;
-            googleOptions.CallbackPath = "/signin-google";
-        });
-
-    Console.WriteLine("✅ Google OAuth đã được cấu hình thành công!");
-}
-else
-{
-    Console.WriteLine("⚠️  Google OAuth chưa được cấu hình. Vui lòng xem hướng dẫn trong GOOGLE_OAUTH_SETUP.md");
-}
-
-// Đăng ký MVC và Razor Pages (cho Identity)
-builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
-
-// Đăng ký các services
-builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.TournamentScheduleService>();
-builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.IYouTubeService, WebQuanLyGiaiDau_NhomTD.Services.YouTubeService>();
-builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.ITournamentEmailService, WebQuanLyGiaiDau_NhomTD.Services.TournamentEmailService>();
-
-// Add authorization policies
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin));
-    // Removed UserOnly policy - all authenticated users have same access
-});
-
-var app = builder.Build();
-
-// Create admin user if it doesn't exist
-using (var scope = app.Services.CreateScope())
-{
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser>>();
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
-    // Ensure roles exist
-    if (!roleManager.RoleExistsAsync(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin).GetAwaiter().GetResult())
+    // Đăng ký Identity với ApplicationUser thay vì IdentityUser
+    builder.Services.AddDefaultIdentity<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser>(options =>
     {
-        roleManager.CreateAsync(new IdentityRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)).GetAwaiter().GetResult();
+        options.SignIn.RequireConfirmedAccount = false;
+    })
+    .AddRoles<IdentityRole>() // Add role management
+    .AddEntityFrameworkStores<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContext>();
+
+    // Thêm Google Authentication
+    var googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID")
+        ?? builder.Configuration["Authentication:Google:ClientId"];
+    var googleClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET")
+        ?? builder.Configuration["Authentication:Google:ClientSecret"];
+
+    // Only add Google authentication if credentials are properly configured
+    if (!string.IsNullOrEmpty(googleClientId) &&
+        !string.IsNullOrEmpty(googleClientSecret) &&
+        googleClientId != "YOUR_GOOGLE_CLIENT_ID_HERE" &&
+        googleClientSecret != "YOUR_GOOGLE_CLIENT_SECRET_HERE")
+    {
+        builder.Services.AddAuthentication()
+            .AddGoogle(googleOptions =>
+            {
+                googleOptions.ClientId = googleClientId;
+                googleOptions.ClientSecret = googleClientSecret;
+                googleOptions.CallbackPath = "/signin-google";
+            });
+
+        Console.WriteLine("✅ Google OAuth đã được cấu hình thành công!");
+    }
+    else
+    {
+        Console.WriteLine("⚠️  Google OAuth chưa được cấu hình. Vui lòng xem hướng dẫn trong GOOGLE_OAUTH_SETUP.md");
+        Console.WriteLine("   Đăng nhập bằng Google sẽ không hoạt động cho đến khi bạn cấu hình thông tin xác thực.");
+        Console.WriteLine("   Bạn vẫn có thể đăng nhập bằng tài khoản cục bộ.");
     }
 
-    // Removed User role creation - no longer needed
+    // Đăng ký MVC và Razor Pages (cho Identity)
+    builder.Services.AddControllersWithViews();
+    builder.Services.AddRazorPages();
 
-    // Create admin user
-    string adminEmail = "admin@example.com";
-    string adminPassword = "Admin123!";
+    // Đăng ký các services
+    builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.TournamentScheduleService>();
+    builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.IYouTubeService, WebQuanLyGiaiDau_NhomTD.Services.YouTubeService>();
+    builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.ITournamentEmailService, WebQuanLyGiaiDau_NhomTD.Services.TournamentEmailService>();
 
-    if (userManager.FindByEmailAsync(adminEmail).GetAwaiter().GetResult() == null)
+    // Add authorization policies
+    builder.Services.AddAuthorization(options =>
     {
-        var adminUser = new WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser
-        {
-            UserName = adminEmail,
-            Email = adminEmail,
-            EmailConfirmed = true,
-            FullName = "Admin User"
-        };
+        options.AddPolicy("AdminOnly", policy => policy.RequireRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin));
+        // Removed UserOnly policy - all authenticated users have same access
+    });
 
-        var result = userManager.CreateAsync(adminUser, adminPassword).GetAwaiter().GetResult();
+    var app = builder.Build();
 
-        if (result.Succeeded)
-        {
-            userManager.AddToRoleAsync(adminUser, WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin).GetAwaiter().GetResult();
-        }
-    }
-
-    // Removed regular user creation - users will register themselves without specific roles
-
-    // Seed basketball tournament data
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-    // Đảm bảo khởi tạo dữ liệu thể thức thi đấu trước
-    await SeedTournamentFormatData.SeedTournamentFormats(scope.ServiceProvider);
-
-    // Seed missing tables data
-    SeedMissingTablesData.Initialize(dbContext);
-
-    // Create two basketball tournaments (one completed and one open for registration)
-    SeedTwoBasketballTournaments(dbContext);
-
-    // Seed 5v5 basketball tournaments
-    await SeedBasketball5v5Data.SeedBasketball5v5Tournaments(scope.ServiceProvider);
-
-    // Seed news data
-    SeedNewsData.Initialize(dbContext);
-}
-
-// Cấu hình pipeline
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error");
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.UseRouting();
-
-// Đảm bảo gọi Middleware Authentication trước Authorization
-app.UseAuthentication();
-app.UseAuthorization();
-
-// Ánh xạ Route cho Controllers
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-// Ánh xạ các Razor Pages (các trang Identity, ví dụ: đăng nhập, đăng ký)
-app.MapRazorPages();
-
-// Kiểm tra và tạo các bảng cần thiết (nếu chưa tồn tại)
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var dbContext = services.GetRequiredService<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContext>();
-
-    try
+    // Create admin user and seed data
+    using (var scope = app.Services.CreateScope())
     {
-        // Đảm bảo cơ sở dữ liệu đã được tạo
-        dbContext.Database.EnsureCreated();
-
-        // Kiểm tra xem các bảng đã tồn tại chưa
-        Console.WriteLine("Kiểm tra cấu trúc cơ sở dữ liệu...");
-
-        // Kiểm tra xem bảng TournamentFormats đã tồn tại chưa
-        bool tournamentFormatsTableExists = false;
+        var services = scope.ServiceProvider;
+        // This inner try-catch is for seeding specific errors
         try
         {
-            // Thử truy vấn bảng TournamentFormats
-            tournamentFormatsTableExists = dbContext.TournamentFormats.Any();
+            var userManager = services.GetRequiredService<UserManager<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser>>();
+            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+            if (!await roleManager.RoleExistsAsync(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+            {
+                await roleManager.CreateAsync(new IdentityRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin));
+            }
+
+            string adminEmail = "admin@example.com";
+            string adminPassword = "Admin123!";
+            if (await userManager.FindByEmailAsync(adminEmail) == null)
+            {
+                var adminUser = new WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser
+                {
+                    UserName = adminEmail, Email = adminEmail, EmailConfirmed = true, FullName = "Admin User"
+                };
+                var result = await userManager.CreateAsync(adminUser, adminPassword);
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(adminUser, WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin);
+                }
+                else
+                {
+                    Console.WriteLine($"Lỗi khi tạo admin user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
+            }
+
+            var dbContext = services.GetRequiredService<ApplicationDbContext>();
+            Console.WriteLine("Bắt đầu quá trình seed dữ liệu...");
+            Console.WriteLine("Seed dữ liệu TournamentFormats...");
+            await SeedTournamentFormatData.SeedTournamentFormats(services);
+            Console.WriteLine("Seed dữ liệu TournamentFormats thành công.");
+            Console.WriteLine("Seed dữ liệu MissingTablesData...");
+            SeedMissingTablesData.Initialize(dbContext);
+            Console.WriteLine("Seed dữ liệu MissingTablesData thành công.");
+            Console.WriteLine("Seed dữ liệu TwoBasketballTournaments...");
+            SeedTwoBasketballTournaments(dbContext); // Synchronous
+            Console.WriteLine("Seed dữ liệu TwoBasketballTournaments thành công.");
+            Console.WriteLine("Seed dữ liệu Basketball5v5Data...");
+            await SeedBasketball5v5Data.SeedBasketball5v5Tournaments(services);
+            Console.WriteLine("Seed dữ liệu Basketball5v5Data thành công.");
+            Console.WriteLine("Seed dữ liệu NewsData...");
+            SeedNewsData.Initialize(dbContext);
+            Console.WriteLine("Seed dữ liệu NewsData thành công.");
+            Console.WriteLine("Quá trình seed dữ liệu hoàn tất.");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Nếu bảng không tồn tại, tạo bảng
-            Console.WriteLine("Bảng TournamentFormats chưa tồn tại. Đang tạo bảng...");
-
-            // Tạo bảng TournamentFormats bằng SQL trực tiếp
-            dbContext.Database.ExecuteSqlRaw(@"
-                IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'TournamentFormats')
-                BEGIN
-                    CREATE TABLE [dbo].[TournamentFormats](
-                        [Id] [int] IDENTITY(1,1) NOT NULL,
-                        [Name] [nvarchar](max) NOT NULL,
-                        [Description] [nvarchar](max) NOT NULL,
-                        [ScoringRules] [nvarchar](max) NOT NULL,
-                        [WinnerDetermination] [nvarchar](max) NOT NULL,
-                        CONSTRAINT [PK_TournamentFormats] PRIMARY KEY CLUSTERED ([Id] ASC)
-                    )
-                END
-            ");
-
-            // Thêm cột TournamentFormatId vào bảng Tournaments nếu chưa tồn tại
-            dbContext.Database.ExecuteSqlRaw(@"
-                IF NOT EXISTS (SELECT * FROM sys.columns WHERE name = 'TournamentFormatId' AND object_id = OBJECT_ID('Tournaments'))
-                BEGIN
-                    ALTER TABLE [dbo].[Tournaments]
-                    ADD [TournamentFormatId] [int] NULL,
-                        [MaxTeams] [int] NULL,
-                        [TeamsPerGroup] [int] NULL
-                END
-            ");
-
-            Console.WriteLine("Đã tạo bảng TournamentFormats và cập nhật bảng Tournaments.");
+            Console.WriteLine($"LỖI TRONG QUÁ TRÌNH KHỞI TẠO USER/ROLE HOẶC SEED DỮ LIỆU: {ex.ToString()}");
         }
+    }
 
-        // Ghi log
-        Console.WriteLine("Cấu trúc cơ sở dữ liệu đã sẵn sàng.");
+    // Configure the HTTP request pipeline.
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseExceptionHandler("/Error");
+        app.UseHsts();
+    }
+
+    app.UseHttpsRedirection();
+    app.UseStaticFiles();
+    app.UseRouting();
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Home}/{action=Index}/{id?}");
+    app.MapRazorPages();
+
+    // Database structure check
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var dbContext = services.GetRequiredService<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContext>();
+        // This inner try-catch is for DB structure check specific errors
+        try
+        {
+            // Check if the database exists
+            Console.WriteLine("Kiểm tra cơ sở dữ liệu...");
+            bool dbExists = dbContext.Database.CanConnect();
+            
+            if (!dbExists)
+            {
+                Console.WriteLine("Cơ sở dữ liệu không tồn tại. Đang tạo cơ sở dữ liệu mới...");
+                try
+                {
+                    dbContext.Database.EnsureCreated();
+                    Console.WriteLine("Đã tạo cơ sở dữ liệu thành công.");
+                }
+                catch (Exception createEx)
+                {
+                    Console.WriteLine($"Lỗi khi tạo cơ sở dữ liệu: {createEx.Message}");
+                    throw; // Re-throw to stop the application
+                }
+            }
+            else
+            {
+                Console.WriteLine("Cơ sở dữ liệu đã tồn tại.");
+            }
+            
+            // Apply migrations
+            try
+            {
+                Console.WriteLine("Đang áp dụng migrations...");
+                dbContext.Database.Migrate();
+                Console.WriteLine("Migrations đã được áp dụng thành công.");
+            }
+            catch (Exception migrationEx)
+            {
+                Console.WriteLine($"Lỗi khi áp dụng migrations: {migrationEx.Message}");
+            }
+            Console.WriteLine("Kiểm tra cấu trúc cơ sở dữ liệu...");
+            // ... (rest of the database check logic, including its own try-catch for TournamentFormats)
+            bool tournamentFormatsTableExists = false;
+            try
+            {
+                tournamentFormatsTableExists = dbContext.TournamentFormats.Any();
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Bảng TournamentFormats chưa tồn tại. Đang tạo bảng...");
+                dbContext.Database.ExecuteSqlRaw(@"
+                    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'TournamentFormats')
+                    BEGIN
+                        CREATE TABLE [dbo].[TournamentFormats](
+                            [Id] [int] IDENTITY(1,1) NOT NULL,
+                            [Name] [nvarchar](max) NOT NULL,
+                            [Description] [nvarchar](max) NOT NULL,
+                            [ScoringRules] [nvarchar](max) NOT NULL,
+                            [WinnerDetermination] [nvarchar](max) NOT NULL,
+                            CONSTRAINT [PK_TournamentFormats] PRIMARY KEY CLUSTERED ([Id] ASC)
+                        )
+                    END
+                ");
+                // Check if Tournaments table exists before trying to alter it
+                try
+                {
+                    dbContext.Database.ExecuteSqlRaw(@"
+                        IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Tournaments')
+                        BEGIN
+                            IF NOT EXISTS (SELECT * FROM sys.columns WHERE name = 'TournamentFormatId' AND object_id = OBJECT_ID('Tournaments'))
+                            BEGIN
+                                ALTER TABLE [dbo].[Tournaments]
+                                ADD [TournamentFormatId] [int] NULL,
+                                    [MaxTeams] [int] NULL,
+                                    [TeamsPerGroup] [int] NULL
+                            END
+                        END
+                    ");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Lỗi khi cập nhật bảng Tournaments: {ex.Message}");
+                }
+                Console.WriteLine("Đã tạo bảng TournamentFormats và cập nhật bảng Tournaments.");
+            }
+            Console.WriteLine("Cấu trúc cơ sở dữ liệu đã sẵn sàng.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Lỗi khi kiểm tra cơ sở dữ liệu: {ex.ToString()}"); // Log full exception
+            
+            // Check if this is a connection issue
+            if (ex.ToString().Contains("A network-related or instance-specific error") || 
+                ex.ToString().Contains("Cannot open database") ||
+                ex.ToString().Contains("Login failed"))
+            {
+                Console.WriteLine("Có vẻ như có vấn đề với kết nối cơ sở dữ liệu. Vui lòng kiểm tra:");
+                Console.WriteLine("1. SQL Server đã được cài đặt và đang chạy");
+                Console.WriteLine("2. Chuỗi kết nối trong appsettings.json là chính xác");
+                Console.WriteLine("3. Người dùng Windows hiện tại có quyền truy cập SQL Server");
+                Console.WriteLine("4. Cơ sở dữ liệu 'WebQuanLyGiaiDau_NhomTD' đã tồn tại hoặc người dùng có quyền tạo cơ sở dữ liệu mới");
+            }
+        }    }    
+    Console.WriteLine("Hoàn tất cấu hình pipeline và kiểm tra DB. Sẵn sàng chạy app.Run().");
+    
+    // Add a special route to keep the application running
+    app.MapGet("/ping", () => "Application is running");
+    
+    // Add shutdown protection
+    app.Lifetime.ApplicationStopping.Register(() => 
+    {
+        Console.WriteLine("Application is being stopped. Reason may be:");
+        Console.WriteLine("1. Manual shutdown requested");
+        Console.WriteLine("2. Host environment shutdown");
+        Console.WriteLine("3. Unhandled exception in the application");
+    });
+    
+    // Add a cancellation token source to prevent immediate shutdown
+    var cts = new CancellationTokenSource();
+    Console.CancelKeyPress += (sender, e) => {
+        e.Cancel = true;
+        cts.Cancel();
+        Console.WriteLine("Cancellation requested by user. Application will shut down.");
+    };
+
+    // Log that we're about to run
+    Console.WriteLine("Hoàn tất cấu hình pipeline và kiểm tra DB. Sẵn sàng chạy app.Run().");
+
+    // Run the application with a hosted service to keep it alive
+    var hostTask = app.RunAsync();
+
+    // Add a background task to periodically check that the app is still running
+    _ = Task.Run(async () => {
+        try {
+            Console.WriteLine("Starting background health check task...");
+            while (!cts.Token.IsCancellationRequested)
+            {
+                await Task.Delay(30000, cts.Token); // Check every 30 seconds
+                Console.WriteLine("Application health check: Running");
+            }
+        }
+        catch (OperationCanceledException) {
+            Console.WriteLine("Health check task was canceled.");
+        }
+        catch (Exception ex) {
+            Console.WriteLine($"Error in health check task: {ex.Message}");
+        }
+    });
+
+    // Wait for the app to shut down or user cancellation
+    try
+    {
+        Console.WriteLine("Application is now running. Press Ctrl+C to stop.");
+        await hostTask;
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Lỗi khi kiểm tra cơ sở dữ liệu: {ex.Message}");
+        Console.WriteLine($"Exception from host: {ex.Message}");
     }
-}
+    finally
+    {
+        Console.WriteLine("Application has stopped.");
+    }
 
-app.Run();
-
-// Method to seed two basketball tournaments
-void SeedTwoBasketballTournaments(ApplicationDbContext context)
+// Method to seed two basketball tournaments (definition remains outside)
+static void SeedTwoBasketballTournaments(ApplicationDbContext context)
 {
     // Ensure the database is created
     context.Database.EnsureCreated();

@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -88,24 +88,16 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 })
                 .ToListAsync();
 
-            // Đảm bảo tất cả các trận đấu đều có thời gian bắt đầu là 15:00 (3 giờ chiều)
+            // Load related tournament data once to avoid Status column issue
+            var tournamentData = await _context.Tournaments
+                .AsNoTracking()
+                .ToDictionaryAsync(t => t.Id);
+
             foreach (var match in matches)
             {
-                // Chỉ cập nhật hiển thị, không cập nhật database
-                DateTime matchDate = match.MatchDate.Date;
-                match.MatchDate = matchDate.AddHours(15); // 15:00
-            }
-
-            // Load related tournament data separately to avoid Status column issue
-            foreach (var match in matches)
-            {
-                var tournamentData = await _context.Tournaments
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(t => t.Id == match.TournamentId);
-
-                if (tournamentData != null)
+                if (tournamentData.ContainsKey(match.TournamentId))
                 {
-                    match.Tournament = tournamentData;
+                    match.Tournament = tournamentData[match.TournamentId];
                 }
             }
 
@@ -356,7 +348,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
         // GET: Tournament/Create
         [Authorize]
-        public async Task<IActionResult> GenerateSchedule(int id)
+        public async Task<IActionResult> Create(int? sportsId = null)
         {
             var sports = _context.Sports.ToList();
             ViewBag.Sports = new SelectList(sports, "Id", "Name", sportsId);

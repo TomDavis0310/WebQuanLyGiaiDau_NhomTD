@@ -5,7 +5,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Models.ViewModels
     public class PlayerScoringViewModel
     {
         public int MatchId { get; set; }
-        public Match Match { get; set; }
+        public Match Match { get; set; } = new Match();
         
         public List<PlayerScoring> PlayerScorings { get; set; } = new List<PlayerScoring>();
         

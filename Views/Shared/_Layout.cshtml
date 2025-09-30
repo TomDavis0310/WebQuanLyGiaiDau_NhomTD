@@ -11,11 +11,12 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Roboto:wght@300;400;500;700;900&family=Orbitron:wght@400;700;900&display=swap">
-    <link rel="stylesheet" href="~/css/sports-theme.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/rules.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Roboto:wght@300;400;500;700;900&family=Orbitron:wght@400;700;900&display=swap">    <link rel="stylesheet" href="~/css/sports-theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />    <link rel="stylesheet" href="~/css/rules.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/youtube-integration.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/form-fixes.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-dropdown.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/responsive-menu-fixes.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WebQuanLyGiaiDau_NhomTD.styles.css" asp-append-version="true" />
 
     <!-- Favicon -->
@@ -50,8 +51,8 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="navbar-collapse collapse d-lg-flex justify-content-between">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <div class="navbar-collapse collapse d-lg-flex align-items-center w-100">
+                    <ul class="navbar-nav d-flex flex-row align-items-center flex-wrap mb-0">
                         <!-- Trang chủ luôn hiển thị cho tất cả người dùng -->
                         <li class="nav-item nav-item-enhanced">
                             <a class="nav-link" asp-controller="Home" asp-action="Index">
@@ -205,11 +206,21 @@
                                 </a>
                             </li>
                         }
+                        
+                        <!-- Login/Logout section trong navbar -->
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item nav-item-enhanced dropdown ms-auto">
+                                <partial name="_LoginPartial" />
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item nav-item-enhanced ms-auto">
+                                <partial name="_LoginPartial" />
+                            </li>
+                        }
                     </ul>
-
-                    <div class="d-flex">
-                        <partial name="_LoginPartial" />
-                    </div>
                 </div>
             </div>
         </nav>
@@ -267,12 +278,12 @@
                 <p>&copy; 2025 Thể Thao 24/7 - Nền tảng giải đấu năng động #1 Việt Nam. Mọi quyền được bảo lưu.</p>
             </div>
         </div>
-    </footer>
-
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    </footer>    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/sports-animations.js" asp-append-version="true"></script>
+    <script src="~/js/dropdown-fix.js" asp-append-version="true"></script>
+    <script src="~/js/mobile-menu-fix.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 
 </body>

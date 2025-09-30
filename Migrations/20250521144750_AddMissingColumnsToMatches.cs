@@ -131,13 +131,13 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                         column: x => x.Team1Id,
                         principalTable: "Teams",
                         principalColumn: "TeamId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                     table.ForeignKey(
                         name: "FK_MatchDetails_Teams_Team2Id",
                         column: x => x.Team2Id,
                         principalTable: "Teams",
                         principalColumn: "TeamId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                 });
 
             migrationBuilder.CreateTable(
@@ -195,7 +195,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                         column: x => x.TeamId,
                         principalTable: "Teams",
                         principalColumn: "TeamId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                 });
 
             migrationBuilder.CreateTable(
@@ -212,19 +212,18 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SportDetails", x => x.Id);
-                    table.ForeignKey(
+                    table.PrimaryKey("PK_SportDetails", x => x.Id);                    table.ForeignKey(
                         name: "FK_SportDetails_Sports_SportId",
                         column: x => x.SportId,
                         principalTable: "Sports",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                     table.ForeignKey(
                         name: "FK_SportDetails_Tournaments_TournamentId",
                         column: x => x.TournamentId,
                         principalTable: "Tournaments",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                 });
 
             migrationBuilder.CreateTable(
@@ -255,36 +254,32 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Standings", x => x.StandingId);
-                    table.ForeignKey(
+                    table.PrimaryKey("PK_Standings", x => x.StandingId);                    table.ForeignKey(
                         name: "FK_Standings_Sports_SportId",
                         column: x => x.SportId,
                         principalTable: "Sports",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                     table.ForeignKey(
                         name: "FK_Standings_Tournaments_TournamentId",
                         column: x => x.TournamentId,
                         principalTable: "Tournaments",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TournamentFormats",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ScoringRules = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    WinnerDetermination = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TournamentFormats", x => x.Id);
-                });
+                        onDelete: ReferentialAction.NoAction);
+                });            // Skip creating TournamentFormats table if it already exists
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='TournamentFormats' AND xtype='U')
+                BEGIN
+                    CREATE TABLE [TournamentFormats] (
+                        [Id] int NOT NULL IDENTITY,
+                        [Name] nvarchar(max) NOT NULL,
+                        [Description] nvarchar(max) NOT NULL,
+                        [ScoringRules] nvarchar(max) NOT NULL,
+                        [WinnerDetermination] nvarchar(max) NOT NULL,
+                        CONSTRAINT [PK_TournamentFormats] PRIMARY KEY ([Id])
+                    );
+                END
+            ");
 
             migrationBuilder.CreateTable(
                 name: "TournamentSubmissions",

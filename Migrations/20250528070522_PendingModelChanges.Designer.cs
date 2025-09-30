@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebQuanLyGiaiDau_NhomTD.Models;
 
@@ -11,9 +12,11 @@ using WebQuanLyGiaiDau_NhomTD.Models;
 namespace WebQuanLyGiaiDau_NhomTD.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250528070522_PendingModelChanges")]
+    partial class PendingModelChanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -316,12 +319,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.Property<string>("GroupName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("HighlightsVideoUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LiveStreamUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Location")
                         .HasColumnType("nvarchar(max)");
 
@@ -359,9 +356,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     b.Property<int>("TournamentId")
                         .HasColumnType("int");
-
-                    b.Property<string>("VideoDescription")
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -1244,13 +1238,13 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.Sports", "Sport")
                         .WithMany()
                         .HasForeignKey("SportId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.Tournament", "Tournament")
                         .WithMany()
                         .HasForeignKey("TournamentId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Sport");
