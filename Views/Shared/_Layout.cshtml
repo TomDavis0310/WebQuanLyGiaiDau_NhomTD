@@ -50,8 +50,8 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="navbar-collapse collapse d-lg-flex justify-content-between">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <div class="navbar-collapse collapse d-lg-flex align-items-center w-100">
+                    <ul class="navbar-nav d-flex flex-row align-items-center flex-wrap mb-0">
                         <!-- Trang chủ luôn hiển thị cho tất cả người dùng -->
                         <li class="nav-item nav-item-enhanced">
                             <a class="nav-link" asp-controller="Home" asp-action="Index">
@@ -205,11 +205,21 @@
                                 </a>
                             </li>
                         }
+                        
+                        <!-- Login/Logout section trong navbar -->
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item nav-item-enhanced dropdown ms-auto">
+                                <partial name="_LoginPartial" />
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item nav-item-enhanced ms-auto">
+                                <partial name="_LoginPartial" />
+                            </li>
+                        }
                     </ul>
-
-                    <div class="d-flex">
-                        <partial name="_LoginPartial" />
-                    </div>
                 </div>
             </div>
         </nav>

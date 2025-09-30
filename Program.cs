@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Đăng ký ApplicationDbContext với DI container
 builder.Services.AddDbContext<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ApplicationDbContextConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
     // Đăng ký Identity với ApplicationUser thay vì IdentityUser
     builder.Services.AddDefaultIdentity<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser>(options =>
