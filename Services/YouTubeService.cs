@@ -8,7 +8,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Services
 {
     public class YouTubeService : IYouTubeService
     {
-        private readonly Google.Apis.YouTube.v3.YouTubeService _youtubeService;
+        private readonly Google.Apis.YouTube.v3.YouTubeService? _youtubeService;
         private readonly IConfiguration _configuration;
         private readonly ILogger<YouTubeService> _logger;
 
@@ -79,7 +79,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Services
             }
         }
 
-        public async Task<YouTubeVideo> GetVideoDetailsAsync(string videoId)
+        public async Task<YouTubeVideo?> GetVideoDetailsAsync(string videoId)
         {
             try
             {
@@ -132,7 +132,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Services
             return await SearchVideosAsync(request);
         }
 
-        public string ExtractVideoIdFromUrl(string youtubeUrl)
+        public string? ExtractVideoIdFromUrl(string youtubeUrl)
         {
             if (string.IsNullOrEmpty(youtubeUrl))
                 return null;
@@ -196,9 +196,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Services
                 VideoId = searchResult.Id.VideoId,
                 Title = searchResult.Snippet.Title,
                 Description = searchResult.Snippet.Description,
-                ThumbnailUrl = searchResult.Snippet.Thumbnails?.Medium?.Url ?? searchResult.Snippet.Thumbnails?.Default__?.Url,
+                ThumbnailUrl = searchResult.Snippet.Thumbnails?.Medium?.Url ?? searchResult.Snippet.Thumbnails?.Default__?.Url ?? "",
                 ChannelTitle = searchResult.Snippet.ChannelTitle,
-                PublishedAt = searchResult.Snippet.PublishedAt ?? DateTime.MinValue
+                PublishedAt = searchResult.Snippet.PublishedAtDateTimeOffset?.DateTime ?? DateTime.MinValue
             };
 
             // Get additional details
@@ -219,11 +219,11 @@ namespace WebQuanLyGiaiDau_NhomTD.Services
             var isLive = videoItem.LiveStreamingDetails != null;
             var liveStatus = "none";
 
-            if (isLive)
+            if (isLive && videoItem.LiveStreamingDetails != null)
             {
-                if (videoItem.LiveStreamingDetails.ActualStartTime.HasValue && !videoItem.LiveStreamingDetails.ActualEndTime.HasValue)
+                if (videoItem.LiveStreamingDetails.ActualStartTimeDateTimeOffset.HasValue && !videoItem.LiveStreamingDetails.ActualEndTimeDateTimeOffset.HasValue)
                     liveStatus = "live";
-                else if (videoItem.LiveStreamingDetails.ScheduledStartTime.HasValue && !videoItem.LiveStreamingDetails.ActualStartTime.HasValue)
+                else if (videoItem.LiveStreamingDetails.ScheduledStartTimeDateTimeOffset.HasValue && !videoItem.LiveStreamingDetails.ActualStartTimeDateTimeOffset.HasValue)
                     liveStatus = "upcoming";
             }
 
@@ -232,9 +232,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Services
                 VideoId = videoItem.Id,
                 Title = videoItem.Snippet.Title,
                 Description = videoItem.Snippet.Description,
-                ThumbnailUrl = videoItem.Snippet.Thumbnails?.Medium?.Url ?? videoItem.Snippet.Thumbnails?.Default__?.Url,
+                ThumbnailUrl = videoItem.Snippet.Thumbnails?.Medium?.Url ?? videoItem.Snippet.Thumbnails?.Default__?.Url ?? "",
                 ChannelTitle = videoItem.Snippet.ChannelTitle,
-                PublishedAt = videoItem.Snippet.PublishedAt ?? DateTime.MinValue,
+                PublishedAt = videoItem.Snippet.PublishedAtDateTimeOffset?.DateTime ?? DateTime.MinValue,
                 Duration = videoItem.ContentDetails?.Duration ?? "PT0S",
                 ViewCount = (long)(videoItem.Statistics?.ViewCount ?? 0),
                 IsLiveStream = isLive,

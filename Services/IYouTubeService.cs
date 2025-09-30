@@ -12,7 +12,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Services
         /// <summary>
         /// Get video details by video ID
         /// </summary>
-        Task<YouTubeVideo> GetVideoDetailsAsync(string videoId);
+        Task<YouTubeVideo?> GetVideoDetailsAsync(string videoId);
 
         /// <summary>
         /// Search for live streams
@@ -27,7 +27,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Services
         /// <summary>
         /// Extract video ID from YouTube URL
         /// </summary>
-        string ExtractVideoIdFromUrl(string youtubeUrl);
+        string? ExtractVideoIdFromUrl(string youtubeUrl);
 
         /// <summary>
         /// Validate if URL is a valid YouTube URL

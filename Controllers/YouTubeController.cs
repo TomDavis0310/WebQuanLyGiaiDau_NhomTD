@@ -49,7 +49,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 ViewBag.Query = query;
                 return View(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 ViewBag.Error = "YouTube API is not available. Please check your API key configuration.";
                 ViewBag.Query = query;
@@ -70,7 +70,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 var result = await _youtubeService.SearchHighlightsAsync(query, maxResults);
                 return Json(new { success = true, data = result });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return Json(new { success = false, message = "YouTube API is not available. Please check your API key configuration." });
             }
@@ -89,7 +89,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 var result = await _youtubeService.SearchLiveStreamsAsync(query, maxResults);
                 return Json(new { success = true, data = result });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return Json(new { success = false, message = "YouTube API is not available. Please check your API key configuration." });
             }
@@ -158,7 +158,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
                 return Json(new { success = true, data = video });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return Json(new { success = false, message = "YouTube API is not available. Please check your API key configuration." });
             }

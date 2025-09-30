@@ -36,7 +36,10 @@ namespace WebQuanLyGiaiDau_NhomTD
                 .FirstOrDefaultAsync(t => t.Name == "Giải Bóng Rổ 5v5 Mùa Đông 2024" && t.SportsId == basketball.Id);
 
             // Force reseeding of teams and players for existing tournaments
-            await ForceReseedTeamsAndPlayers(context, basketball.Id, pastTournament, openTournament);
+            if (pastTournament != null && openTournament != null)
+            {
+                await ForceReseedTeamsAndPlayers(context, basketball.Id, pastTournament, openTournament);
+            }
 
             // If tournaments don't exist, create them
             if (pastTournament == null && openTournament == null)
@@ -53,7 +56,6 @@ namespace WebQuanLyGiaiDau_NhomTD
                     StartDate = new DateTime(2023, 6, 1),
                     EndDate = new DateTime(2023, 8, 15),
                     ImageUrl = "/images/basketball5v5_past.jpg",
-                    RegistrationStatus = "Completed",
                     SportsId = basketball.Id,
                     TournamentFormatId = formatId,
                     MaxTeams = 8,
@@ -69,7 +71,6 @@ namespace WebQuanLyGiaiDau_NhomTD
                     StartDate = new DateTime(2024, 12, 1),
                     EndDate = new DateTime(2025, 2, 28),
                     ImageUrl = "/images/basketball5v5_open.jpg",
-                    RegistrationStatus = "Open",
                     SportsId = basketball.Id,
                     TournamentFormatId = formatId,
                     MaxTeams = 8,

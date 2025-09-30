@@ -277,7 +277,7 @@ builder.Services.AddDbContext<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContex
     var hostTask = app.RunAsync();
 
     // Add a background task to periodically check that the app is still running
-    Task.Run(async () => {
+    _ = Task.Run(async () => {
         try {
             Console.WriteLine("Starting background health check task...");
             while (!cts.Token.IsCancellationRequested)
