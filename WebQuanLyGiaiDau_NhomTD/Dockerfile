@@ -3,12 +3,11 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Copy csproj and restore dependencies
-COPY ["WebQuanLyGiaiDau_NhomTD/WebQuanLyGiaiDau_NhomTD.csproj", "WebQuanLyGiaiDau_NhomTD/"]
-RUN dotnet restore "WebQuanLyGiaiDau_NhomTD/WebQuanLyGiaiDau_NhomTD.csproj"
+COPY ["WebQuanLyGiaiDau_NhomTD.csproj", "./"]
+RUN dotnet restore "WebQuanLyGiaiDau_NhomTD.csproj"
 
 # Copy everything else and build
 COPY . .
-WORKDIR "/src/WebQuanLyGiaiDau_NhomTD"
 RUN dotnet build "WebQuanLyGiaiDau_NhomTD.csproj" -c Release -o /app/build
 
 # Stage 2: Publish

@@ -2,6 +2,7 @@ services:
   - type: web
     name: webquanlygiaidau
     env: docker
+    rootDir: ./WebQuanLyGiaiDau_NhomTD
     dockerfilePath: ./Dockerfile
     dockerContext: ./
     envVars:
