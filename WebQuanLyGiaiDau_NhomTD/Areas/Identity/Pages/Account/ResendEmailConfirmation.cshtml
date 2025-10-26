@@ -1,0 +1,48 @@
+﻿@page
+@model ResendEmailConfirmationModel
+@{
+    ViewData["Title"] = "Gửi lại email xác nhận";
+}
+
+<div class="text-center mb-4">
+    <h1 class="h3 mb-3 fw-bold text-primary">
+        <i class="bi bi-envelope-check me-2"></i>
+        Gửi lại email xác nhận
+    </h1>
+    <p class="text-muted">Chưa nhận được email xác nhận? Nhập email của bạn để chúng tôi gửi lại.</p>
+</div>
+
+<form method="post">
+    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+
+    <div class="form-floating mb-3">
+        <input asp-for="Input.Email" class="form-control" aria-required="true" placeholder="name@example.com" />
+        <label asp-for="Input.Email" class="form-label">
+            <i class="bi bi-envelope me-2"></i>Email
+        </label>
+        <span asp-validation-for="Input.Email" class="text-danger"></span>
+    </div>
+
+    <div class="d-grid mb-3">
+        <button type="submit" class="btn btn-auth btn-lg">
+            <i class="bi bi-envelope-arrow-up me-2"></i>
+            Gửi lại email xác nhận
+        </button>
+    </div>
+
+    <div class="auth-links">
+        <div class="text-center">
+            <p class="mb-0">
+                Quay lại
+                <a asp-page="./Login">
+                    <i class="bi bi-box-arrow-in-right me-1"></i>
+                    Đăng nhập
+                </a>
+            </p>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

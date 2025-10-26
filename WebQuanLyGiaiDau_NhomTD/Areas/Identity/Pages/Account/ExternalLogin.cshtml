@@ -1,0 +1,52 @@
+﻿@page
+@model ExternalLoginModel
+@{
+    ViewData["Title"] = "Liên kết tài khoản";
+}
+
+<div class="text-center mb-4">
+    <h1 class="h3 mb-3 fw-bold text-primary">
+        <i class="bi bi-link-45deg me-2"></i>
+        Liên kết tài khoản @Model.ProviderDisplayName
+    </h1>
+    <div class="alert alert-success" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        Bạn đã xác thực thành công với <strong>@Model.ProviderDisplayName</strong>!
+        <br>
+        Vui lòng nhập email để hoàn tất quá trình đăng ký.
+    </div>
+</div>
+
+<form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="form-floating mb-3">
+        <input asp-for="Input.Email" class="form-control" autocomplete="email" placeholder="name@example.com"/>
+        <label asp-for="Input.Email" class="form-label">
+            <i class="bi bi-envelope me-2"></i>Email
+        </label>
+        <span asp-validation-for="Input.Email" class="text-danger"></span>
+    </div>
+
+    <div class="d-grid mb-3">
+        <button type="submit" class="btn btn-auth btn-lg">
+            <i class="bi bi-person-plus me-2"></i>
+            Hoàn tất đăng ký
+        </button>
+    </div>
+
+    <div class="auth-links">
+        <div class="text-center">
+            <p class="mb-0">
+                <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Quay lại đăng nhập
+                </a>
+            </p>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

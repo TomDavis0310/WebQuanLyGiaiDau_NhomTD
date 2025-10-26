@@ -1,0 +1,141 @@
+@{
+    ViewData["Title"] = "Bảng Điều Khiển Người Dùng";
+}
+
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <i class="bi bi-speedometer2 me-2"></i>Bảng Điều Khiển Người Dùng
+                    </h2>
+                    <p class="card-text">Chào mừng đến với bảng điều khiển người dùng. Từ đây bạn có thể xem và đăng ký tham gia các giải đấu.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Xem giải đấu -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 hover-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-box bg-primary text-white me-3">
+                            <i class="bi bi-trophy"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Giải Đấu</h5>
+                    </div>
+                    <p class="card-text">Xem danh sách các giải đấu và đăng ký tham gia.</p>
+                    <div class="mt-auto">
+                        <a asp-controller="Tournament" asp-action="Index" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-right"></i> Truy cập
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Giải đấu đã đăng ký -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 hover-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-box bg-success text-white me-3">
+                            <i class="bi bi-list-check"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Giải Đấu Đã Đăng Ký</h5>
+                    </div>
+                    <p class="card-text">Xem danh sách các giải đấu bạn đã đăng ký tham gia.</p>
+                    <div class="mt-auto">
+                        <a asp-controller="Tournament" asp-action="MyRegistrations" class="btn btn-outline-success">
+                            <i class="bi bi-arrow-right"></i> Truy cập
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Xem đội bóng -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 hover-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-box bg-info text-white me-3">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Đội Bóng</h5>
+                    </div>
+                    <p class="card-text">Xem thông tin về các đội bóng tham gia giải đấu.</p>
+                    <div class="mt-auto">
+                        <a asp-controller="Teams" asp-action="Index" class="btn btn-outline-info">
+                            <i class="bi bi-arrow-right"></i> Truy cập
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Xem cầu thủ -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 hover-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-box bg-warning text-white me-3">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Cầu Thủ</h5>
+                    </div>
+                    <p class="card-text">Xem thông tin về các cầu thủ trong các đội bóng.</p>
+                    <div class="mt-auto">
+                        <a asp-controller="Players" asp-action="Index" class="btn btn-outline-warning">
+                            <i class="bi bi-arrow-right"></i> Truy cập
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Xem môn thể thao -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 hover-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-box bg-danger text-white me-3">
+                            <i class="bi bi-dribbble"></i>
+                        </div>
+                        <h5 class="card-title mb-0">Môn Thể Thao</h5>
+                    </div>
+                    <p class="card-text">Xem các môn thể thao có trong hệ thống.</p>
+                    <div class="mt-auto">
+                        <a asp-controller="Sports" asp-action="Index" class="btn btn-outline-danger">
+                            <i class="bi bi-arrow-right"></i> Truy cập
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+    .hover-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+</style>

@@ -1,0 +1,53 @@
+@model IEnumerable<WebQuanLyGiaiDau_NhomTD.Models.Statistic>
+@using WebQuanLyGiaiDau_NhomTD.Models.UserModel
+
+@{
+    ViewData["Title"] = "Thống Kê Trận Đấu";
+}
+
+<h1 class="text-center text-primary mt-4">📊 Thống Kê Trận Đấu</h1>
+
+@if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+{
+    <div class="text-end mb-3">
+        <a asp-action="Create" class="btn btn-success">➕ Thêm Thống Kê Mới</a>
+    </div>
+}
+
+<table class="table table-hover table-bordered shadow">
+    <thead class="table-dark text-center">
+        <tr>
+            <th>Cầu Thủ</th>
+            <th>Điểm</th>
+            <th>Kiến Tạo</th>
+            <th>Bắt Bóng</th>
+            <th>Trận Đấu</th>
+            <th>Hành Động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr class="align-middle">
+                <td>
+                    <a asp-controller="Tournament" asp-action="FindPlayerByName" asp-route-playerName="@item.PlayerName" asp-route-tournamentId="@item.Match.TournamentId" class="text-decoration-none">
+                        @Html.DisplayFor(modelItem => item.PlayerName)
+                        <small class="d-block text-muted"><i class="bi bi-info-circle"></i> Nhấn để xem chi tiết</small>
+                    </a>
+                </td>
+                <td class="text-center">@Html.DisplayFor(modelItem => item.Points)</td>
+                <td class="text-center">@Html.DisplayFor(modelItem => item.Assists)</td>
+                <td class="text-center">@Html.DisplayFor(modelItem => item.Rebounds)</td>
+                <td>@Html.DisplayFor(modelItem => item.Match.TeamA) vs @Html.DisplayFor(modelItem => item.Match.TeamB)</td>
+                <td class="text-center">
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info me-1">🔍 Xem</a>
+                    @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning me-1">✏️ Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">🗑️ Xóa</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

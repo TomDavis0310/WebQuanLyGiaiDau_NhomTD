@@ -1,0 +1,70 @@
+@model WebQuanLyGiaiDau_NhomTD.Models.Match
+
+@{
+    ViewData["Title"] = "Thêm Trận Đấu Mới";
+}
+
+<h1 class="text-center text-success mt-4">🏀 Thêm Trận Đấu Mới</h1>
+<hr class="mb-4" />
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <form asp-action="Create" class="bg-light p-4 rounded shadow">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="TeamA" class="form-label fw-semibold">Đội A</label>
+                <input asp-for="TeamA" class="form-control" placeholder="Nhập tên đội A..." />
+                <span asp-validation-for="TeamA" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="TeamB" class="form-label fw-semibold">Đội B</label>
+                <input asp-for="TeamB" class="form-control" placeholder="Nhập tên đội B..." />
+                <span asp-validation-for="TeamB" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MatchDate" class="form-label fw-semibold">Ngày Thi Đấu</label>
+                <input asp-for="MatchDate" class="form-control" type="date" />
+                <span asp-validation-for="MatchDate" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MatchTime" class="form-label fw-semibold">Thời Gian Thi Đấu</label>
+                <input asp-for="MatchTime" class="form-control" type="time" value="15:00" />
+                <span asp-validation-for="MatchTime" class="text-danger"></span>
+                <div class="form-text">Mặc định: 15:00 (3 giờ chiều)</div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Location" class="form-label fw-semibold">Địa Điểm Thi Đấu</label>
+                <input asp-for="Location" class="form-control" placeholder="Nhập địa điểm thi đấu..." />
+                <span asp-validation-for="Location" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="TournamentId" class="form-label fw-semibold">Giải Đấu</label>
+                <select asp-for="TournamentId" class="form-select" asp-items="ViewBag.TournamentId">
+                    <option value="">-- Chọn Giải Đấu --</option>
+                </select>
+                <span asp-validation-for="TournamentId" class="text-danger"></span>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Tạo Trận Đấu
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Quay Lại
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
