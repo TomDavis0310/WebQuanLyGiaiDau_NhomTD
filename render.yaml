@@ -4,7 +4,7 @@ services:
     env: docker
     rootDir: ./WebQuanLyGiaiDau_NhomTD
     dockerfilePath: ./Dockerfile
-    dockerContext: ./
+    dockerContext: ./WebQuanLyGiaiDau_NhomTD
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
