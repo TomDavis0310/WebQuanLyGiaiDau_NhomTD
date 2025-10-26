@@ -1,0 +1,41 @@
+@model WebQuanLyGiaiDau_NhomTD.Models.Match
+
+@{
+    ViewData["Title"] = "Xóa Trận Đấu";
+}
+
+<h1 class="text-center text-danger mt-4">🗑️ Xóa Trận Đấu</h1>
+<h4 class="text-center text-secondary mb-4">Bạn có chắc chắn muốn xóa trận đấu này không?</h4>
+
+@if (ViewData["error"] != null)
+{
+    <div class="alert alert-danger">
+        @ViewData["error"]
+    </div>
+}
+
+<div class="container bg-light rounded shadow p-4 mb-4">
+    <h5 class="text-primary">Thông Tin Trận Đấu:</h5>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-3 fw-bold">Đội A:</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.TeamA)</dd>
+
+        <dt class="col-sm-3 fw-bold">Đội B:</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.TeamB)</dd>
+
+        <dt class="col-sm-3 fw-bold">Ngày Thi Đấu:</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.MatchDate)</dd>
+
+        <dt class="col-sm-3 fw-bold">Giải Đấu:</dt>
+        <dd class="col-sm-9">@Html.DisplayFor(model => model.Tournament.Name)</dd>
+    </dl>
+
+    <form asp-action="Delete" onsubmit="return confirm('Bạn có chắc chắn muốn xóa trận đấu này? Hành động này không thể hoàn tác và sẽ xóa tất cả dữ liệu liên quan.');">
+        <input type="hidden" asp-for="Id" />
+        <div class="d-flex justify-content-between mt-4">
+            <input type="submit" value="🗑️ Xóa" class="btn btn-danger" />
+            <a asp-action="Index" class="btn btn-outline-secondary">↩️ Quay Lại</a>
+        </div>
+    </form>
+</div>

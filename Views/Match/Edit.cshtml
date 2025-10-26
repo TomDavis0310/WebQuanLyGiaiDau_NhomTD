@@ -1,0 +1,102 @@
+@model WebQuanLyGiaiDau_NhomTD.Models.Match
+
+@{
+    ViewData["Title"] = "Chỉnh Sửa Trận Đấu";
+}
+
+<h1 class="text-center text-warning mt-4">✏️ Chỉnh Sửa Trận Đấu</h1>
+
+<div class="container bg-light rounded shadow p-4 mt-4 mb-4">
+    <form asp-action="Edit">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <input type="hidden" asp-for="Id" />
+
+        <div class="mb-3">
+            <label asp-for="TeamA" class="form-label fw-bold">Đội A:</label>
+            <input asp-for="TeamA" class="form-control" />
+            <span asp-validation-for="TeamA" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="TeamB" class="form-label fw-bold">Đội B:</label>
+            <input asp-for="TeamB" class="form-control" />
+            <span asp-validation-for="TeamB" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="MatchDate" class="form-label fw-bold">Ngày Thi Đấu:</label>
+            <input asp-for="MatchDate" class="form-control" type="date" />
+            <span asp-validation-for="MatchDate" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="MatchTime" class="form-label fw-bold">Thời Gian Thi Đấu:</label>
+            <input asp-for="MatchTime" class="form-control" type="time" />
+            <span asp-validation-for="MatchTime" class="text-danger"></span>
+            <div class="form-text">Mặc định: 15:00 (3 giờ chiều)</div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Location" class="form-label fw-bold">Địa Điểm Thi Đấu:</label>
+            <input asp-for="Location" class="form-control" placeholder="Nhập địa điểm thi đấu..." />
+            <span asp-validation-for="Location" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="TournamentId" class="form-label fw-bold">Giải Đấu:</label>
+            <select asp-for="TournamentId" class="form-select" asp-items="ViewBag.TournamentId"></select>
+            <span asp-validation-for="TournamentId" class="text-danger"></span>
+        </div>
+
+        @* YouTube Video Section *@
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h6 class="mb-0"><i class="bi bi-youtube"></i> Video YouTube</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-camera-video"></i> URL Video Highlights:
+                    </label>
+                    @* <input asp-for="HighlightsVideoUrl" class="form-control" placeholder="https://www.youtube.com/watch?v=..." />
+                    <span asp-validation-for="HighlightsVideoUrl" class="text-danger"></span> *@
+                    <input type="url" class="form-control" placeholder="https://www.youtube.com/watch?v=..." disabled />
+                    <div class="form-text text-muted">Chức năng tạm thời không khả dụng</div>
+                    <div class="form-text">Nhập URL video highlights của trận đấu từ YouTube</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-broadcast"></i> URL Live Stream:
+                    </label>
+                    @* <input asp-for="LiveStreamUrl" class="form-control" placeholder="https://www.youtube.com/watch?v=..." />
+                    <span asp-validation-for="LiveStreamUrl" class="text-danger"></span> *@
+                    <input type="url" class="form-control" placeholder="https://www.youtube.com/watch?v=..." disabled />
+                    <div class="form-text text-muted">Chức năng tạm thời không khả dụng</div>
+                    <div class="form-text">Nhập URL live stream của trận đấu từ YouTube</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">
+                        <i class="bi bi-card-text"></i> Mô tả Video:
+                    </label>
+                    @* <textarea asp-for="VideoDescription" class="form-control" rows="3" placeholder="Mô tả về video..."></textarea>
+                    <span asp-validation-for="VideoDescription" class="text-danger"></span> *@
+                    <textarea class="form-control" rows="3" placeholder="Mô tả về video..." disabled></textarea>
+                    <div class="form-text text-muted">Chức năng tạm thời không khả dụng</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+            <input type="submit" value="💾 Lưu Thay Đổi" class="btn btn-success" />
+            <a asp-action="Index" class="btn btn-outline-secondary">↩️ Quay Lại Danh Sách</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
