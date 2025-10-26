@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: webquanlygiaidau
+    env: docker
+    dockerfilePath: ./WebQuanLyGiaiDau_NhomTD/Dockerfile
+    dockerContext: ./WebQuanLyGiaiDau_NhomTD
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ConnectionStrings__DefaultConnection
+        sync: false # Set this manually in Render dashboard
+      - key: YouTube__ApiKey
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+    healthCheckPath: /ping
