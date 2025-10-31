@@ -11,13 +11,13 @@ class Tournament {
   final String? location;
   final DateTime startDate;
   final DateTime endDate;
-  final int maxTeams;
-  final int teamsPerGroup;
+  final int? maxTeams;
+  final int? teamsPerGroup;
   final String registrationStatus;
-  final int sportsId;
+  final int? sportsId;
   final int? tournamentFormatId;
-  final int registeredTeamsCount;
-  final int totalMatches;
+  final int? registeredTeamsCount;
+  final int? totalMatches;
 
   Tournament({
     required this.id,
@@ -27,13 +27,13 @@ class Tournament {
     this.location,
     required this.startDate,
     required this.endDate,
-    required this.maxTeams,
-    required this.teamsPerGroup,
+    this.maxTeams,
+    this.teamsPerGroup,
     required this.registrationStatus,
-    required this.sportsId,
+    this.sportsId,
     this.tournamentFormatId,
-    required this.registeredTeamsCount,
-    required this.totalMatches,
+    this.registeredTeamsCount,
+    this.totalMatches,
   });
 
   factory Tournament.fromJson(Map<String, dynamic> json) => _$TournamentFromJson(json);

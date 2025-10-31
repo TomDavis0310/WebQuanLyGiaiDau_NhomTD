@@ -14,13 +14,13 @@ Tournament _$TournamentFromJson(Map<String, dynamic> json) => Tournament(
   location: json['location'] as String?,
   startDate: DateTime.parse(json['startDate'] as String),
   endDate: DateTime.parse(json['endDate'] as String),
-  maxTeams: (json['maxTeams'] as num).toInt(),
-  teamsPerGroup: (json['teamsPerGroup'] as num).toInt(),
+  maxTeams: (json['maxTeams'] as num?)?.toInt(),
+  teamsPerGroup: (json['teamsPerGroup'] as num?)?.toInt(),
   registrationStatus: json['registrationStatus'] as String,
-  sportsId: (json['sportsId'] as num).toInt(),
+  sportsId: (json['sportsId'] as num?)?.toInt(),
   tournamentFormatId: (json['tournamentFormatId'] as num?)?.toInt(),
-  registeredTeamsCount: (json['registeredTeamsCount'] as num).toInt(),
-  totalMatches: (json['totalMatches'] as num).toInt(),
+  registeredTeamsCount: (json['registeredTeamsCount'] as num?)?.toInt(),
+  totalMatches: (json['totalMatches'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$TournamentToJson(Tournament instance) =>

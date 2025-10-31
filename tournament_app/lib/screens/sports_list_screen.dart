@@ -1,6 +1,15 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/sport.dart';
 import '../services/api_service.dart';
+import '../widgets/app_logo.dart';
+import '../providers/auth_provider.dart';
+import 'profile_screen.dart';
+import 'login_screen.dart';
+import 'tournament_list_screen.dart';
+import 'news_list_screen.dart';
+import 'search_screen.dart';
+import 'dashboard_screen.dart';
 
 class SportsListScreen extends StatefulWidget {
   const SportsListScreen({super.key});
@@ -51,13 +60,84 @@ class _SportsListScreenState extends State<SportsListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Danh Sách Môn Thể Thao'),
+        title: AppLogoWithText(
+          logoHeight: 40,
+          text: 'Danh Sách Môn Thể Thao',
+          textStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SearchScreen(),
+                ),
+              );
+            },
+            tooltip: 'Tìm kiếm',
+          ),
+          Consumer<AuthProvider>(
+            builder: (context, authProvider, child) {
+              if (!authProvider.isAuthenticated) {
+                return const SizedBox.shrink();
+              }
+              return IconButton(
+                icon: const Icon(Icons.dashboard),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const DashboardScreen(),
+                    ),
+                  );
+                },
+                tooltip: 'Dashboard',
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.newspaper),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const NewsListScreen(),
+                ),
+              );
+            },
+            tooltip: 'Tin tức',
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
             onPressed: loadSports,
+          ),
+          Consumer<AuthProvider>(
+            builder: (context, authProvider, child) {
+              return IconButton(
+                icon: Icon(
+                  authProvider.isAuthenticated 
+                      ? Icons.person 
+                      : Icons.login,
+                ),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => authProvider.isAuthenticated
+                          ? const ProfileScreen()
+                          : const LoginScreen(),
+                    ),
+                  );
+                },
+                tooltip: authProvider.isAuthenticated 
+                    ? 'Thông tin cá nhân' 
+                    : 'Đăng nhập',
+              );
+            },
           ),
         ],
       ),
@@ -149,11 +229,10 @@ class _SportsListScreenState extends State<SportsListScreen> {
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
-          // TODO: Navigate to tournaments by sport
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Xem giải đấu ${sport.name}'),
-              duration: Duration(seconds: 2),
+          // Navigate to tournaments by sport
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => TournamentListScreen(sport: sport),
             ),
           );
         },
