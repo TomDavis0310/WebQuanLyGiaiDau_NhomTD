@@ -58,5 +58,6 @@
         public DbSet<MatchDetail> MatchDetails { get; set; }
         public DbSet<TournamentFormat> TournamentFormats { get; set; }
         public DbSet<PlayerScoring> PlayerScorings { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
     }
 }

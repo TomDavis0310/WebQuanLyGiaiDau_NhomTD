@@ -27,6 +27,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
         /// Get user dashboard overview
         /// </summary>
         [HttpGet("overview")]
+        [AllowAnonymous]
         public async Task<ActionResult<object>> GetDashboardOverview()
         {
             try
@@ -34,7 +35,21 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
                 var userId = GetUserId();
                 if (string.IsNullOrEmpty(userId))
                 {
-                    return Unauthorized(new { message = "User not authenticated" });
+                    // Return empty dashboard for anonymous users
+                    return Ok(new
+                    {
+                        registeredTournaments = new List<object>(),
+                        teams = new List<object>(),
+                        upcomingMatches = new List<object>(),
+                        statistics = new
+                        {
+                            totalTeams = 0,
+                            totalTournaments = 0,
+                            totalMatches = 0,
+                            upcomingMatchesCount = 0
+                        },
+                        recentActivity = new List<object>()
+                    });
                 }
 
                 // Get user's registered tournaments

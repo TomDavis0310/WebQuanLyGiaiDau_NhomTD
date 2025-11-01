@@ -110,12 +110,28 @@ namespace WebQuanLyGiaiDau_NhomTD.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
+                _logger.LogInformation($"Attempting login for email: {Input.Email}");
+                
+                // Find user by email first to verify user exists
+                var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
+                if (user == null)
+                {
+                    _logger.LogWarning($"User not found with email: {Input.Email}");
+                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    return Page();
+                }
+                
+                _logger.LogInformation($"User found: {user.UserName}, EmailConfirmed: {user.EmailConfirmed}");
+                
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(user.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                
+                _logger.LogInformation($"Login result - Succeeded: {result.Succeeded}, RequiresTwoFactor: {result.RequiresTwoFactor}, IsLockedOut: {result.IsLockedOut}, IsNotAllowed: {result.IsNotAllowed}");
+                
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User logged in.");
+                    _logger.LogInformation("User logged in successfully.");
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
@@ -129,12 +145,14 @@ namespace WebQuanLyGiaiDau_NhomTD.Areas.Identity.Pages.Account
                 }
                 else
                 {
+                    _logger.LogWarning($"Login failed for user: {user.UserName}");
                     ModelState.AddModelError(string.Empty, "Invalid login attempt.");
                     return Page();
                 }
             }
 
             // If we got this far, something failed, redisplay form
+            _logger.LogWarning("ModelState is invalid");
             return Page();
         }
     }

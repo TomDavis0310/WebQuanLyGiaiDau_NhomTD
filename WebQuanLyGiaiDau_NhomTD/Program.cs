@@ -3,25 +3,45 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
 using WebQuanLyGiaiDau_NhomTD;
+using WebQuanLyGiaiDau_NhomTD.Data.Seed;
 using System.Threading;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Kestrel to use the PORT environment variable (for Render deployment)
+// Configure Kestrel to use the PORT environment variable (for local development)
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+// Listen on all network interfaces to allow mobile app connections
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // Đăng ký ApplicationDbContext với DI container
 builder.Services.AddDbContext<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
-// Đăng ký Identity với ApplicationUser thay vì IdentityUser
-builder.Services.AddDefaultIdentity<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser>(options =>
+// Cấu hình Authentication để hỗ trợ cả Cookie (MVC) và JWT Bearer (API)
+builder.Services.AddAuthentication(options =>
 {
-    options.SignIn.RequireConfirmedAccount = false;
+    // Đặt Cookie làm scheme mặc định cho MVC/Razor Pages
+    options.DefaultScheme = IdentityConstants.ApplicationScheme;
+    options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
 })
-.AddRoles<IdentityRole>() // Add role management
-.AddEntityFrameworkStores<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContext>();
+.AddJwtBearer(options =>
+{
+    // JWT Bearer chỉ dùng cho API endpoints
+    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
+            System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "YourSuperSecretKeyThatIsAtLeast32CharactersLongForTDSports!"))
+    };
+});
+
+Console.WriteLine("✅ JWT Bearer Authentication đã được cấu hình cho API!");
 
 // Thêm Google Authentication
 var googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID")
@@ -29,7 +49,7 @@ var googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID")
 var googleClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET")
     ?? builder.Configuration["Authentication:Google:ClientSecret"];
 
-// Only add Google authentication if credentials are properly configured
+// Thêm Google Authentication (nếu có cấu hình)
 if (!string.IsNullOrEmpty(googleClientId) &&
     !string.IsNullOrEmpty(googleClientSecret) &&
     googleClientId != "YOUR_GOOGLE_CLIENT_ID_HERE" &&
@@ -52,6 +72,33 @@ else
     Console.WriteLine("   Bạn vẫn có thể đăng nhập bằng tài khoản cục bộ.");
 }
 
+// Đăng ký Identity với ApplicationUser (phải đặt sau cấu hình Authentication)
+builder.Services.AddDefaultIdentity<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser>(options =>
+{
+    // Sign-in settings
+    options.SignIn.RequireConfirmedAccount = false; // Set to true for production
+    
+    // Password settings - Enhanced security
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = false; // Keep flexible for now
+    options.Password.RequireNonAlphanumeric = false; // Keep flexible for now
+    options.Password.RequiredLength = 6;
+    options.Password.RequiredUniqueChars = 0;
+    
+    // Lockout settings - Prevent brute force attacks
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.AllowedForNewUsers = true;
+    
+    // User settings
+    options.User.RequireUniqueEmail = true;
+})
+.AddRoles<IdentityRole>() // Add role management
+.AddEntityFrameworkStores<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContext>();
+
+Console.WriteLine("✅ Identity với Cookie Authentication đã được cấu hình cho MVC!");
+
 // Đăng ký MVC và Razor Pages (cho Identity)
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
@@ -65,6 +112,31 @@ builder.Services.AddSwaggerGen(c =>
         Title = "Tournament Management API",
         Version = "v1",
         Description = "API for Tournament Management System"
+    });
+});
+
+// Add CORS for mobile app and other clients
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowMobileApp", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:*",
+                "http://10.0.2.2:*",  // Android Emulator
+                "http://127.0.0.1:*",
+                "http://192.168.*:*"   // Local network devices
+            )
+            .SetIsOriginAllowedToAllowWildcardSubdomains()
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+    
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
 
@@ -119,6 +191,11 @@ using (var scope = app.Services.CreateScope())
             }
         }
 
+        // Seed Users với nhiều tài khoản
+        Console.WriteLine("Seed dữ liệu Users...");
+        await SeedUsersData.SeedUsers(services);
+        Console.WriteLine("Seed dữ liệu Users thành công.");
+
         var dbContext = services.GetRequiredService<ApplicationDbContext>();
         Console.WriteLine("Bắt đầu quá trình seed dữ liệu...");
         Console.WriteLine("Seed dữ liệu TournamentFormats...");
@@ -164,6 +241,10 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
+// Use CORS - Must be after UseRouting and before UseAuthentication
+app.UseCors("AllowAll"); // Use AllowAll for development, switch to AllowMobileApp for production
+
 app.UseAuthentication();
 app.UseAuthorization();
 

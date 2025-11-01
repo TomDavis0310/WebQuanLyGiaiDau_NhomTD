@@ -26,10 +26,12 @@ dependencies:
   # UI Components
   cached_network_image: ^3.3.0
   flutter_html: ^3.0.0-beta.2
+  fl_chart: ^0.69.0
   
   # Utilities
   intl: ^0.18.1
   json_annotation: ^4.8.1
+  timeago: ^3.7.0
   
   # SignalR for real-time updates
   signalr_netcore: ^1.3.3

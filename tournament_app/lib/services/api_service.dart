@@ -11,12 +11,15 @@ import '../models/player_detail.dart';
 import '../models/standings.dart';
 import '../models/search_result.dart';
 import '../models/dashboard.dart';
+import '../models/tournament_statistics.dart';
+import '../models/tournament_rules.dart';
+import '../models/notification.dart';
 
 class ApiService {
   // Sử dụng địa chỉ IP thực của máy tính để điện thoại có thể kết nối
   // Backend API đang chạy trên port 8080
-  // IP address updated: 192.168.1.9 (check with ipconfig command)
-  static const String baseUrl = 'http://192.168.1.9:8080/api';
+  // IP address updated: 192.168.1.2 (check with ipconfig command)
+  static const String baseUrl = 'http://192.168.1.2:8080/api';
   
   // Sports API
   static Future<ApiResponse<List<Sport>>> getSports() async {
@@ -1139,18 +1142,26 @@ class ApiService {
       };
 
       final response = await http.get(
-        Uri.parse('$baseUrl/Profile'),
+        Uri.parse('$baseUrl/profile'),
         headers: headers,
       );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         
-        return ApiResponse<Map<String, dynamic>>(
-          success: true,
-          message: 'Profile loaded successfully',
-          data: jsonData,
-        );
+        // Extract data from ApiResponse wrapper
+        if (jsonData['success'] == true && jsonData['data'] != null) {
+          return ApiResponse<Map<String, dynamic>>(
+            success: true,
+            message: jsonData['message'] ?? 'Profile loaded successfully',
+            data: jsonData['data'],
+          );
+        } else {
+          return ApiResponse<Map<String, dynamic>>(
+            success: false,
+            message: jsonData['message'] ?? 'Failed to load profile',
+          );
+        }
       } else if (response.statusCode == 401) {
         return ApiResponse<Map<String, dynamic>>(
           success: false,
@@ -1177,6 +1188,10 @@ class ApiService {
     required String email,
     String? phoneNumber,
     String? bio,
+    String? address,
+    int? age,
+    String? gender,
+    DateTime? dateOfBirth,
   }) async {
     try {
       final headers = {
@@ -1186,13 +1201,15 @@ class ApiService {
 
       final body = json.encode({
         'fullName': fullName,
-        'email': email,
-        'phoneNumber': phoneNumber ?? '',
-        'bio': bio ?? '',
+        'phoneNumber': phoneNumber,
+        'address': address,
+        'age': age,
+        'gender': gender,
+        'dateOfBirth': dateOfBirth?.toIso8601String(),
       });
 
       final response = await http.put(
-        Uri.parse('$baseUrl/Profile/update'),
+        Uri.parse('$baseUrl/profile'),
         headers: headers,
         body: body,
       );
@@ -1200,11 +1217,19 @@ class ApiService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         
-        return ApiResponse<Map<String, dynamic>>(
-          success: true,
-          message: jsonData['message'] ?? 'Profile updated successfully',
-          data: jsonData,
-        );
+        // Extract data from ApiResponse wrapper
+        if (jsonData['success'] == true && jsonData['data'] != null) {
+          return ApiResponse<Map<String, dynamic>>(
+            success: true,
+            message: jsonData['message'] ?? 'Profile updated successfully',
+            data: jsonData['data'],
+          );
+        } else {
+          return ApiResponse<Map<String, dynamic>>(
+            success: false,
+            message: jsonData['message'] ?? 'Failed to update profile',
+          );
+        }
       } else if (response.statusCode == 401) {
         return ApiResponse<Map<String, dynamic>>(
           success: false,
@@ -1239,12 +1264,12 @@ class ApiService {
       };
 
       final body = json.encode({
-        'currentPassword': currentPassword,
+        'oldPassword': currentPassword,
         'newPassword': newPassword,
       });
 
-      final response = await http.put(
-        Uri.parse('$baseUrl/Profile/change-password'),
+      final response = await http.post(
+        Uri.parse('$baseUrl/profile/change-password'),
         headers: headers,
         body: body,
       );
@@ -1252,11 +1277,19 @@ class ApiService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         
-        return ApiResponse<Map<String, dynamic>>(
-          success: true,
-          message: jsonData['message'] ?? 'Password changed successfully',
-          data: jsonData,
-        );
+        // Extract data from ApiResponse wrapper
+        if (jsonData['success'] == true) {
+          return ApiResponse<Map<String, dynamic>>(
+            success: true,
+            message: jsonData['message'] ?? 'Password changed successfully',
+            data: jsonData['data'],
+          );
+        } else {
+          return ApiResponse<Map<String, dynamic>>(
+            success: false,
+            message: jsonData['message'] ?? 'Failed to change password',
+          );
+        }
       } else if (response.statusCode == 401) {
         return ApiResponse<Map<String, dynamic>>(
           success: false,
@@ -1292,7 +1325,7 @@ class ApiService {
       });
 
       final response = await http.post(
-        Uri.parse('$baseUrl/Auth/forgot-password'),
+        Uri.parse('$baseUrl/profile/forgot-password'),
         headers: headers,
         body: body,
       );
@@ -1300,11 +1333,19 @@ class ApiService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         
-        return ApiResponse<Map<String, dynamic>>(
-          success: true,
-          message: jsonData['message'] ?? 'Reset code sent to your email',
-          data: jsonData,
-        );
+        // Extract data from ApiResponse wrapper
+        if (jsonData['success'] == true) {
+          return ApiResponse<Map<String, dynamic>>(
+            success: true,
+            message: jsonData['message'] ?? 'Reset code sent to your email',
+            data: jsonData['data'],
+          );
+        } else {
+          return ApiResponse<Map<String, dynamic>>(
+            success: false,
+            message: jsonData['message'] ?? 'Failed to send reset code',
+          );
+        }
       } else {
         final Map<String, dynamic>? errorData = 
             response.body.isNotEmpty ? json.decode(response.body) : null;
@@ -1334,12 +1375,12 @@ class ApiService {
 
       final body = json.encode({
         'email': email,
-        'resetCode': resetCode,
+        'code': resetCode,
         'newPassword': newPassword,
       });
 
       final response = await http.post(
-        Uri.parse('$baseUrl/Auth/reset-password'),
+        Uri.parse('$baseUrl/profile/reset-password'),
         headers: headers,
         body: body,
       );
@@ -1347,11 +1388,19 @@ class ApiService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         
-        return ApiResponse<Map<String, dynamic>>(
-          success: true,
-          message: jsonData['message'] ?? 'Password reset successfully',
-          data: jsonData,
-        );
+        // Extract data from ApiResponse wrapper
+        if (jsonData['success'] == true) {
+          return ApiResponse<Map<String, dynamic>>(
+            success: true,
+            message: jsonData['message'] ?? 'Password reset successfully',
+            data: jsonData['data'],
+          );
+        } else {
+          return ApiResponse<Map<String, dynamic>>(
+            success: false,
+            message: jsonData['message'] ?? 'Failed to reset password',
+          );
+        }
       } else {
         final Map<String, dynamic>? errorData = 
             response.body.isNotEmpty ? json.decode(response.body) : null;
@@ -1699,6 +1748,778 @@ class ApiService {
       }
     } catch (e) {
       return ApiResponse<Map<String, dynamic>>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Get players for a specific team
+  static Future<ApiResponse<List<dynamic>>> getTeamPlayers(int teamId) async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        return ApiResponse<List<dynamic>>(
+          success: false,
+          message: 'Not authenticated',
+        );
+      }
+
+      final headers = {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': 'Bearer $token',
+      };
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/tournament-management/teams/$teamId/players'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        return ApiResponse<List<dynamic>>(
+          success: jsonData['success'] ?? true,
+          message: jsonData['message'] ?? 'Players loaded successfully',
+          data: jsonData['data'] as List<dynamic>?,
+        );
+      } else {
+        final Map<String, dynamic>? errorData =
+            response.body.isNotEmpty ? json.decode(response.body) : null;
+        return ApiResponse<List<dynamic>>(
+          success: false,
+          message: errorData?['message'] ?? 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<List<dynamic>>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  // ==================== TOURNAMENT REGISTRATION APIs ====================
+
+  /// Get available tournaments for registration
+  static Future<ApiResponse<List<dynamic>>> getAvailableTournaments() async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        return ApiResponse<List<dynamic>>(
+          success: false,
+          message: 'Not authenticated',
+        );
+      }
+
+      final headers = {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': 'Bearer $token',
+      };
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/tournament-management/available-tournaments'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        return ApiResponse<List<dynamic>>(
+          success: jsonData['success'] ?? true,
+          message: jsonData['message'] ?? 'Tournaments loaded successfully',
+          data: jsonData['data'] as List<dynamic>?,
+        );
+      } else {
+        final Map<String, dynamic>? errorData =
+            response.body.isNotEmpty ? json.decode(response.body) : null;
+        return ApiResponse<List<dynamic>>(
+          success: false,
+          message: errorData?['message'] ?? 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<List<dynamic>>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Register a team for a tournament
+  static Future<ApiResponse<Map<String, dynamic>>> registerForTournament(
+      int tournamentId, int teamId) async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        return ApiResponse<Map<String, dynamic>>(
+          success: false,
+          message: 'Not authenticated',
+        );
+      }
+
+      final headers = {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': 'Bearer $token',
+      };
+
+      final body = json.encode({'teamId': teamId});
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/tournament-management/tournaments/$tournamentId/register'),
+        headers: headers,
+        body: body,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        return ApiResponse<Map<String, dynamic>>(
+          success: jsonData['success'] ?? true,
+          message: jsonData['message'] ?? 'Registered successfully',
+          data: jsonData['data'] as Map<String, dynamic>?,
+        );
+      } else {
+        final Map<String, dynamic>? errorData =
+            response.body.isNotEmpty ? json.decode(response.body) : null;
+        return ApiResponse<Map<String, dynamic>>(
+          success: false,
+          message: errorData?['message'] ?? 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<Map<String, dynamic>>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Unregister a team from a tournament
+  static Future<ApiResponse<Map<String, dynamic>>> unregisterFromTournament(
+      int tournamentId, int teamId) async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        return ApiResponse<Map<String, dynamic>>(
+          success: false,
+          message: 'Not authenticated',
+        );
+      }
+
+      final headers = {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': 'Bearer $token',
+      };
+
+      final body = json.encode({'teamId': teamId});
+
+      final response = await http.delete(
+        Uri.parse('$baseUrl/tournament-management/tournaments/$tournamentId/register'),
+        headers: headers,
+        body: body,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        final jsonData = response.body.isNotEmpty 
+            ? json.decode(response.body) 
+            : {'success': true, 'message': 'Unregistered successfully'};
+        return ApiResponse<Map<String, dynamic>>(
+          success: jsonData['success'] ?? true,
+          message: jsonData['message'] ?? 'Unregistered successfully',
+        );
+      } else {
+        final Map<String, dynamic>? errorData =
+            response.body.isNotEmpty ? json.decode(response.body) : null;
+        return ApiResponse<Map<String, dynamic>>(
+          success: false,
+          message: errorData?['message'] ?? 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<Map<String, dynamic>>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Get user's tournament registrations
+  static Future<ApiResponse<List<dynamic>>> getMyRegistrations() async {
+    try {
+      final token = await _getToken();
+      if (token == null) {
+        return ApiResponse<List<dynamic>>(
+          success: false,
+          message: 'Not authenticated',
+        );
+      }
+
+      final headers = {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Authorization': 'Bearer $token',
+      };
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/tournament-management/my-registrations'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(response.body);
+        return ApiResponse<List<dynamic>>(
+          success: jsonData['success'] ?? true,
+          message: jsonData['message'] ?? 'Registrations loaded successfully',
+          data: jsonData['data'] as List<dynamic>?,
+        );
+      } else {
+        final Map<String, dynamic>? errorData =
+            response.body.isNotEmpty ? json.decode(response.body) : null;
+        return ApiResponse<List<dynamic>>(
+          success: false,
+          message: errorData?['message'] ?? 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<List<dynamic>>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  // ==================== STATISTICS API ====================
+
+  /// Get top scorers for a tournament
+  static Future<ApiResponse<List<TopScorer>>> getTopScorers(
+    int tournamentId, {
+    int limit = 10,
+  }) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/StatisticsApi/tournament/$tournamentId/top-scorers?limit=$limit'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        if (jsonData['success'] == true) {
+          final List<dynamic> scorersJson = jsonData['data'] ?? [];
+          final List<TopScorer> scorers = scorersJson
+              .map((json) => TopScorer.fromJson(json))
+              .toList();
+
+          return ApiResponse<List<TopScorer>>(
+            success: true,
+            message: jsonData['message'],
+            data: scorers,
+            count: jsonData['count'],
+          );
+        } else {
+          return ApiResponse<List<TopScorer>>(
+            success: false,
+            message: jsonData['message'] ?? 'Failed to load top scorers',
+          );
+        }
+      } else {
+        return ApiResponse<List<TopScorer>>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<List<TopScorer>>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Get team statistics for a tournament
+  static Future<ApiResponse<List<TeamStatistics>>> getTeamStatistics(
+      int tournamentId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/StatisticsApi/tournament/$tournamentId/team-stats'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        if (jsonData['success'] == true) {
+          final List<dynamic> statsJson = jsonData['data'] ?? [];
+          final List<TeamStatistics> stats = statsJson
+              .map((json) => TeamStatistics.fromJson(json))
+              .toList();
+
+          return ApiResponse<List<TeamStatistics>>(
+            success: true,
+            message: jsonData['message'],
+            data: stats,
+            count: jsonData['count'],
+          );
+        } else {
+          return ApiResponse<List<TeamStatistics>>(
+            success: false,
+            message: jsonData['message'] ?? 'Failed to load team statistics',
+          );
+        }
+      } else {
+        return ApiResponse<List<TeamStatistics>>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<List<TeamStatistics>>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Get match statistics for a tournament
+  static Future<ApiResponse<MatchStatistics>> getMatchStatistics(
+      int tournamentId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/StatisticsApi/tournament/$tournamentId/match-stats'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        if (jsonData['success'] == true) {
+          return ApiResponse<MatchStatistics>(
+            success: true,
+            message: jsonData['message'],
+            data: MatchStatistics.fromJson(jsonData['data']),
+          );
+        } else {
+          return ApiResponse<MatchStatistics>(
+            success: false,
+            message: jsonData['message'] ?? 'Failed to load match statistics',
+          );
+        }
+      } else {
+        return ApiResponse<MatchStatistics>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<MatchStatistics>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Get tournament overview with statistics
+  static Future<ApiResponse<TournamentOverview>> getTournamentOverview(
+      int tournamentId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/StatisticsApi/tournament/$tournamentId/overview'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        if (jsonData['success'] == true) {
+          return ApiResponse<TournamentOverview>(
+            success: true,
+            message: jsonData['message'],
+            data: TournamentOverview.fromJson(jsonData['data']),
+          );
+        } else {
+          return ApiResponse<TournamentOverview>(
+            success: false,
+            message: jsonData['message'] ?? 'Failed to load tournament overview',
+          );
+        }
+      } else {
+        return ApiResponse<TournamentOverview>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<TournamentOverview>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  // ==================== TOURNAMENT RULES API ====================
+
+  /// Get all rules for a tournament
+  static Future<ApiResponse<TournamentRulesResponse>> getTournamentRules(
+      int tournamentId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/rules/$tournamentId'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        if (jsonData['success'] == true) {
+          return ApiResponse<TournamentRulesResponse>(
+            success: true,
+            message: jsonData['message'] ?? 'Success',
+            data: TournamentRulesResponse.fromJson(jsonData['data']),
+          );
+        } else {
+          return ApiResponse<TournamentRulesResponse>(
+            success: false,
+            message: jsonData['message'] ?? 'Failed to load rules',
+          );
+        }
+      } else {
+        return ApiResponse<TournamentRulesResponse>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<TournamentRulesResponse>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Get rules by category for a tournament
+  static Future<ApiResponse<RuleCategory>> getRulesByCategory(
+      int tournamentId, String category) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/rules/$tournamentId/category/$category'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        if (jsonData['success'] == true) {
+          return ApiResponse<RuleCategory>(
+            success: true,
+            message: jsonData['message'] ?? 'Success',
+            data: RuleCategory.fromJson(jsonData['data']),
+          );
+        } else {
+          return ApiResponse<RuleCategory>(
+            success: false,
+            message: jsonData['message'] ?? 'Failed to load category rules',
+          );
+        }
+      } else {
+        return ApiResponse<RuleCategory>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<RuleCategory>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  // ==================== NOTIFICATIONS API ====================
+
+  /// Get notifications with optional filters
+  static Future<ApiResponse<NotificationsResponse>> getNotifications({
+    String? type,
+    bool? isRead,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      final queryParams = <String, String>{
+        'page': page.toString(),
+        'pageSize': pageSize.toString(),
+      };
+
+      if (type != null) queryParams['type'] = type;
+      if (isRead != null) queryParams['isRead'] = isRead.toString();
+
+      final uri = Uri.parse('$baseUrl/notifications')
+          .replace(queryParameters: queryParams);
+
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        if (jsonData['success'] == true) {
+          return ApiResponse<NotificationsResponse>(
+            success: true,
+            message: jsonData['message'] ?? 'Success',
+            data: NotificationsResponse.fromJson(jsonData),
+          );
+        } else {
+          return ApiResponse<NotificationsResponse>(
+            success: false,
+            message: jsonData['message'] ?? 'Failed to load notifications',
+          );
+        }
+      } else {
+        return ApiResponse<NotificationsResponse>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<NotificationsResponse>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Get a single notification by ID
+  static Future<ApiResponse<NotificationModel>> getNotification(
+      int id) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/notifications/$id'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        if (jsonData['success'] == true) {
+          return ApiResponse<NotificationModel>(
+            success: true,
+            message: jsonData['message'] ?? 'Success',
+            data: NotificationModel.fromJson(jsonData['data']),
+          );
+        } else {
+          return ApiResponse<NotificationModel>(
+            success: false,
+            message: jsonData['message'] ?? 'Failed to load notification',
+          );
+        }
+      } else if (response.statusCode == 404) {
+        return ApiResponse<NotificationModel>(
+          success: false,
+          message: 'Notification not found',
+        );
+      } else {
+        return ApiResponse<NotificationModel>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<NotificationModel>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Mark a notification as read
+  static Future<ApiResponse<void>> markNotificationAsRead(int id) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/notifications/$id/read'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return ApiResponse<void>(
+          success: jsonData['success'] ?? true,
+          message: jsonData['message'] ?? 'Marked as read',
+        );
+      } else {
+        return ApiResponse<void>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<void>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Mark a notification as unread
+  static Future<ApiResponse<void>> markNotificationAsUnread(int id) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/notifications/$id/unread'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return ApiResponse<void>(
+          success: jsonData['success'] ?? true,
+          message: jsonData['message'] ?? 'Marked as unread',
+        );
+      } else {
+        return ApiResponse<void>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<void>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Mark all notifications as read
+  static Future<ApiResponse<int>> markAllNotificationsAsRead() async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/notifications/read-all'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return ApiResponse<int>(
+          success: jsonData['success'] ?? true,
+          message: jsonData['message'] ?? 'Marked all as read',
+          data: jsonData['count'] ?? 0,
+        );
+      } else {
+        return ApiResponse<int>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<int>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Delete a notification
+  static Future<ApiResponse<void>> deleteNotification(int id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/notifications/$id'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return ApiResponse<void>(
+          success: jsonData['success'] ?? true,
+          message: jsonData['message'] ?? 'Deleted',
+        );
+      } else {
+        return ApiResponse<void>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<void>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Delete all notifications
+  static Future<ApiResponse<int>> deleteAllNotifications() async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/notifications/delete-all'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return ApiResponse<int>(
+          success: jsonData['success'] ?? true,
+          message: jsonData['message'] ?? 'Deleted all',
+          data: jsonData['count'] ?? 0,
+        );
+      } else {
+        return ApiResponse<int>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<int>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Get unread notifications count
+  static Future<ApiResponse<int>> getUnreadNotificationsCount() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/notifications/unread-count'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        if (jsonData['success'] == true) {
+          return ApiResponse<int>(
+            success: true,
+            message: jsonData['message'] ?? 'Success',
+            data: jsonData['data']['unreadCount'] ?? 0,
+          );
+        } else {
+          return ApiResponse<int>(
+            success: false,
+            message: jsonData['message'] ?? 'Failed to load count',
+          );
+        }
+      } else {
+        return ApiResponse<int>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<int>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Get notification types
+  static Future<ApiResponse<List<NotificationType>>> getNotificationTypes() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/notifications/types'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        if (jsonData['success'] == true) {
+          final List<dynamic> typesJson = jsonData['data'] ?? [];
+          final types = typesJson
+              .map((json) => NotificationType.fromJson(json))
+              .toList();
+
+          return ApiResponse<List<NotificationType>>(
+            success: true,
+            message: jsonData['message'] ?? 'Success',
+            data: types,
+          );
+        } else {
+          return ApiResponse<List<NotificationType>>(
+            success: false,
+            message: jsonData['message'] ?? 'Failed to load types',
+          );
+        }
+      } else {
+        return ApiResponse<List<NotificationType>>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<List<NotificationType>>(
         success: false,
         message: 'Error: $e',
       );

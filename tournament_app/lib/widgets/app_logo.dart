@@ -95,13 +95,17 @@ class AppLogoWithText extends StatelessWidget {
         AppLogo(height: logoHeight),
         if (text != null) ...[
           SizedBox(width: spacing),
-          Text(
-            text!,
-            style: textStyle ??
-                TextStyle(
-                  fontSize: logoHeight * 0.5,
-                  fontWeight: FontWeight.bold,
-                ),
+          Flexible(
+            child: Text(
+              text!,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: textStyle ??
+                  TextStyle(
+                    fontSize: logoHeight * 0.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
           ),
         ],
       ],
