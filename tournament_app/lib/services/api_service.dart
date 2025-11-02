@@ -162,13 +162,26 @@ class ApiService {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         
         if (jsonData['success'] == true && jsonData['data'] != null) {
-          final tournamentDetail = TournamentDetail.fromJson(jsonData['data']);
-          
-          return ApiResponse<TournamentDetail>(
-            success: true,
-            message: jsonData['message'] ?? 'Success',
-            data: tournamentDetail,
-          );
+          try {
+            // Debug: Print raw data
+            print('Tournament API Response: ${jsonData['data']}');
+            
+            final tournamentDetail = TournamentDetail.fromJson(jsonData['data']);
+            
+            return ApiResponse<TournamentDetail>(
+              success: true,
+              message: jsonData['message'] ?? 'Success',
+              data: tournamentDetail,
+            );
+          } catch (parseError, stackTrace) {
+            print('Parse Error: $parseError');
+            print('Stack Trace: $stackTrace');
+            print('Raw JSON: ${jsonData['data']}');
+            return ApiResponse<TournamentDetail>(
+              success: false,
+              message: 'Parse error: $parseError',
+            );
+          }
         } else {
           return ApiResponse<TournamentDetail>(
             success: false,
@@ -181,7 +194,9 @@ class ApiService {
           message: 'HTTP Error: ${response.statusCode}',
         );
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('API Error: $e');
+      print('Stack Trace: $stackTrace');
       return ApiResponse<TournamentDetail>(
         success: false,
         message: 'Error: $e',

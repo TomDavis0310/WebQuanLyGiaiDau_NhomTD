@@ -14,8 +14,8 @@ class TournamentDetail {
   final String? location;
   final DateTime startDate;
   final DateTime endDate;
-  final int maxTeams;
-  final int teamsPerGroup;
+  final int? maxTeams;
+  final int? teamsPerGroup;
   final String registrationStatus;
   final Sport sports;
   final List<Match> matches;
@@ -29,8 +29,8 @@ class TournamentDetail {
     this.location,
     required this.startDate,
     required this.endDate,
-    required this.maxTeams,
-    required this.teamsPerGroup,
+    this.maxTeams,
+    this.teamsPerGroup,
     required this.registrationStatus,
     required this.sports,
     required this.matches,

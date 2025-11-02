@@ -313,7 +313,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
               Expanded(
                 child: _buildStatCard(
                   Icons.groups,
-                  '${tournament!.registeredTeamsCount}/${tournament!.maxTeams}',
+                  '${tournament!.registeredTeamsCount}/${tournament!.maxTeams ?? 0}',
                   'Đội',
                   Colors.blue,
                 ),
@@ -411,9 +411,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
               _buildInfoRow(Icons.location_on, 'Địa điểm',
                   tournament!.location ?? 'Chưa xác định'),
               _buildInfoRow(Icons.groups, 'Số đội tối đa',
-                  '${tournament!.maxTeams}'),
+                  '${tournament!.maxTeams ?? 'Chưa xác định'}'),
               _buildInfoRow(Icons.grid_view, 'Đội mỗi bảng',
-                  '${tournament!.teamsPerGroup}'),
+                  '${tournament!.teamsPerGroup ?? 'Chưa xác định'}'),
             ],
           ),
           SizedBox(height: 16),
