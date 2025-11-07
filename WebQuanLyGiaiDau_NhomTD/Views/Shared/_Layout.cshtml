@@ -90,6 +90,11 @@
                                 </a>
                             </li>
 
+                            <!-- Đổi điểm - truy cập trang đổi điểm -->
+                            <li class="nav-item nav-item-enhanced">
+                                <a class="nav-link" asp-controller="Shop" asp-action="Index">Đổi điểm</a>
+                            </li>
+
                             @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
                             {
                                 <!-- Admin-specific navigation -->

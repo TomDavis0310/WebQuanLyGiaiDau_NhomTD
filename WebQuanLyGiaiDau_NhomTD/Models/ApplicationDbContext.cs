@@ -58,5 +58,10 @@
         public DbSet<MatchDetail> MatchDetails { get; set; }
         public DbSet<TournamentFormat> TournamentFormats { get; set; }
         public DbSet<PlayerScoring> PlayerScorings { get; set; }
+        
+        // Điểm thưởng và sản phẩm đổi điểm
+        public DbSet<RewardProduct> RewardProducts { get; set; }
+        public DbSet<PointsSetting> PointsSettings { get; set; }
+    public DbSet<RedeemTransaction> RedeemTransactions { get; set; }
     }
 }

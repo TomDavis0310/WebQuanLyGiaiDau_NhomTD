@@ -1,0 +1,34 @@
+@model IEnumerable<WebQuanLyGiaiDau_NhomTD.Models.RedeemTransaction>
+@{
+    ViewData["Title"] = "Lịch sử giao dịch";
+}
+
+<div class="container mt-4">
+    <h2>Lịch sử giao dịch</h2>
+
+    <div class="mt-3">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Thời gian</th>
+                    <th>Sản phẩm</th>
+                    <th>Điểm</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var t in Model)
+                {
+                    <tr>
+                        <td>@t.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@(t.Product != null ? t.Product.Name : t.ProductId.ToString())</td>
+                        <td>@t.PointsCost</td>
+                        <td>@t.Status</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <a class="btn btn-secondary" asp-action="Index">Quay lại</a>
+</div>

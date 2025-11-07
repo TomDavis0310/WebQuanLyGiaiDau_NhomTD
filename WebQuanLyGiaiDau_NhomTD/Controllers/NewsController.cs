@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebQuanLyGiaiDau_NhomTD.Models;
 using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
+using System.Security.Claims;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -78,6 +79,24 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             news.ViewCount++;
             _context.Update(news);
             await _context.SaveChangesAsync();
+
+            // Nếu người dùng đã đăng nhập, cộng điểm theo cấu hình
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var user = await _context.Users.FindAsync(userId);
+                    if (user != null)
+                    {
+                        var cfg = await _context.PointsSettings.FirstOrDefaultAsync();
+                        var add = cfg?.ReadNewsPoints ?? 1;
+                        user.Points += add;
+                        _context.Update(user);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
 
             return View(news);
         }
@@ -264,9 +283,14 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         {
             try
             {
-                if (image == null || image.Length == 0)
+                if (image == null)
                 {
-                    return null;
+                    throw new ArgumentNullException(nameof(image));
+                }
+
+                if (image.Length == 0)
+                {
+                    throw new ArgumentException("Empty file provided", nameof(image));
                 }
 
                 // Kiểm tra kích thước file (giới hạn 5MB)

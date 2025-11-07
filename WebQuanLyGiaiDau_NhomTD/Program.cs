@@ -8,8 +8,8 @@ using System.Threading;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Kestrel to use the PORT environment variable (for Render deployment)
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+builder.WebHost.UseUrls($"http://localhost:{port}");
 
 // Đăng ký ApplicationDbContext với DI container
 builder.Services.AddDbContext<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContext>(options =>
