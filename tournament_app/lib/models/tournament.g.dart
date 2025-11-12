@@ -10,7 +10,7 @@ Tournament _$TournamentFromJson(Map<String, dynamic> json) => Tournament(
   id: (json['id'] as num).toInt(),
   name: json['name'] as String,
   description: json['description'] as String?,
-  imageUrl: json['imageUrl'] as String?,
+  imageUrl: Tournament._imageUrlFromJson(json['imageUrl'] as String?),
   location: json['location'] as String?,
   startDate: DateTime.parse(json['startDate'] as String),
   endDate: DateTime.parse(json['endDate'] as String),

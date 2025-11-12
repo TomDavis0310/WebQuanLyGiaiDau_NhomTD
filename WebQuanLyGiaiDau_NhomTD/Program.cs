@@ -4,10 +4,17 @@ using Microsoft.EntityFrameworkCore;
 using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
 using WebQuanLyGiaiDau_NhomTD;
 using WebQuanLyGiaiDau_NhomTD.Data.Seed;
+using WebQuanLyGiaiDau_NhomTD.Middleware;
+using WebQuanLyGiaiDau_NhomTD.Services.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Threading;
+using WebQuanLyGiaiDau_NhomTD.Services.Interfaces;
+using WebQuanLyGiaiDau_NhomTD.Services;
+using WebQuanLyGiaiDau_NhomTD.Models.Email;
+using WebQuanLyGiaiDau_NhomTD.Models.FileUpload;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-
 // Configure Kestrel to use the PORT environment variable (for local development)
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 // Listen on all network interfaces to allow mobile app connections
@@ -67,9 +74,11 @@ if (!string.IsNullOrEmpty(googleClientId) &&
 }
 else
 {
-    Console.WriteLine("⚠️  Google OAuth chưa được cấu hình. Vui lòng xem hướng dẫn trong GOOGLE_OAUTH_SETUP.md");
-    Console.WriteLine("   Đăng nhập bằng Google sẽ không hoạt động cho đến khi bạn cấu hình thông tin xác thực.");
-    Console.WriteLine("   Bạn vẫn có thể đăng nhập bằng tài khoản cục bộ.");
+    Console.WriteLine("⚠️  Google OAuth chưa được cấu hình - Đăng nhập bằng Google sẽ không hoạt động.");
+    Console.WriteLine("   🔧 Để kích hoạt Google OAuth:");
+    Console.WriteLine("   📖 Xem hướng dẫn chi tiết: GOOGLE_OAUTH_HOÀN_THIỆN.md");
+    Console.WriteLine("   ⚡ Hoặc hướng dẫn nhanh: GOOGLE_OAUTH_QUICK_START.md");
+    Console.WriteLine("   ✅ Bạn vẫn có thể đăng nhập bằng tài khoản email thông thường.");
 }
 
 // Đăng ký Identity với ApplicationUser (phải đặt sau cấu hình Authentication)
@@ -143,10 +152,54 @@ builder.Services.AddCors(options =>
 // Add SignalR services
 builder.Services.AddSignalR();
 
+// Add Health Checks
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<ApplicationDbContext>("database", tags: new[] { "database" })
+    .AddCheck<DatabaseHealthCheck>("database_detailed", tags: new[] { "database", "detailed" })
+    .AddCheck<ExternalServicesHealthCheck>("external_services", tags: new[] { "external" })
+    .AddCheck<ApplicationHealthCheck>("application", tags: new[] { "application" });
+
+// Add HttpClient for Health Checks
+builder.Services.AddHttpClient<ExternalServicesHealthCheck>();
+
 // Đăng ký các services
 builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.TournamentScheduleService>();
 builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.IYouTubeService, WebQuanLyGiaiDau_NhomTD.Services.YouTubeService>();
-builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.ITournamentEmailService, WebQuanLyGiaiDau_NhomTD.Services.TournamentEmailService>();
+
+// Đăng ký Email Configuration
+builder.Services.Configure<EmailConfiguration>(
+    builder.Configuration.GetSection("EmailSettings"));
+
+// Đăng ký Email Services
+builder.Services.AddScoped<IEmailTemplateEngine, EmailTemplateEngine>();
+builder.Services.AddScoped<IEmailService, AdvancedEmailService>();
+builder.Services.AddScoped<ITournamentEmailService, TournamentEmailService>();
+builder.Services.AddScoped<IEmailSender, AdvancedEmailService>(); // For ASP.NET Core Identity
+
+// Đăng ký File Upload Services
+builder.Services.AddSingleton<FileUploadConfiguration>(provider =>
+{
+    var config = new FileUploadConfiguration();
+    builder.Configuration.GetSection("FileUpload").Bind(config);
+    
+    // Set default allowed file types
+    if (!config.AllowedExtensions.Any())
+    {
+        config.AllowedExtensions.AddRange(FileTypes.Images.All);
+        config.AllowedExtensions.AddRange(FileTypes.Documents.All);
+    }
+    
+    if (!config.AllowedMimeTypes.Any())
+    {
+        config.AllowedMimeTypes.AddRange(FileTypes.Images.MimeTypes);
+        config.AllowedMimeTypes.AddRange(FileTypes.Documents.MimeTypes);
+    }
+    
+    return config;
+});
+
+builder.Services.AddScoped<IFileStorageProvider, LocalFileStorageProvider>();
+builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 
 // Add authorization policies
 builder.Services.AddAuthorization(options =>
@@ -224,7 +277,8 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
+    // Use Global Exception Handler for production
+    app.UseMiddleware<GlobalExceptionMiddleware>();
     app.UseHsts();
 }
 else
@@ -236,10 +290,24 @@ else
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Tournament Management API v1");
         c.RoutePrefix = "api-docs"; // Swagger UI will be available at /api-docs
     });
+    
+    // Use Global Exception Handler in development too
+    app.UseMiddleware<GlobalExceptionMiddleware>();
 }
 
 app.UseHttpsRedirection();
+
+// Configure static files with custom file provider for uploads
 app.UseStaticFiles();
+
+// Serve upload files
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "uploads")),
+    RequestPath = "/uploads"
+});
+
 app.UseRouting();
 
 // Use CORS - Must be after UseRouting and before UseAuthentication
@@ -250,6 +318,54 @@ app.UseAuthorization();
 
 // Add SignalR hub mapping
 app.MapHub<MatchHub>("/matchHub");
+
+// Health Check endpoints
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        
+        var response = new
+        {
+            status = report.Status.ToString(),
+            totalDuration = report.TotalDuration.TotalMilliseconds,
+            checks = report.Entries.Select(entry => new
+            {
+                name = entry.Key,
+                status = entry.Value.Status.ToString(),
+                duration = entry.Value.Duration.TotalMilliseconds,
+                description = entry.Value.Description,
+                data = entry.Value.Data,
+                exception = entry.Value.Exception?.Message,
+                tags = entry.Value.Tags
+            })
+        };
+        
+        await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response, new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+        }));
+    }
+});
+
+// Health Check endpoints for specific checks
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("database")
+});
+
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("application")
+});
+
+// Simple health check endpoint
+app.MapGet("/ping", () => Results.Ok(new { 
+    status = "healthy", 
+    timestamp = DateTime.UtcNow,
+    message = "Tournament Management System is running!" 
+}));
 
 app.MapControllerRoute(
     name: "default",
@@ -363,9 +479,6 @@ using (var scope = app.Services.CreateScope())
     }    
 }    
 Console.WriteLine("Hoàn tất cấu hình pipeline và kiểm tra DB. Sẵn sàng chạy app.Run().");
-
-// Add a special route to keep the application running
-app.MapGet("/ping", () => "Application is running");
 
 // Add shutdown protection
 app.Lifetime.ApplicationStopping.Register(() => 

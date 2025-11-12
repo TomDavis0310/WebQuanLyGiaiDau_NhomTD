@@ -1,0 +1,14 @@
+@model WebQuanLyGiaiDau_NhomTD.Models.RewardProduct
+@{
+    ViewData["Title"] = "Xóa sản phẩm";
+}
+
+<div class="container mt-4">
+    <h2>Xóa sản phẩm</h2>
+    <div class="alert alert-warning">Bạn có chắc muốn xóa sản phẩm <strong>@Model.Name</strong> không?</div>
+    <form asp-action="DeleteProduct" method="post">
+        <input type="hidden" asp-for="Id" />
+        <button class="btn btn-danger">Xóa</button>
+        <a class="btn btn-secondary" asp-action="ManageProducts">Hủy</a>
+    </form>
+</div>

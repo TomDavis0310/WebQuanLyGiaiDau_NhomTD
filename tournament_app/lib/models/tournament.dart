@@ -1,4 +1,5 @@
 ﻿import 'package:json_annotation/json_annotation.dart';
+import '../services/api_service.dart';
 
 part 'tournament.g.dart';
 
@@ -7,6 +8,7 @@ class Tournament {
   final int id;
   final String name;
   final String? description;
+  @JsonKey(fromJson: _imageUrlFromJson)
   final String? imageUrl;
   final String? location;
   final DateTime startDate;
@@ -35,6 +37,8 @@ class Tournament {
     this.registeredTeamsCount,
     this.totalMatches,
   });
+
+  static String? _imageUrlFromJson(String? url) => ApiService.convertImageUrl(url);
 
   factory Tournament.fromJson(Map<String, dynamic> json) => _$TournamentFromJson(json);
   Map<String, dynamic> toJson() => _$TournamentToJson(this);

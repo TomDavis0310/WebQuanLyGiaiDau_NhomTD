@@ -486,7 +486,6 @@ class _TournamentListScreenState extends State<TournamentListScreen> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          // TODO: Register for tournament
                           final authProvider = Provider.of<AuthProvider>(
                             context,
                             listen: false,
@@ -509,10 +508,14 @@ class _TournamentListScreenState extends State<TournamentListScreen> {
                               ),
                             );
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Đăng ký tham gia: ${tournament.name}'),
-                              ),
+                            // Navigate to tournament registration screen
+                            Navigator.pushNamed(
+                              context,
+                              '/tournament-registration',
+                              arguments: {
+                                'tournamentId': tournament.id,
+                                'tournamentName': tournament.name,
+                              },
                             );
                           }
                         },
@@ -533,10 +536,12 @@ class _TournamentListScreenState extends State<TournamentListScreen> {
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         onPressed: () {
-                          // TODO: Navigate to tournament detail
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Xem chi tiết: ${tournament.name}'),
+                          // Navigate to tournament detail screen
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => TournamentDetailScreen(
+                                tournamentId: tournament.id,
+                              ),
                             ),
                           );
                         },

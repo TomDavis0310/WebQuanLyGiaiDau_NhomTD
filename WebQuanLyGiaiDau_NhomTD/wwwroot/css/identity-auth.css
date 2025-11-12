@@ -140,7 +140,6 @@
 .external-auth {
     margin-top: 2rem;
     padding-top: 2rem;
-    border-top: 1px solid #e9ecef;
 }
 
 .external-auth h3 {
@@ -148,6 +147,21 @@
     font-size: 1.1rem;
     margin-bottom: 1rem;
     font-weight: 600;
+}
+
+/* Divider styling for "HOẶC" */
+.external-auth hr {
+    border-color: #dee2e6;
+    margin: 1.5rem 0;
+}
+
+.external-auth .text-muted {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #6c757d !important;
+    background: #f8f9fa;
+    padding: 0.5rem 1rem;
+    border-radius: 1rem;
 }
 
 .btn-outline-primary {

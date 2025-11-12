@@ -71,6 +71,24 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return NotFound();
             }
 
+            // Nếu người dùng đã đăng nhập, cộng điểm xem giải đấu
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var user = await _context.Users.FindAsync(userId);
+                    if (user != null)
+                    {
+                        var cfg = await _context.PointsSettings.FirstOrDefaultAsync();
+                        var add = cfg?.ViewTournamentPoints ?? 2;
+                        user.Points += add;
+                        _context.Update(user);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+
             // Lấy danh sách các trận đấu của giải đấu này, chỉ lấy các cột cần thiết
             // Không bao gồm cột Status vì nó không tồn tại trong database
             var matches = await _context.Matches

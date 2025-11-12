@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/google_signin_button.dart';
 import 'register_screen.dart';
 import 'sports_list_screen.dart';
 import 'forgot_password_screen.dart';
@@ -51,6 +52,46 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    final success = await authProvider.signInWithGoogle();
+
+    if (success && mounted) {
+      // Navigate to home screen
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const SportsListScreen()),
+      );
+    } else if (mounted) {
+      // Show error with helpful message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Google Sign-in hiện chưa sẵn sàng',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 4),
+              Text('Vui lòng sử dụng đăng nhập với email/password'),
+            ],
+          ),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'OK',
+            textColor: Colors.white,
+            onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            },
+          ),
+        ),
+      );
     }
   }
 
@@ -243,6 +284,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            
+                            // Google Sign-In Button
+                            Consumer<AuthProvider>(
+                              builder: (context, authProvider, child) {
+                                return GoogleSignInButton(
+                                  onPressed: _handleGoogleSignIn,
+                                  isLoading: authProvider.isLoading,
                                 );
                               },
                             ),

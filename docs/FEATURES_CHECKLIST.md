@@ -319,7 +319,7 @@
 
 1. **IP Address Issue**
    - ❌ Lỗi: "No route to host" - IP đã thay đổi
-   - ✅ Sửa: Cập nhật IP từ `192.168.1.9` → `192.168.1.2`
+   - ✅ Sửa: Cập nhật IP từ `192.168.1.9` → `192.168.1.7`
 
 2. **Dashboard Authentication**
    - ❌ Lỗi: "Invalid JSON response: <!DOCTYPE html>"
@@ -363,7 +363,7 @@ CORS: Enabled for Flutter app
 
 ### Flutter Configuration
 ```dart
-baseUrl: 'http://192.168.1.2:8080/api'
+baseUrl: 'http://192.168.1.7:8080/api'
 ```
 
 ### Environment Variables

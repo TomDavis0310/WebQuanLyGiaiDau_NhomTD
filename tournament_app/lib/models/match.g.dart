@@ -7,16 +7,16 @@ part of 'match.dart';
 // **************************************************************************
 
 Match _$MatchFromJson(Map<String, dynamic> json) => Match(
-  id: (json['id'] as num).toInt(),
+  id: Match._safeIntFromJson(json['id']),
   teamA: json['teamA'] as String,
   teamB: json['teamB'] as String,
   matchDate: DateTime.parse(json['matchDate'] as String),
   matchTime: json['matchTime'] as String?,
   location: json['location'] as String?,
-  scoreTeamA: (json['scoreTeamA'] as num?)?.toInt(),
-  scoreTeamB: (json['scoreTeamB'] as num?)?.toInt(),
+  scoreTeamA: Match._safeIntFromJsonNullable(json['scoreTeamA']),
+  scoreTeamB: Match._safeIntFromJsonNullable(json['scoreTeamB']),
   groupName: json['groupName'] as String?,
-  round: (json['round'] as num?)?.toInt(),
+  round: Match._safeIntFromJsonNullable(json['round']),
 );
 
 Map<String, dynamic> _$MatchToJson(Match instance) => <String, dynamic>{

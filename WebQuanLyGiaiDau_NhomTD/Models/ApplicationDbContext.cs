@@ -1,12 +1,8 @@
-﻿﻿namespace WebQuanLyGiaiDau_NhomTD.Models
+﻿﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
+namespace WebQuanLyGiaiDau_NhomTD.Models
 {
-    using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-    using Microsoft.CodeAnalysis.Elfie.Diagnostics;
-    // Data/AppDbContext.cs
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.General;
-    using System.Collections.Generic;
-    using System.Numerics;
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
@@ -59,5 +55,9 @@
         public DbSet<TournamentFormat> TournamentFormats { get; set; }
         public DbSet<PlayerScoring> PlayerScorings { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        // Điểm thưởng và sản phẩm đổi điểm
+        public DbSet<RewardProduct> RewardProducts { get; set; }
+        public DbSet<PointsSetting> PointsSettings { get; set; }
+        public DbSet<RedeemTransaction> RedeemTransactions { get; set; }
     }
 }

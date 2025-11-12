@@ -10,6 +10,7 @@ class User {
   final String? fullName;
   final String? phoneNumber;
   final String? avatarUrl;
+  final String? profilePictureUrl;
   final DateTime? createdAt;
   final String? role;
 
@@ -20,6 +21,7 @@ class User {
     this.fullName,
     this.phoneNumber,
     this.avatarUrl,
+    this.profilePictureUrl,
     this.createdAt,
     this.role,
   });
@@ -35,6 +37,7 @@ class User {
     String? fullName,
     String? phoneNumber,
     String? avatarUrl,
+    String? profilePictureUrl,
     DateTime? createdAt,
     String? role,
   }) {
@@ -45,6 +48,7 @@ class User {
       fullName: fullName ?? this.fullName,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
       createdAt: createdAt ?? this.createdAt,
       role: role ?? this.role,
     );

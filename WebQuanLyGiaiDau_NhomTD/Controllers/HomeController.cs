@@ -40,8 +40,18 @@ public class HomeController : Controller
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
+    public IActionResult Error(string? requestId = null, int? statusCode = null)
     {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        var errorModel = new ErrorViewModel 
+        { 
+            RequestId = requestId ?? Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+            StatusCode = statusCode ?? 500
+        };
+        
+        // Log the error for monitoring
+        _logger.LogError("Error page displayed - RequestId: {RequestId}, StatusCode: {StatusCode}", 
+            errorModel.RequestId, errorModel.StatusCode);
+        
+        return View(errorModel);
     }
 }

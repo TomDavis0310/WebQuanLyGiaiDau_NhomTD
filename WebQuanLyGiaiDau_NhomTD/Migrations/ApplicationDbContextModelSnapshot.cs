@@ -217,6 +217,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<int>("Points")
+                        .HasColumnType("int");
+
                     b.Property<string>("ProfilePictureUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -614,6 +617,86 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.HasIndex("PlayerId");
 
                     b.ToTable("PlayerScorings");
+                });
+
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.PointsSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ReadNewsPoints")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ViewTournamentPoints")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VoteTeamPoints")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PointsSettings");
+                });
+
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.RedeemTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PointsCost")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RedeemTransactions");
+                });
+
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.RewardProduct", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PointsCost")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RewardProducts");
                 });
 
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.SportDetail", b =>
@@ -1237,6 +1320,25 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.Navigation("Match");
 
                     b.Navigation("Player");
+                });
+
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.RedeemTransaction", b =>
+                {
+                    b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.RewardProduct", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.SportDetail", b =>

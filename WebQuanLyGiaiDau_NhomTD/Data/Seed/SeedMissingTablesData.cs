@@ -62,12 +62,12 @@ namespace WebQuanLyGiaiDau_NhomTD
             }
 
             // Thêm dữ liệu cho bảng Format
-            var formats = new Format[]
+            var formats = new WebQuanLyGiaiDau_NhomTD.Models.Format[]
             {
-                new Format { FormatName = "Vòng tròn", Description = "Mỗi đội sẽ thi đấu với tất cả các đội khác" },
-                new Format { FormatName = "Loại trực tiếp", Description = "Đội thua sẽ bị loại khỏi giải đấu" },
-                new Format { FormatName = "Vòng bảng", Description = "Các đội được chia thành các bảng và thi đấu vòng tròn trong bảng" },
-                new Format { FormatName = "Vòng bảng + Loại trực tiếp", Description = "Vòng bảng để xác định các đội vào vòng loại trực tiếp" }
+                new WebQuanLyGiaiDau_NhomTD.Models.Format { FormatName = "Vòng tròn", Description = "Mỗi đội sẽ thi đấu với tất cả các đội khác" },
+                new WebQuanLyGiaiDau_NhomTD.Models.Format { FormatName = "Loại trực tiếp", Description = "Đội thua sẽ bị loại khỏi giải đấu" },
+                new WebQuanLyGiaiDau_NhomTD.Models.Format { FormatName = "Vòng bảng", Description = "Các đội được chia thành các bảng và thi đấu vòng tròn trong bảng" },
+                new WebQuanLyGiaiDau_NhomTD.Models.Format { FormatName = "Vòng bảng + Loại trực tiếp", Description = "Vòng bảng để xác định các đội vào vòng loại trực tiếp" }
             };
             context.Formats.AddRange(formats);
             context.SaveChanges();

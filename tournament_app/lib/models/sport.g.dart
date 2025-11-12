@@ -9,8 +9,8 @@ part of 'sport.dart';
 Sport _$SportFromJson(Map<String, dynamic> json) => Sport(
   id: (json['id'] as num).toInt(),
   name: json['name'] as String,
-  imageUrl: json['imageUrl'] as String?,
-  tournamentCount: (json['tournamentCount'] as num).toInt(),
+  imageUrl: Sport._imageUrlFromJson(json['imageUrl'] as String?),
+  tournamentCount: Sport._safeIntFromJson(json['tournamentCount']),
 );
 
 Map<String, dynamic> _$SportToJson(Sport instance) => <String, dynamic>{

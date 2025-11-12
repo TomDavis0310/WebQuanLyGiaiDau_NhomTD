@@ -53,10 +53,23 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
       final response = await ApiService.getTournamentDetail(widget.tournamentId);
 
       if (response.success && response.data != null) {
-        setState(() {
-          tournament = response.data;
-          isLoading = false;
-        });
+        // Add null safety checks for critical fields
+        final tournamentData = response.data!;
+        
+        // Validate required fields
+        if (tournamentData.name.isNotEmpty && 
+            tournamentData.maxTeams > 0 &&
+            tournamentData.teamsPerGroup > 0) {
+          setState(() {
+            tournament = tournamentData;
+            isLoading = false;
+          });
+        } else {
+          setState(() {
+            errorMessage = 'Dữ liệu giải đấu không hợp lệ';
+            isLoading = false;
+          });
+        }
       } else {
         setState(() {
           errorMessage = response.message;
@@ -331,7 +344,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
               Expanded(
                 child: _buildStatCard(
                   Icons.calendar_today,
-                  '${(tournament!.endDate.difference(tournament!.startDate).inDays + 1)}',
+                  '${tournament!.endDate.difference(tournament!.startDate).inDays + 1}',
                   'Ngày',
                   Colors.orange,
                 ),
@@ -679,7 +692,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
                   // Score or VS
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: isCompleted
+                    child: isCompleted && match.scoreTeamA != null && match.scoreTeamB != null
                         ? Text(
                             '${match.scoreTeamA} - ${match.scoreTeamB}',
                             style: TextStyle(
@@ -736,7 +749,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
                       ),
                     ],
                   ),
-                  if (match.location != null)
+                  if (match.location != null && match.location!.isNotEmpty)
                     Row(
                       children: [
                         Icon(Icons.location_on, size: 16, color: Colors.grey),

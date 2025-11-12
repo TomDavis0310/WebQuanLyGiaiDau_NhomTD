@@ -7,11 +7,11 @@ part of 'team.dart';
 // **************************************************************************
 
 Team _$TeamFromJson(Map<String, dynamic> json) => Team(
-  teamId: (json['teamId'] as num).toInt(),
+  teamId: Team._safeIntFromJson(json['teamId']),
   name: json['name'] as String,
   coach: json['coach'] as String?,
   logoUrl: json['logoUrl'] as String?,
-  playerCount: (json['playerCount'] as num?)?.toInt(),
+  playerCount: Team._safeIntFromJsonNullable(json['playerCount']),
 );
 
 Map<String, dynamic> _$TeamToJson(Team instance) => <String, dynamic>{

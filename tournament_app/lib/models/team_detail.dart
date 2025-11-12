@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'player_scoring.dart'; // Player model
+import '../services/api_service.dart';
 
 part 'team_detail.g.dart';
 
@@ -9,6 +10,7 @@ class TeamDetail {
   final int teamId;
   final String name;
   final String? coach;
+  @JsonKey(fromJson: _logoUrlFromJson)
   final String? logoUrl;
   final String? userId;
   final List<Player> players;
@@ -23,6 +25,8 @@ class TeamDetail {
     required this.players,
     this.matchHistory,
   });
+
+  static String? _logoUrlFromJson(String? url) => ApiService.convertImageUrl(url);
 
   factory TeamDetail.fromJson(Map<String, dynamic> json) =>
       _$TeamDetailFromJson(json);

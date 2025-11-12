@@ -7,10 +7,10 @@ part of 'player_detail.dart';
 // **************************************************************************
 
 PlayerDetail _$PlayerDetailFromJson(Map<String, dynamic> json) => PlayerDetail(
-  playerId: (json['playerId'] as num).toInt(),
+  playerId: PlayerDetail._safeIntFromJson(json['playerId']),
   fullName: json['fullName'] as String,
   position: json['position'] as String,
-  number: (json['number'] as num).toInt(),
+  number: PlayerDetail._safeIntFromJson(json['number']),
   imageUrl: json['imageUrl'] as String?,
   team: json['team'] == null
       ? null
@@ -40,7 +40,7 @@ Map<String, dynamic> _$PlayerDetailToJson(PlayerDetail instance) =>
     };
 
 PlayerTeam _$PlayerTeamFromJson(Map<String, dynamic> json) => PlayerTeam(
-  teamId: (json['teamId'] as num).toInt(),
+  teamId: PlayerTeam._safeIntFromJson(json['teamId']),
   name: json['name'] as String,
   logo: json['logo'] as String?,
   sport: json['sport'] == null
@@ -57,7 +57,7 @@ Map<String, dynamic> _$PlayerTeamToJson(PlayerTeam instance) =>
     };
 
 PlayerSport _$PlayerSportFromJson(Map<String, dynamic> json) => PlayerSport(
-  id: (json['id'] as num).toInt(),
+  id: PlayerSport._safeIntFromJson(json['id']),
   name: json['name'] as String,
   imageUrl: json['imageUrl'] as String?,
 );
@@ -71,10 +71,12 @@ Map<String, dynamic> _$PlayerSportToJson(PlayerSport instance) =>
 
 PlayerStatistics _$PlayerStatisticsFromJson(Map<String, dynamic> json) =>
     PlayerStatistics(
-      totalMatches: (json['totalMatches'] as num).toInt(),
-      totalPoints: (json['totalPoints'] as num).toInt(),
-      averagePoints: (json['averagePoints'] as num).toDouble(),
-      highestScore: (json['highestScore'] as num).toInt(),
+      totalMatches: PlayerStatistics._safeIntFromJson(json['totalMatches']),
+      totalPoints: PlayerStatistics._safeIntFromJson(json['totalPoints']),
+      averagePoints: PlayerStatistics._safeDoubleFromJson(
+        json['averagePoints'],
+      ),
+      highestScore: PlayerStatistics._safeIntFromJson(json['highestScore']),
     );
 
 Map<String, dynamic> _$PlayerStatisticsToJson(PlayerStatistics instance) =>
@@ -86,16 +88,16 @@ Map<String, dynamic> _$PlayerStatisticsToJson(PlayerStatistics instance) =>
     };
 
 PlayerMatch _$PlayerMatchFromJson(Map<String, dynamic> json) => PlayerMatch(
-  matchId: (json['matchId'] as num).toInt(),
+  matchId: PlayerMatch._safeIntFromJson(json['matchId']),
   teamA: json['teamA'] as String,
   teamB: json['teamB'] as String,
-  scoreA: (json['scoreA'] as num?)?.toInt(),
-  scoreB: (json['scoreB'] as num?)?.toInt(),
+  scoreA: PlayerMatch._safeIntFromJsonNullable(json['scoreA']),
+  scoreB: PlayerMatch._safeIntFromJsonNullable(json['scoreB']),
   matchDate: DateTime.parse(json['matchDate'] as String),
   location: json['location'] as String?,
   status: json['status'] as String,
-  points: (json['points'] as num).toInt(),
-  scoringCount: (json['scoringCount'] as num).toInt(),
+  points: PlayerMatch._safeIntFromJson(json['points']),
+  scoringCount: PlayerMatch._safeIntFromJson(json['scoringCount']),
 );
 
 Map<String, dynamic> _$PlayerMatchToJson(PlayerMatch instance) =>
@@ -114,9 +116,9 @@ Map<String, dynamic> _$PlayerMatchToJson(PlayerMatch instance) =>
 
 PerformanceData _$PerformanceDataFromJson(Map<String, dynamic> json) =>
     PerformanceData(
-      matchId: (json['matchId'] as num).toInt(),
+      matchId: PerformanceData._safeIntFromJson(json['matchId']),
       matchDate: DateTime.parse(json['matchDate'] as String),
-      points: (json['points'] as num).toInt(),
+      points: PerformanceData._safeIntFromJson(json['points']),
     );
 
 Map<String, dynamic> _$PerformanceDataToJson(PerformanceData instance) =>
@@ -129,12 +131,16 @@ Map<String, dynamic> _$PerformanceDataToJson(PerformanceData instance) =>
 PlayerStatisticsSummary _$PlayerStatisticsSummaryFromJson(
   Map<String, dynamic> json,
 ) => PlayerStatisticsSummary(
-  totalMatches: (json['totalMatches'] as num).toInt(),
-  totalPoints: (json['totalPoints'] as num).toInt(),
-  averagePoints: (json['averagePoints'] as num).toDouble(),
-  highestScore: (json['highestScore'] as num).toInt(),
-  winRate: (json['winRate'] as num).toDouble(),
-  currentStreak: (json['currentStreak'] as num).toInt(),
+  totalMatches: PlayerStatisticsSummary._safeIntFromJson(json['totalMatches']),
+  totalPoints: PlayerStatisticsSummary._safeIntFromJson(json['totalPoints']),
+  averagePoints: PlayerStatisticsSummary._safeDoubleFromJson(
+    json['averagePoints'],
+  ),
+  highestScore: PlayerStatisticsSummary._safeIntFromJson(json['highestScore']),
+  winRate: PlayerStatisticsSummary._safeDoubleFromJson(json['winRate']),
+  currentStreak: PlayerStatisticsSummary._safeIntFromJson(
+    json['currentStreak'],
+  ),
   recentForm: (json['recentForm'] as List<dynamic>)
       .map((e) => (e as num).toInt())
       .toList(),

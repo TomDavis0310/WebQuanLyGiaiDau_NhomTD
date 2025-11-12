@@ -4,15 +4,19 @@ part 'match.g.dart';
 
 @JsonSerializable()
 class Match {
+  @JsonKey(fromJson: _safeIntFromJson)
   final int id;
   final String teamA;
   final String teamB;
   final DateTime matchDate;
   final String? matchTime;
   final String? location;
+  @JsonKey(fromJson: _safeIntFromJsonNullable)
   final int? scoreTeamA;
+  @JsonKey(fromJson: _safeIntFromJsonNullable)
   final int? scoreTeamB;
   final String? groupName; // Bảng đấu (e.g., "Bảng A", "Bảng B")
+  @JsonKey(fromJson: _safeIntFromJsonNullable)
   final int? round; // Vòng đấu (1, 2, 3, ...)
 
   Match({
@@ -27,6 +31,22 @@ class Match {
     this.groupName,
     this.round,
   });
+
+  static int _safeIntFromJson(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  static int? _safeIntFromJsonNullable(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
+  }
 
   factory Match.fromJson(Map<String, dynamic> json) => _$MatchFromJson(json);
   Map<String, dynamic> toJson() => _$MatchToJson(this);
@@ -43,8 +63,10 @@ class Match {
 
   String? get winner {
     if (scoreTeamA == null || scoreTeamB == null) return null;
-    if (scoreTeamA! > scoreTeamB!) return teamA;
-    if (scoreTeamB! > scoreTeamA!) return teamB;
+    final scoreA = scoreTeamA!;
+    final scoreB = scoreTeamB!;
+    if (scoreA > scoreB) return teamA;
+    if (scoreB > scoreA) return teamB;
     return 'draw';
   }
 

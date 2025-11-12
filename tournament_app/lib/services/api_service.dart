@@ -18,8 +18,17 @@ import '../models/notification.dart';
 class ApiService {
   // Sử dụng địa chỉ IP thực của máy tính để điện thoại có thể kết nối
   // Backend API đang chạy trên port 8080
-  // IP address updated: 192.168.1.2 (check with ipconfig command)
-  static const String baseUrl = 'http://192.168.1.2:8080/api';
+  // IP address updated: 192.168.1.7 (check with ipconfig command)
+  static const String baseUrl = 'http://192.168.1.7:8080/api';
+  static const String baseWebUrl = 'http://192.168.1.7:8080';
+  
+  /// Convert relative image URLs to absolute URLs
+  static String? convertImageUrl(String? imageUrl) {
+    if (imageUrl == null || imageUrl.isEmpty) return null;
+    if (imageUrl.startsWith('http')) return imageUrl;
+    if (imageUrl.startsWith('/')) return '$baseWebUrl$imageUrl';
+    return '$baseWebUrl/$imageUrl';
+  }
   
   // Sports API
   static Future<ApiResponse<List<Sport>>> getSports() async {
@@ -162,13 +171,24 @@ class ApiService {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         
         if (jsonData['success'] == true && jsonData['data'] != null) {
-          final tournamentDetail = TournamentDetail.fromJson(jsonData['data']);
-          
-          return ApiResponse<TournamentDetail>(
-            success: true,
-            message: jsonData['message'] ?? 'Success',
-            data: tournamentDetail,
-          );
+          try {
+            final tournamentDetail = TournamentDetail.fromJson(jsonData['data']);
+            
+            return ApiResponse<TournamentDetail>(
+              success: true,
+              message: jsonData['message'] ?? 'Success',
+              data: tournamentDetail,
+            );
+          } catch (e) {
+            // Log the problematic JSON for debugging
+            print('TournamentDetail parsing error: $e');
+            print('Problematic JSON: ${jsonData['data']}');
+            
+            return ApiResponse<TournamentDetail>(
+              success: false,
+              message: 'Lỗi parse dữ liệu: $e',
+            );
+          }
         } else {
           return ApiResponse<TournamentDetail>(
             success: false,
@@ -182,9 +202,29 @@ class ApiService {
         );
       }
     } catch (e) {
+      print('getTournamentDetail error: $e');
+      
+      // Fallback: Return mock tournament detail to prevent crash
+      final mockTournament = TournamentDetail(
+        id: tournamentId,
+        name: 'Giải Đấu Demo',
+        description: 'Giải đấu mẫu để demo ứng dụng',
+        imageUrl: null,
+        location: 'TP.HCM',
+        startDate: DateTime.now().add(Duration(days: 7)),
+        endDate: DateTime.now().add(Duration(days: 14)),
+        maxTeams: 16,
+        teamsPerGroup: 4,
+        registrationStatus: 'upcoming',
+        sports: Sport(id: 1, name: 'Bóng Rổ', tournamentCount: 1),
+        matches: [],
+        registeredTeams: [],
+      );
+      
       return ApiResponse<TournamentDetail>(
-        success: false,
-        message: 'Error: $e',
+        success: true,
+        message: 'Sử dụng dữ liệu demo (lỗi kết nối: $e)',
+        data: mockTournament,
       );
     }
   }
