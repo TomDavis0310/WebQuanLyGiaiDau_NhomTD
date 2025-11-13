@@ -590,12 +590,67 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize] // Allow all authenticated users
-        public async Task<IActionResult> Edit(int id, Tournament tournament, IFormFile imageUrl, int? TournamentFormatId, int? MaxTeams, int? TeamsPerGroup)
+        public async Task<IActionResult> Edit(int id, Tournament tournament, IFormFile? imageFile, int? TournamentFormatId, int? MaxTeams, int? TeamsPerGroup)
         {
+            Console.WriteLine($"🔍 Edit POST called - Tournament ID: {id}, Name: {tournament?.Name}");
+            
             if (id != tournament.Id)
             {
+                Console.WriteLine($"❌ ID mismatch: {id} != {tournament.Id}");
                 return NotFound();
             }
+
+            // Log ModelState errors before cleaning
+            if (!ModelState.IsValid)
+            {
+                Console.WriteLine("⚠️ ModelState errors before cleaning:");
+                foreach (var key in ModelState.Keys)
+                {
+                    var errors = ModelState[key].Errors;
+                    if (errors.Count > 0)
+                    {
+                        Console.WriteLine($"  - {key}: {string.Join(", ", errors.Select(e => e.ErrorMessage))}");
+                    }
+                }
+            }
+
+            // Remove validation errors for RegistrationStatus since it's obsolete
+            if (ModelState.ContainsKey("RegistrationStatus"))
+            {
+                ModelState.Remove("RegistrationStatus");
+            }
+
+            // Remove validation errors for NotMapped properties
+            if (ModelState.ContainsKey("CalculatedStatus"))
+            {
+                ModelState.Remove("CalculatedStatus");
+            }
+            if (ModelState.ContainsKey("RegistrationStartDate"))
+            {
+                ModelState.Remove("RegistrationStartDate");
+            }
+            if (ModelState.ContainsKey("RegistrationEndDate"))
+            {
+                ModelState.Remove("RegistrationEndDate");
+            }
+            
+            // Remove validation errors for navigation properties
+            if (ModelState.ContainsKey("Sports"))
+            {
+                ModelState.Remove("Sports");
+            }
+            if (ModelState.ContainsKey("TournamentFormat"))
+            {
+                ModelState.Remove("TournamentFormat");
+            }
+            
+            // Remove validation error for ImageUrl (it will be handled separately)
+            if (ModelState.ContainsKey("ImageUrl"))
+            {
+                ModelState.Remove("ImageUrl");
+            }
+
+            Console.WriteLine($"✅ ModelState.IsValid after cleaning: {ModelState.IsValid}");
 
             if (ModelState.IsValid)
             {
@@ -604,12 +659,17 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     // Get the existing tournament to preserve the image URL if no new image is uploaded
                     var existingTournament = await _context.Tournaments.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
 
-                    if (imageUrl != null)
+                    if (existingTournament == null)
+                    {
+                        return NotFound();
+                    }
+
+                    if (imageFile != null)
                     {
                         // Upload new image
-                        tournament.ImageUrl = await SaveImage(imageUrl);
+                        tournament.ImageUrl = await SaveImage(imageFile);
                     }
-                    else if (existingTournament != null)
+                    else
                     {
                         // Keep existing image URL if no new image is uploaded
                         tournament.ImageUrl = existingTournament.ImageUrl;
@@ -620,8 +680,15 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     tournament.MaxTeams = MaxTeams;
                     tournament.TeamsPerGroup = TeamsPerGroup;
 
+                    // Preserve the RegistrationStatus from existing tournament (obsolete field but may still be in DB)
+                    #pragma warning disable CS0618 // Type or member is obsolete
+                    tournament.RegistrationStatus = existingTournament.RegistrationStatus;
+                    #pragma warning restore CS0618 // Type or member is obsolete
+
                     _context.Update(tournament);
                     await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "Cập nhật giải đấu thành công!";
 
                     // Redirect back to the sports list view if we came from there
                     if (tournament.SportsId > 0)
@@ -645,11 +712,31 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 catch (Exception ex)
                 {
                     ModelState.AddModelError(string.Empty, "Lỗi khi cập nhật dữ liệu: " + ex.Message);
+                    TempData["ErrorMessage"] = "Lỗi: " + ex.Message + (ex.InnerException != null ? " - " + ex.InnerException.Message : "");
                 }
             }
+            else
+            {
+                // Log validation errors for debugging
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                TempData["ErrorMessage"] = "Dữ liệu không hợp lệ: " + string.Join(", ", errors);
+            }
 
+            // Prepare ViewBag data for the view (needed when returning with errors)
             var sports = _context.Sports.ToList();
             ViewBag.Sports = new SelectList(sports, "Id", "Name", tournament.SportsId);
+
+            // Lấy danh sách các thể thức thi đấu
+            var tournamentFormats = _context.TournamentFormats.ToList();
+            if (tournamentFormats == null || !tournamentFormats.Any())
+            {
+                // Nếu chưa có dữ liệu thể thức thi đấu, khởi tạo
+                SeedTournamentFormatData.SeedTournamentFormats(HttpContext.RequestServices).Wait();
+                tournamentFormats = _context.TournamentFormats.ToList();
+            }
+            ViewBag.TournamentFormats = new SelectList(tournamentFormats, "Id", "Name", tournament.TournamentFormatId);
+            ViewBag.FormatDetails = tournamentFormats;
+
             return View(tournament);
         }
 
@@ -710,11 +797,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
                     if (hasRegistrations || hasMatches)
                     {
-                        // If there are related records, return to the delete view with an error message
-                        ViewData["error"] = "Không thể xóa giải đấu này vì có đăng ký hoặc trận đấu liên quan.";
-                        tournament = await _context.Tournaments
-                            .FirstOrDefaultAsync(m => m.Id == id);
-                        return View(tournament);
+                        // If there are related records, show error message
+                        TempData["ErrorMessage"] = "Không thể xóa giải đấu này vì có đăng ký hoặc trận đấu liên quan.";
+                        return RedirectToAction(nameof(Details), new { id = id });
                     }
 
                     // Store the sportsId before removing the tournament
@@ -722,6 +807,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
                     _context.Tournaments.Remove(tournament);
                     await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "Đã xóa giải đấu thành công.";
 
                     // Redirect back to the sports list view if we have a sportsId
                     if (sportsId.HasValue && sportsId.Value > 0)
@@ -734,27 +821,22 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             catch (Exception ex)
             {
                 // Handle any other exceptions
-                var tournament = await _context.Tournaments
-                    .Include(t => t.Sports)
-                    .FirstOrDefaultAsync(m => m.Id == id);
+                Console.WriteLine($"Error deleting tournament: {ex.Message}");
 
                 // Format a more user-friendly error message
                 string errorMessage = "Lỗi khi xóa giải đấu: ";
-                if (ex.Message.Contains("TournamentRegistrations"))
+                if (ex.InnerException?.Message.Contains("TournamentRegistrations") == true ||
+                    ex.InnerException?.Message.Contains("FK") == true)
                 {
-                    errorMessage += "Có đăng ký tham gia giải đấu này. Vui lòng xóa các đăng ký trước.";
-                }
-                else if (ex.Message.Contains("Matches"))
-                {
-                    errorMessage += "Có trận đấu liên quan đến giải đấu này. Vui lòng xóa các trận đấu trước.";
+                    errorMessage = "Không thể xóa giải đấu vì có dữ liệu liên quan. Vui lòng xóa các đăng ký và trận đấu trước.";
                 }
                 else
                 {
                     errorMessage += ex.Message;
                 }
 
-                ViewData["error"] = errorMessage;
-                return View(tournament);
+                TempData["ErrorMessage"] = errorMessage;
+                return RedirectToAction(nameof(Details), new { id = id });
             }
         }
 

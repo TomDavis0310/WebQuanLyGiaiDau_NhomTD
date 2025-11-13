@@ -23,6 +23,12 @@ class PlayerScoring {
       _$PlayerScoringFromJson(json);
 
   Map<String, dynamic> toJson() => _$PlayerScoringToJson(this);
+
+  static int _safeIntFromJson(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
 }
 
 /// Player model - Thông tin cầu thủ
@@ -46,4 +52,10 @@ class Player {
       _$PlayerFromJson(json);
 
   Map<String, dynamic> toJson() => _$PlayerToJson(this);
+
+  static int _safeIntFromJson(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
 }

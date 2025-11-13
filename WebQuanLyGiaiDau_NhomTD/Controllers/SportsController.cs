@@ -257,39 +257,85 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var sport = await _context.Sports.FindAsync(id);
-            if (sport == null)
+            try
             {
-                return NotFound();
+                var sport = await _context.Sports.FindAsync(id);
+                if (sport == null)
+                {
+                    return NotFound();
+                }
+
+                // Check if there are any news articles for this sport
+                var hasNews = await _context.News
+                    .AnyAsync(n => n.SportsId == id);
+
+                if (hasNews)
+                {
+                    TempData["ErrorMessage"] = "Không thể xóa môn thể thao này vì có tin tức liên quan. Vui lòng xóa tin tức trước.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Check if there are any active tournaments for this sport
+                // Cannot use CalculatedStatus (NotMapped property) in query, so load tournaments and check in memory
+                var currentTime = DateTime.Now;
+                var tournaments = await _context.Tournaments
+                    .Where(t => t.SportsId == id)
+                    .ToListAsync();
+
+                var hasActiveTournaments = tournaments.Any(t => 
+                    currentTime >= t.StartDate && currentTime <= t.EndDate);
+
+                if (hasActiveTournaments)
+                {
+                    // Cannot delete sport with active tournaments
+                    TempData["ErrorMessage"] = "Không thể xóa môn thể thao này vì có giải đấu đang diễn ra. Vui lòng chờ đến khi giải đấu kết thúc.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Check if there are any tournaments for this sport (for warning)
+                var hasTournaments = tournaments.Any();
+
+                if (hasTournaments)
+                {
+                    // Warn but allow deletion
+                    TempData["WarningMessage"] = "Lưu ý: Xóa môn thể thao này sẽ ảnh hưởng đến các giải đấu đã tạo.";
+                }
+
+                // Delete the sport
+                _context.Sports.Remove(sport);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Môn thể thao đã được xóa thành công.";
+                return RedirectToAction(nameof(Index));
             }
-
-            // Check if there are any active tournaments for this sport
-            var hasActiveTournaments = await _context.Tournaments
-                .AnyAsync(t => t.SportsId == id && t.CalculatedStatus == "Giải đấu đang diễn ra");
-
-            if (hasActiveTournaments)
+            catch (DbUpdateException ex)
             {
-                // Cannot delete sport with active tournaments
-                TempData["ErrorMessage"] = "Không thể xóa môn thể thao này vì có giải đấu đang diễn ra. Vui lòng chờ đến khi giải đấu kết thúc.";
-                return RedirectToAction(nameof(Delete), new { id = id });
+                // Handle foreign key constraint violations
+                Console.WriteLine($"Error deleting sport: {ex.Message}");
+                
+                string errorMessage = "Không thể xóa môn thể thao này vì có dữ liệu liên quan. ";
+                if (ex.InnerException?.Message.Contains("FK_News") == true)
+                {
+                    errorMessage += "Vui lòng xóa các tin tức trước.";
+                }
+                else if (ex.InnerException?.Message.Contains("FK_Tournaments") == true)
+                {
+                    errorMessage += "Vui lòng xóa các giải đấu trước.";
+                }
+                else
+                {
+                    errorMessage += "Vui lòng kiểm tra và xóa dữ liệu liên quan.";
+                }
+
+                TempData["ErrorMessage"] = errorMessage;
+                return RedirectToAction(nameof(Index));
             }
-
-            // Check if there are any tournaments for this sport (for warning)
-            var hasTournaments = await _context.Tournaments
-                .AnyAsync(t => t.SportsId == id);
-
-            if (hasTournaments)
+            catch (Exception ex)
             {
-                // Warn but allow deletion
-                TempData["WarningMessage"] = "Lưu ý: Xóa môn thể thao này sẽ ảnh hưởng đến các giải đấu đã tạo.";
+                Console.WriteLine($"Unexpected error deleting sport: {ex.Message}");
+                TempData["ErrorMessage"] = "Lỗi không xác định khi xóa môn thể thao. Vui lòng thử lại.";
+                return RedirectToAction(nameof(Index));
             }
-
-            // Delete the sport
-            _context.Sports.Remove(sport);
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = "Môn thể thao đã được xóa thành công.";
-            return RedirectToAction(nameof(Index));
         }
     }
 }

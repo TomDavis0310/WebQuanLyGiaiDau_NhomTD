@@ -33,6 +33,12 @@ class TeamDetail {
 
   Map<String, dynamic> toJson() => _$TeamDetailToJson(this);
 
+  static int _safeIntFromJson(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
   // Computed properties
   int get playerCount => players.length;
   int get totalMatches => matchHistory?.length ?? 0;
@@ -109,6 +115,19 @@ class MatchHistory {
     if (scoreTeamA == null || scoreTeamB == null) return '-';
     if (teamName == teamA) return '$scoreTeamA - $scoreTeamB';
     return '$scoreTeamB - $scoreTeamA';
+  }
+
+  static int _safeIntFromJson(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  static int? _safeIntFromJsonNullable(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 }
 

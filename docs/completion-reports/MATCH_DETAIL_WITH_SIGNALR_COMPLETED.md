@@ -199,7 +199,7 @@ Run app → Tournament Detail
 #### **Backend Setup:**
 ```csharp
 // Backend needs to be running
-// SignalR Hub at: http://192.168.1.7:8080/matchHub
+// SignalR Hub at: http://192.168.1.2:8080/matchHub
 ```
 
 #### **Test Score Update:**
@@ -420,7 +420,7 @@ String? number
 
 ### **Backend Hub URL:**
 ```
-http://192.168.1.7:8080/matchHub
+http://192.168.1.2:8080/matchHub
 ```
 
 ### **Hub Methods:**

@@ -155,27 +155,27 @@
 
 **1. Get All News:**
 ```bash
-curl http://192.168.1.7:8080/api/NewsApi?page=1&pageSize=10
+curl http://192.168.1.2:8080/api/NewsApi?page=1&pageSize=10
 ```
 
 **2. Get Featured News:**
 ```bash
-curl http://192.168.1.7:8080/api/NewsApi/featured?count=5
+curl http://192.168.1.2:8080/api/NewsApi/featured?count=5
 ```
 
 **3. Get News Detail:**
 ```bash
-curl http://192.168.1.7:8080/api/NewsApi/1
+curl http://192.168.1.2:8080/api/NewsApi/1
 ```
 
 **4. Get Related News:**
 ```bash
-curl http://192.168.1.7:8080/api/NewsApi/1/related?count=5
+curl http://192.168.1.2:8080/api/NewsApi/1/related?count=5
 ```
 
 **5. Get Categories:**
 ```bash
-curl http://192.168.1.7:8080/api/NewsApi/categories
+curl http://192.168.1.2:8080/api/NewsApi/categories
 ```
 
 ---
@@ -228,7 +228,7 @@ curl http://192.168.1.7:8080/api/NewsApi/categories
 
 ## 📝 Ghi Chú
 
-- **Backend URL:** `http://192.168.1.7:8080`
+- **Backend URL:** `http://192.168.1.2:8080`
 - **Frontend URL:** `http://localhost:8081`
 - **Test Browser:** Chrome
 - **Flutter Version:** 3.8.1+

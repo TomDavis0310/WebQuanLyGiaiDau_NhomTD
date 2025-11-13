@@ -119,6 +119,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
                         m.GroupName,
                         m.Round,
                         Status = m.CalculatedStatus,
+                        m.HighlightsVideoUrl,
+                        m.LiveStreamUrl,
+                        m.VideoDescription,
                         Tournament = new
                         {
                             m.Tournament.Id,
@@ -303,6 +306,50 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
                     message = "Lấy danh sách trận đấu đang diễn ra thành công",
                     data = liveMatches,
                     count = liveMatches.Count()
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Lỗi server: " + ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// Lấy danh sách trận đấu có video trong giải đấu
+        /// </summary>
+        [HttpGet("tournament/{tournamentId}/videos")]
+        public async Task<ActionResult<object>> GetTournamentMatchesWithVideos(int tournamentId)
+        {
+            try
+            {
+                var matches = await _context.Matches
+                    .Where(m => m.TournamentId == tournamentId && 
+                               (m.HighlightsVideoUrl != null || m.LiveStreamUrl != null))
+                    .OrderByDescending(m => m.MatchDate)
+                    .Select(m => new
+                    {
+                        id = m.Id,
+                        teamA = m.TeamA ?? "",
+                        teamB = m.TeamB ?? "",
+                        matchDate = m.MatchDate,
+                        scoreTeamA = m.ScoreTeamA,
+                        scoreTeamB = m.ScoreTeamB,
+                        highlightsVideoUrl = m.HighlightsVideoUrl,
+                        liveStreamUrl = m.LiveStreamUrl,
+                        status = m.CalculatedStatus
+                    })
+                    .ToListAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy danh sách trận đấu có video thành công",
+                    data = matches,
+                    count = matches.Count
                 });
             }
             catch (Exception ex)

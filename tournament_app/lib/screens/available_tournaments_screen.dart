@@ -24,6 +24,7 @@ class _AvailableTournamentsScreenState
   
   bool _isLoadingAvailable = true;
   bool _isLoadingRegistrations = true;
+  // ignore: unused_field
   bool _isLoadingTeams = true;
   
   String? _errorMessageAvailable;

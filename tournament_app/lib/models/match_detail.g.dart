@@ -30,6 +30,9 @@ MatchDetail _$MatchDetailFromJson(Map<String, dynamic> json) => MatchDetail(
   playerScorings: (json['playerScorings'] as List<dynamic>)
       .map((e) => PlayerScoring.fromJson(e as Map<String, dynamic>))
       .toList(),
+  highlightsVideoUrl: json['highlightsVideoUrl'] as String?,
+  liveStreamUrl: json['liveStreamUrl'] as String?,
+  videoDescription: json['videoDescription'] as String?,
 );
 
 Map<String, dynamic> _$MatchDetailToJson(MatchDetail instance) =>
@@ -49,6 +52,9 @@ Map<String, dynamic> _$MatchDetailToJson(MatchDetail instance) =>
       'teamAInfo': instance.teamAInfo,
       'teamBInfo': instance.teamBInfo,
       'playerScorings': instance.playerScorings,
+      'highlightsVideoUrl': instance.highlightsVideoUrl,
+      'liveStreamUrl': instance.liveStreamUrl,
+      'videoDescription': instance.videoDescription,
     };
 
 TournamentInfo _$TournamentInfoFromJson(Map<String, dynamic> json) =>

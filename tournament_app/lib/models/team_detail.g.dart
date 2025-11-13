@@ -7,7 +7,7 @@ part of 'team_detail.dart';
 // **************************************************************************
 
 TeamDetail _$TeamDetailFromJson(Map<String, dynamic> json) => TeamDetail(
-  teamId: TeamDetail._safeIntFromJson(json['teamId']),
+  teamId: (json['teamId'] as num).toInt(),
   name: json['name'] as String,
   coach: json['coach'] as String?,
   logoUrl: TeamDetail._logoUrlFromJson(json['logoUrl'] as String?),
@@ -32,12 +32,12 @@ Map<String, dynamic> _$TeamDetailToJson(TeamDetail instance) =>
     };
 
 MatchHistory _$MatchHistoryFromJson(Map<String, dynamic> json) => MatchHistory(
-  id: MatchHistory._safeIntFromJson(json['id']),
+  id: (json['id'] as num).toInt(),
   teamA: json['teamA'] as String,
   teamB: json['teamB'] as String,
   matchDate: DateTime.parse(json['matchDate'] as String),
-  scoreTeamA: MatchHistory._safeIntFromJsonNullable(json['scoreTeamA']),
-  scoreTeamB: MatchHistory._safeIntFromJsonNullable(json['scoreTeamB']),
+  scoreTeamA: (json['scoreTeamA'] as num?)?.toInt(),
+  scoreTeamB: (json['scoreTeamB'] as num?)?.toInt(),
   tournament: TournamentInfo.fromJson(
     json['tournament'] as Map<String, dynamic>,
   ),

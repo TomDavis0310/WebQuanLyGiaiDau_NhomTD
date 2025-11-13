@@ -63,13 +63,9 @@
             </div>
 
             <div class="form-group mb-3">
-                <label asp-for="RegistrationStatus" class="form-label fw-bold">Trạng Thái Đăng Ký</label>
-                <select asp-for="RegistrationStatus" class="form-select">
-                    <option value="Open">Mở đăng ký</option>
-                    <option value="Closed">Đóng đăng ký</option>
-                    <option value="Completed">Đã kết thúc</option>
-                </select>
-                <span asp-validation-for="RegistrationStatus" class="text-danger"></span>
+                <label class="form-label fw-bold">Trạng Thái Hiện Tại</label>
+                <input type="text" class="form-control" value="@Model.CalculatedStatus" disabled readonly />
+                <div class="form-text">Trạng thái được tính tự động dựa trên ngày bắt đầu và kết thúc</div>
             </div>
 
             <div class="form-group mb-4">
@@ -87,7 +83,6 @@
                 <label class="form-label fw-bold mt-2">Thay Đổi Ảnh</label>
                 <input type="file" name="imageUrl" class="form-control" />
                 <small class="text-muted">Để trống nếu không muốn thay đổi ảnh</small>
-                <input type="hidden" asp-for="ImageUrl" />
             </div>
 
             <div class="d-flex justify-content-between mt-4">
@@ -107,17 +102,20 @@
         $(document).ready(function() {
             // Lấy thông tin chi tiết về các thể thức thi đấu
             var formatDetails = [
-                @foreach (var format in ViewBag.FormatDetails)
+                @if (ViewBag.FormatDetails != null)
                 {
-                    <text>
+                    foreach (var format in ViewBag.FormatDetails)
                     {
-                        id: @format.Id,
-                        name: "@format.Name",
-                        description: "@format.Description",
-                        scoringRules: "@format.ScoringRules",
-                        winnerDetermination: "@format.WinnerDetermination"
-                    },
-                    </text>
+                        <text>
+                        {
+                            id: @format.Id,
+                            name: "@format.Name",
+                            description: "@format.Description",
+                            scoringRules: "@format.ScoringRules",
+                            winnerDetermination: "@format.WinnerDetermination"
+                        },
+                        </text>
+                    }
                 }
             ];
 

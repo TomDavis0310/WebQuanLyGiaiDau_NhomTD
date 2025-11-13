@@ -216,14 +216,24 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [Authorize(Roles = SD.Role_Admin)]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var news = await _context.News.FindAsync(id);
-            if (news != null)
+            try
             {
-                _context.News.Remove(news);
+                var news = await _context.News.FindAsync(id);
+                if (news != null)
+                {
+                    _context.News.Remove(news);
+                    await _context.SaveChangesAsync();
+                    
+                    TempData["SuccessMessage"] = "Đã xóa tin tức thành công.";
+                }
+                return RedirectToAction(nameof(Index));
             }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Lỗi khi xóa tin tức: {ex.Message}");
+                TempData["ErrorMessage"] = "Không thể xóa tin tức này. Vui lòng thử lại.";
+                return RedirectToAction(nameof(Details), new { id = id });
+            }
         }
 
         private bool NewsExists(int id)

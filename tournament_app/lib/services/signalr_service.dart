@@ -3,7 +3,7 @@ import 'dart:async';
 
 /// SignalR Service for real-time match updates
 class SignalRService {
-  static const String hubUrl = 'http://192.168.1.7:8080/matchHub';
+  static const String hubUrl = 'http://192.168.1.2:8080/matchHub';
   
   HubConnection? _hubConnection;
   bool _isConnected = false;

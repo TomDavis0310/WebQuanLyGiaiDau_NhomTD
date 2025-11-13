@@ -369,24 +369,24 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
                     if (hasStatistics)
                     {
-                        // If there are related records, return to the delete view with an error message
-                        ViewData["error"] = "Không thể xóa cầu thủ này vì có thống kê liên quan.";
-                        player = await _context.Players
-                            .Include(p => p.Team)
-                            .FirstOrDefaultAsync(m => m.PlayerId == id);
-                        return View(player);
+                        // If there are related records, show error message
+                        TempData["ErrorMessage"] = "Không thể xóa cầu thủ này vì có thống kê liên quan.";
+                        return RedirectToAction(nameof(Details), new { id = id });
                     }
 
                     _context.Players.Remove(player);
                     await _context.SaveChangesAsync();
+                    
+                    TempData["SuccessMessage"] = "Đã xóa cầu thủ thành công.";
                 }
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                // Log the error
+                // Log the error and show to user
                 Console.WriteLine("Error deleting player: " + ex.Message);
-                return RedirectToAction(nameof(Index));
+                TempData["ErrorMessage"] = "Lỗi khi xóa cầu thủ: " + ex.Message;
+                return RedirectToAction(nameof(Details), new { id = id });
             }
         }
 

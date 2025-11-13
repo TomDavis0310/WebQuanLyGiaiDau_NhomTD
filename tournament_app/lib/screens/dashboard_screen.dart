@@ -464,6 +464,7 @@ class _MyTournamentsTabState extends State<MyTournamentsTab> {
   List<UserTournament> _tournaments = [];
   bool _isLoading = true;
   int _currentPage = 1;
+  // ignore: unused_field
   int _totalPages = 1;
 
   @override

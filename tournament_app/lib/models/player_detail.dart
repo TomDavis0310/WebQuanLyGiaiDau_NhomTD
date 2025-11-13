@@ -30,6 +30,12 @@ class PlayerDetail {
       _$PlayerDetailFromJson(json);
 
   Map<String, dynamic> toJson() => _$PlayerDetailToJson(this);
+
+  static int _safeIntFromJson(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
 }
 
 @JsonSerializable()
@@ -50,6 +56,12 @@ class PlayerTeam {
       _$PlayerTeamFromJson(json);
 
   Map<String, dynamic> toJson() => _$PlayerTeamToJson(this);
+
+  static int _safeIntFromJson(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
 }
 
 @JsonSerializable()
@@ -68,6 +80,12 @@ class PlayerSport {
       _$PlayerSportFromJson(json);
 
   Map<String, dynamic> toJson() => _$PlayerSportToJson(this);
+
+  static int _safeIntFromJson(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
 }
 
 @JsonSerializable()
@@ -88,6 +106,19 @@ class PlayerStatistics {
       _$PlayerStatisticsFromJson(json);
 
   Map<String, dynamic> toJson() => _$PlayerStatisticsToJson(this);
+
+  static int _safeIntFromJson(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  static double _safeDoubleFromJson(dynamic value) {
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
 }
 
 @JsonSerializable()
@@ -144,6 +175,19 @@ class PlayerMatch {
     final minute = matchDate.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
   }
+
+  static int _safeIntFromJson(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  static int? _safeIntFromJsonNullable(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value);
+    return null;
+  }
 }
 
 @JsonSerializable()
@@ -162,6 +206,12 @@ class PerformanceData {
       _$PerformanceDataFromJson(json);
 
   Map<String, dynamic> toJson() => _$PerformanceDataToJson(this);
+
+  static int _safeIntFromJson(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
 }
 
 @JsonSerializable()
@@ -188,4 +238,17 @@ class PlayerStatisticsSummary {
       _$PlayerStatisticsSummaryFromJson(json);
 
   Map<String, dynamic> toJson() => _$PlayerStatisticsSummaryToJson(this);
+
+  static int _safeIntFromJson(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  static double _safeDoubleFromJson(dynamic value) {
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
 }

@@ -166,6 +166,8 @@
                 {
                     _context.Statistics.Remove(statistic);
                     await _context.SaveChangesAsync();
+                    
+                    TempData["SuccessMessage"] = "Đã xóa thống kê thành công.";
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -173,7 +175,8 @@
             {
                 // Handle foreign key constraint violation
                 Console.WriteLine($"Lỗi khi xóa thống kê: {ex.Message}");
-                return RedirectToAction(nameof(Delete), new { id = id, error = "Không thể xóa thống kê này vì có dữ liệu liên quan." });
+                TempData["ErrorMessage"] = "Không thể xóa thống kê này vì có dữ liệu liên quan.";
+                return RedirectToAction(nameof(Details), new { id = id });
             }
         }
 

@@ -289,8 +289,20 @@
                 var match = await _context.Matches.FindAsync(id);
                 if (match != null)
                 {
+                    // Check if there are statistics for this match
+                    var hasStatistics = await _context.Statistics
+                        .AnyAsync(s => s.MatchId == id);
+
+                    if (hasStatistics)
+                    {
+                        TempData["ErrorMessage"] = "Không thể xóa trận đấu này vì có thống kê liên quan. Vui lòng xóa thống kê trước.";
+                        return RedirectToAction(nameof(Details), new { id = id });
+                    }
+
                     _context.Matches.Remove(match);
                     await _context.SaveChangesAsync();
+                    
+                    TempData["SuccessMessage"] = "Đã xóa trận đấu thành công.";
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -298,7 +310,8 @@
             {
                 // Handle foreign key constraint violation
                 Console.WriteLine($"Lỗi khi xóa trận đấu: {ex.Message}");
-                return RedirectToAction(nameof(Delete), new { id = id, error = "Không thể xóa trận đấu này vì có dữ liệu liên quan." });
+                TempData["ErrorMessage"] = "Không thể xóa trận đấu này vì có dữ liệu liên quan.";
+                return RedirectToAction(nameof(Details), new { id = id });
             }
         }
 

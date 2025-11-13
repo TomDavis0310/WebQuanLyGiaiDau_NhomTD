@@ -11,6 +11,7 @@
         [Required(ErrorMessage = "Tên giải đấu không được bỏ trống")]
         public required string Name { get; set; }
 
+        [Required(ErrorMessage = "Mô tả không được bỏ trống")]
         public required string Description { get; set; }
 
         [Display(Name = "Địa điểm")]

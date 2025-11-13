@@ -8,8 +8,8 @@ part of 'player_scoring.dart';
 
 PlayerScoring _$PlayerScoringFromJson(Map<String, dynamic> json) =>
     PlayerScoring(
-      id: PlayerScoring._safeIntFromJson(json['id']),
-      points: PlayerScoring._safeIntFromJson(json['points']),
+      id: (json['id'] as num).toInt(),
+      points: (json['points'] as num).toInt(),
       scoringTime: json['scoringTime'] as String?,
       notes: json['notes'] as String?,
       player: Player.fromJson(json['player'] as Map<String, dynamic>),
@@ -25,7 +25,7 @@ Map<String, dynamic> _$PlayerScoringToJson(PlayerScoring instance) =>
     };
 
 Player _$PlayerFromJson(Map<String, dynamic> json) => Player(
-  playerId: Player._safeIntFromJson(json['playerId']),
+  playerId: (json['playerId'] as num).toInt(),
   fullName: json['fullName'] as String,
   position: json['position'] as String?,
   number: json['number'] as String?,

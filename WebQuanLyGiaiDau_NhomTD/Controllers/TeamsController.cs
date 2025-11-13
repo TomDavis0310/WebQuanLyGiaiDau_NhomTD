@@ -288,31 +288,35 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     var hasPlayers = await _context.Players
                         .AnyAsync(p => p.TeamId == id);
 
-                    // Check if there are any matches for this team
-                    var hasMatches = await _context.Matches
-                        .AnyAsync(m => m.TeamA == team.Name || m.TeamB == team.Name);
-
-                    if (hasPlayers || hasMatches)
+                    if (hasPlayers)
                     {
                         // If there are related records, return to the delete view with an error message
-                        ViewData["error"] = "Không thể xóa đội bóng này vì có cầu thủ hoặc trận đấu liên quan.";
-                        team = await _context.Teams
-                            .FirstOrDefaultAsync(m => m.TeamId == id);
-                        return View(team);
+                        TempData["ErrorMessage"] = "Không thể xóa đội bóng này vì có cầu thủ liên quan. Vui lòng xóa tất cả cầu thủ trước.";
+                        return RedirectToAction(nameof(Details), new { id = id });
+                    }
+
+                    // Check if team is registered in any tournament
+                    var hasRegistrations = await _context.TournamentTeams
+                        .AnyAsync(tt => tt.TeamId == id);
+
+                    if (hasRegistrations)
+                    {
+                        TempData["ErrorMessage"] = "Không thể xóa đội bóng này vì đã đăng ký tham gia giải đấu.";
+                        return RedirectToAction(nameof(Details), new { id = id });
                     }
 
                     _context.Teams.Remove(team);
                     await _context.SaveChangesAsync();
+                    
+                    TempData["SuccessMessage"] = "Đã xóa đội bóng thành công.";
                 }
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 // Handle any other exceptions
-                var team = await _context.Teams
-                    .FirstOrDefaultAsync(m => m.TeamId == id);
-                ViewData["error"] = "Lỗi khi xóa đội bóng: " + ex.Message;
-                return View(team);
+                TempData["ErrorMessage"] = "Lỗi khi xóa đội bóng: " + ex.Message;
+                return RedirectToAction(nameof(Details), new { id = id });
             }
         }
 

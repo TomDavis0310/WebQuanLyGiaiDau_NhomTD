@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/match_detail.dart';
 import '../services/api_service.dart';
 import '../services/signalr_service.dart';
@@ -67,6 +68,9 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> with SingleTicker
                 teamAInfo: _matchDetail!.teamAInfo,
                 teamBInfo: _matchDetail!.teamBInfo,
                 playerScorings: _matchDetail!.playerScorings,
+                highlightsVideoUrl: _matchDetail!.highlightsVideoUrl,
+                liveStreamUrl: _matchDetail!.liveStreamUrl,
+                videoDescription: _matchDetail!.videoDescription,
               );
             }
           });
@@ -105,6 +109,9 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> with SingleTicker
                 teamAInfo: _matchDetail!.teamAInfo,
                 teamBInfo: _matchDetail!.teamBInfo,
                 playerScorings: _matchDetail!.playerScorings,
+                highlightsVideoUrl: _matchDetail!.highlightsVideoUrl,
+                liveStreamUrl: _matchDetail!.liveStreamUrl,
+                videoDescription: _matchDetail!.videoDescription,
               );
             }
           });
@@ -377,12 +384,143 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> with SingleTicker
     );
   }
 
+  Widget _buildVideoSection(MatchDetail match) {
+    return Card(
+      elevation: 3,
+      color: Colors.red[50],
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.play_circle_fill, size: 28, color: Colors.red[700]),
+                const SizedBox(width: 12),
+                Text(
+                  'Video trận đấu',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red[900],
+                  ),
+                ),
+              ],
+            ),
+            if (match.videoDescription != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                match.videoDescription!,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            
+            // Live Stream Button
+            if (match.hasLiveStream)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _launchVideo(match.liveStreamUrl!),
+                  icon: const Icon(Icons.live_tv, size: 24),
+                  label: const Text(
+                    'XEM TRỰC TIẾP',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red[600],
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            
+            // Spacing between buttons
+            if (match.hasLiveStream && match.hasHighlights)
+              const SizedBox(height: 12),
+            
+            // Highlights Button
+            if (match.hasHighlights)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _launchVideo(match.highlightsVideoUrl!),
+                  icon: const Icon(Icons.movie, size: 24),
+                  label: const Text(
+                    'XEM HIGHLIGHTS',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue[700],
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _launchVideo(String url) async {
+    final Uri uri = Uri.parse(url);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Không thể mở video'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi mở video: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Widget _buildDetailsTab(MatchDetail match) {
     return RefreshIndicator(
       onRefresh: _loadMatchDetail,
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Video section
+          if (match.hasHighlights || match.hasLiveStream)
+            _buildVideoSection(match),
+          
+          if (match.hasHighlights || match.hasLiveStream)
+            const SizedBox(height: 16),
+
           // Tournament info
           _buildInfoCard(
             title: 'Giải đấu',

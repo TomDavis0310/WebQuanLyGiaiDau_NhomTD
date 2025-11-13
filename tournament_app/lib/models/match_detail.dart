@@ -22,6 +22,9 @@ class MatchDetail {
   final Team? teamAInfo;
   final Team? teamBInfo;
   final List<PlayerScoring> playerScorings;
+  final String? highlightsVideoUrl;
+  final String? liveStreamUrl;
+  final String? videoDescription;
 
   MatchDetail({
     required this.id,
@@ -39,6 +42,9 @@ class MatchDetail {
     this.teamAInfo,
     this.teamBInfo,
     required this.playerScorings,
+    this.highlightsVideoUrl,
+    this.liveStreamUrl,
+    this.videoDescription,
   });
 
   /// Check if match is live/ongoing
@@ -49,6 +55,12 @@ class MatchDetail {
 
   /// Check if match is upcoming
   bool get isUpcoming => status.toLowerCase() == 'upcoming';
+
+  /// Check if has video highlights
+  bool get hasHighlights => highlightsVideoUrl != null && highlightsVideoUrl!.isNotEmpty;
+
+  /// Check if has live stream
+  bool get hasLiveStream => liveStreamUrl != null && liveStreamUrl!.isNotEmpty;
 
   /// Get winner team name (null if not completed or draw)
   String? get winner {
