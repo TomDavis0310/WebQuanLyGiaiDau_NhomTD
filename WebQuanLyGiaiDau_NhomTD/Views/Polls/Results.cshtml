@@ -1,0 +1,30 @@
+@model WebQuanLyGiaiDau_NhomTD.Models.Poll
+@{
+    ViewData["Title"] = "Kết quả bình chọn";
+    var counts = ViewBag.Counts as Dictionary<int, int> ?? new Dictionary<int, int>();
+    var total = ViewBag.Total as int? ?? 0;
+}
+
+<div class="container mt-4">
+    <h2>Kết quả: @Model.Title</h2>
+    <p>@Model.Description</p>
+
+    <div class="list-group">
+        @foreach (var opt in Model.Options ?? Enumerable.Empty<WebQuanLyGiaiDau_NhomTD.Models.PollOption>())
+        {
+            var c = counts.ContainsKey(opt.Id) ? counts[opt.Id] : 0;
+            var pct = total > 0 ? Math.Round(100.0 * c / total, 1) : 0;
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between">
+                    <div>@opt.Name</div>
+                    <div>@c (@pct %)</div>
+                </div>
+                <div class="progress mt-2">
+                    <div class="progress-bar" role="progressbar" style="width:@pct%">&nbsp;</div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <a class="btn btn-link" asp-action="List" asp-route-tournamentId="@Model.TournamentId">Quay lại</a>
+</div>

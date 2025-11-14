@@ -28,6 +28,29 @@
                 .WithMany()
                 .HasForeignKey(sd => sd.SportId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            // ensure one vote per user per poll
+            modelBuilder.Entity<PollVote>()
+                .HasIndex(v => new { v.PollId, v.UserId })
+                .IsUnique();
+
+            modelBuilder.Entity<PollOption>()
+                .HasOne(o => o.Poll)
+                .WithMany(p => p.Options)
+                .HasForeignKey(o => o.PollId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PollVote>()
+                .HasOne(v => v.Poll)
+                .WithMany(p => p.Votes)
+                .HasForeignKey(v => v.PollId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PollVote>()
+                .HasOne(v => v.Option)
+                .WithMany(o => o.Votes)
+                .HasForeignKey(v => v.OptionId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<Team> Teams { get; set; }
@@ -63,5 +86,12 @@
         public DbSet<RewardProduct> RewardProducts { get; set; }
         public DbSet<PointsSetting> PointsSettings { get; set; }
     public DbSet<RedeemTransaction> RedeemTransactions { get; set; }
+        
+        // Bình chọn
+        public DbSet<Poll> Polls { get; set; }
+        public DbSet<PollOption> PollOptions { get; set; }
+        public DbSet<PollVote> PollVotes { get; set; }
+
+        
     }
 }

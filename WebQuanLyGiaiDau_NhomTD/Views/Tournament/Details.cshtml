@@ -225,6 +225,21 @@
                         }
                     </div>
 
+                    <div class="mb-3 d-flex gap-2">
+                        @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+                        {
+                            <a class="btn btn-outline-primary" asp-controller="Polls" asp-action="Create" asp-route-tournamentId="@Model.Id">Tạo bình chọn</a>
+                        }
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a class="btn btn-outline-success" asp-controller="Polls" asp-action="List" asp-route-tournamentId="@Model.Id">Bình chọn</a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-outline-success" asp-controller="Account" asp-action="Login">Đăng nhập để bình chọn</a>
+                        }
+                    </div>
+
                     <!-- Hiển thị các đội tham gia -->
                     <div class="mt-4">
                         <h5 class="text-primary mb-3">

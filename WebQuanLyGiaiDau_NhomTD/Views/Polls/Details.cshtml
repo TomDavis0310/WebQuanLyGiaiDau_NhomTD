@@ -1,0 +1,49 @@
+@model WebQuanLyGiaiDau_NhomTD.Models.Poll
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Chi tiết bảng bình chọn";
+    bool isAuthenticated = User?.Identity?.IsAuthenticated == true;
+    var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+
+<div class="container mt-4">
+    <h2>@Model.Title</h2>
+    <p>@Model.Description</p>
+    <p>Thời gian: @Model.StartAt.ToString("dd/MM/yyyy HH:mm") - @Model.EndAt.ToString("dd/MM/yyyy HH:mm") (UTC)</p>
+
+    <div>
+        @if (!isAuthenticated)
+        {
+            <div class="alert alert-info">Vui lòng <a asp-controller="Account" asp-action="Login">đăng nhập</a> để tham gia bình chọn.</div>
+        }
+        else
+        {
+            var now = DateTime.UtcNow;
+            if (now < Model.StartAt)
+            {
+                <div class="alert alert-warning">Bình chọn chưa bắt đầu.</div>
+            }
+            else if (now > Model.EndAt)
+            {
+                <div class="alert alert-secondary">Bình chọn đã kết thúc.</div>
+            }
+            else
+            {
+                <form asp-action="Vote" method="post">
+                    <input type="hidden" name="pollId" value="@Model.Id" />
+                    <div class="list-group mb-3">
+                        @foreach (var opt in Model.Options ?? Enumerable.Empty<WebQuanLyGiaiDau_NhomTD.Models.PollOption>())
+                        {
+                            <label class="list-group-item">
+                                <input type="radio" name="optionId" value="@opt.Id" /> @opt.Name
+                            </label>
+                        }
+                    </div>
+                    <button class="btn btn-primary">Bình chọn</button>
+                </form>
+            }
+        }
+    </div>
+
+    <a class="btn btn-link" asp-action="List" asp-route-tournamentId="@Model.TournamentId">Quay lại</a>
+</div>

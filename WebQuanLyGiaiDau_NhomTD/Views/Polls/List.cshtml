@@ -1,0 +1,36 @@
+@model IEnumerable<WebQuanLyGiaiDau_NhomTD.Models.Poll>
+@{
+    ViewData["Title"] = "Danh sách bình chọn";
+    var tournamentId = ViewBag.TournamentId as int? ?? 0;
+}
+
+<div class="container mt-4">
+    <h2>Bảng bình chọn</h2>
+    <p>Giải đấu: @tournamentId</p>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">Chưa có bảng bình chọn cho giải đấu này.</div>
+    }
+    else
+    {
+        foreach (var poll in Model)
+        {
+            var now = DateTime.UtcNow;
+            var status = now < poll.StartAt ? "Chưa bắt đầu" : now > poll.EndAt ? "Đã kết thúc" : "Đang diễn ra";
+            <div class="card mb-2">
+                <div class="card-body">
+                    <h5>@poll.Title <small class="text-muted">(@status)</small></h5>
+                    <p>@poll.Description</p>
+                    <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@poll.Id">Chi tiết</a>
+                    @if (poll.IsPublished)
+                    {
+                        <a class="btn btn-sm btn-outline-success ms-2" asp-action="Results" asp-route-id="@poll.Id">Kết quả</a>
+                    }
+                </div>
+            </div>
+        }
+    }
+
+    <a class="btn btn-link" asp-controller="Tournament" asp-action="Details" asp-route-id="@tournamentId">Quay lại giải đấu</a>
+</div>

@@ -1,0 +1,99 @@
+@model WebQuanLyGiaiDau_NhomTD.Models.Poll
+@{
+    ViewData["Title"] = "Tạo bình chọn";
+}
+
+<div class="container mt-4">
+    <h2>Tạo bình chọn cho giải đấu @Model.TournamentId</h2>
+
+    <form asp-action="Create" method="post">
+        <input type="hidden" asp-for="TournamentId" />
+        <input type="hidden" name="optionEntityType" id="optionEntityType" value="" />
+        <div class="mb-3">
+            <label asp-for="Title" class="form-label"></label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label"></label>
+            <textarea asp-for="Description" class="form-control"></textarea>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="StartAt" class="form-label">Bắt đầu (UTC)</label>
+                <input asp-for="StartAt" class="form-control" type="datetime-local" />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="EndAt" class="form-label">Kết thúc (UTC)</label>
+                <input asp-for="EndAt" class="form-control" type="datetime-local" />
+            </div>
+        </div>
+
+        <h5>Options</h5>
+        <p>Chọn nguồn option: cầu thủ hoặc đội (hiển thị danh sách thuộc giải đấu để tích chọn)</p>
+        <div class="mb-3">
+            <select id="optionSource" class="form-select">
+                <option value="">-- Chọn nguồn --</option>
+                <option value="Player">Cầu thủ</option>
+                <option value="Team">Đội bóng</option>
+            </select>
+        </div>
+
+        <div id="playersList" style="display:none;">
+            <h6>Cầu thủ trong giải</h6>
+            @if (ViewBag.Players != null)
+            {
+                foreach (var p in (List<WebQuanLyGiaiDau_NhomTD.Models.Player>)ViewBag.Players)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="optionEntityIds" value="@p.PlayerId" id="player_@p.PlayerId" />
+                        <label class="form-check-label" for="player_@p.PlayerId">@p.FullName (@p.Number) - @p.Position</label>
+                    </div>
+                }
+            }
+        </div>
+
+        <div id="teamsList" style="display:none;">
+            <h6>Đội bóng trong giải</h6>
+            @if (ViewBag.Teams != null)
+            {
+                foreach (var t in (List<WebQuanLyGiaiDau_NhomTD.Models.Team>)ViewBag.Teams)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="optionEntityIds" value="@t.TeamId" id="team_@t.TeamId" />
+                        <label class="form-check-label" for="team_@t.TeamId">@t.Name</label>
+                    </div>
+                }
+            }
+        </div>
+
+        <button class="btn btn-primary">Tạo</button>
+        <a class="btn btn-link" asp-action="List" asp-route-tournamentId="@Model.TournamentId">Hủy</a>
+    </form>
+</div>
+
+    @section Scripts {
+        <script>
+            (function(){
+                const source = document.getElementById('optionSource');
+                const playersList = document.getElementById('playersList');
+                const teamsList = document.getElementById('teamsList');
+                const hiddenType = document.getElementById('optionEntityType');
+
+                source.addEventListener('change', function(){
+                    const v = source.value;
+                    hiddenType.value = v;
+                    if (v === 'Player'){
+                        playersList.style.display = '';
+                        teamsList.style.display = 'none';
+                    } else if (v === 'Team'){
+                        playersList.style.display = 'none';
+                        teamsList.style.display = '';
+                    } else {
+                        playersList.style.display = 'none';
+                        teamsList.style.display = 'none';
+                    }
+                });
+            })();
+        </script>
+    }
