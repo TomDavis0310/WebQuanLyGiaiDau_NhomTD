@@ -17,7 +17,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.4")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -316,6 +316,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("AllowWinnerVoting")
+                        .HasColumnType("bit");
+
                     b.Property<string>("GroupName")
                         .HasColumnType("nvarchar(max)");
 
@@ -450,6 +453,42 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.ToTable("MatchSets");
                 });
 
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.MatchVote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MatchId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("VoteTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("VotedTeam")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MatchId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("MatchVotes");
+                });
+
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.News", b =>
                 {
                     b.Property<int>("NewsId")
@@ -483,9 +522,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.Property<DateTime>("PublishDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("SportsId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Summary")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -501,9 +537,69 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     b.HasKey("NewsId");
 
-                    b.HasIndex("SportsId");
-
                     b.ToTable("News");
+                });
+
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ActionUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("RelatedId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RelatedType")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Player", b =>
@@ -634,6 +730,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("VoteTeamPoints")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VoteTournamentPoints")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -951,6 +1050,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("AllowChampionVoting")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1141,6 +1243,68 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.ToTable("TournamentTeams");
                 });
 
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.TournamentVote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("TournamentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("VoteTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("VotedTeamName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TournamentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TournamentVotes");
+                });
+
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.VotingSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AllowMatchVoting")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("AllowTournamentVoting")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("VotingSettings");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -1264,13 +1428,23 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.Navigation("Match");
                 });
 
-            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.News", b =>
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.MatchVote", b =>
                 {
-                    b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.Sports", "Sports")
-                        .WithMany()
-                        .HasForeignKey("SportsId");
+                    b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.Match", "Match")
+                        .WithMany("MatchVotes")
+                        .HasForeignKey("MatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Sports");
+                    b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Match");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Player", b =>
@@ -1510,6 +1684,25 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.Navigation("Tournament");
                 });
 
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.TournamentVote", b =>
+                {
+                    b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.Tournament", "Tournament")
+                        .WithMany("TournamentVotes")
+                        .HasForeignKey("TournamentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tournament");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Format", b =>
                 {
                     b.Navigation("StageDetails");
@@ -1518,6 +1711,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Match", b =>
                 {
                     b.Navigation("MatchSets");
+
+                    b.Navigation("MatchVotes");
 
                     b.Navigation("Statistics");
                 });
@@ -1537,6 +1732,11 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.Navigation("Matches");
 
                     b.Navigation("Players");
+                });
+
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.Tournament", b =>
+                {
+                    b.Navigation("TournamentVotes");
                 });
 
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.TournamentFormat", b =>

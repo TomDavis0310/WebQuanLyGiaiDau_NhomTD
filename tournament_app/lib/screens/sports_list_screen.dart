@@ -3,6 +3,10 @@ import 'package:provider/provider.dart';
 import '../models/sport.dart';
 import '../services/api_service.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/loading_widget.dart';
+import '../widgets/empty_state_widget.dart';
+import '../widgets/error_widget.dart';
+import '../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import 'profile_screen.dart';
 import 'login_screen.dart';
@@ -142,12 +146,12 @@ class _SportsListScreenState extends State<SportsListScreen> {
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).primaryColor.withOpacity(0.1),
+              Color(0xFFF5F7FA),
               Colors.white,
             ],
           ),
@@ -159,57 +163,28 @@ class _SportsListScreenState extends State<SportsListScreen> {
 
   Widget _buildBody() {
     if (isLoading) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Đang tải dữ liệu...'),
-          ],
-        ),
-      );
+      return const LoadingWidget(message: 'Đang tải dữ liệu...');
     }
 
     if (errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red),
-            SizedBox(height: 16),
-            Text(
-              'Lỗi: $errorMessage',
-              style: TextStyle(color: Colors.red),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: loadSports,
-              child: Text('Thử Lại'),
-            ),
-          ],
-        ),
+      return CustomErrorWidget(
+        message: errorMessage!,
+        onRetry: loadSports,
       );
     }
 
     if (sports.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.sports_basketball, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text('Không có môn thể thao nào'),
-          ],
-        ),
+      return const EmptyStateWidget(
+        icon: Icons.sports,
+        title: 'Chưa có môn thể thao',
+        message: 'Hiện tại chưa có môn thể thao nào được thêm vào hệ thống',
       );
     }
 
     return RefreshIndicator(
       onRefresh: loadSports,
       child: ListView.builder(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.spaceMedium),
         itemCount: sports.length,
         itemBuilder: (context, index) {
           final sport = sports[index];
@@ -220,88 +195,107 @@ class _SportsListScreenState extends State<SportsListScreen> {
   }
 
   Widget _buildSportCard(Sport sport) {
-    return Card(
-      margin: EdgeInsets.only(bottom: 16),
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppTheme.spaceMedium),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        boxShadow: AppTheme.cardShadow,
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          // Navigate to tournaments by sport
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => TournamentListScreen(sport: sport),
-            ),
-          );
-        },
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // Sport Icon/Image
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: sport.imageUrl != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          sport.imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(
-                              Icons.sports_basketball,
-                              size: 32,
-                              color: Theme.of(context).primaryColor,
-                            );
-                          },
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => TournamentListScreen(sport: sport),
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(AppTheme.spaceMedium),
+            child: Row(
+              children: [
+                // Sport Icon/Image with Hero animation
+                Hero(
+                  tag: 'sport_${sport.id}',
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primaryBlue.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
                         ),
-                      )
-                    : Icon(
-                        Icons.sports_basketball,
-                        size: 32,
-                        color: Theme.of(context).primaryColor,
-                      ),
-              ),
-              SizedBox(width: 16),
-              
-              // Sport Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      sport.name,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      ],
                     ),
-                    SizedBox(height: 4),
-                    Text(
-                      '${sport.tournamentCount} giải đấu',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
+                    child: sport.imageUrl != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                            child: Image.network(
+                              sport.imageUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(
+                                  Icons.sports_basketball,
+                                  size: 36,
+                                  color: Colors.white,
+                                );
+                              },
+                            ),
+                          )
+                        : const Icon(
+                            Icons.sports_basketball,
+                            size: 36,
+                            color: Colors.white,
+                          ),
+                  ),
                 ),
-              ),
-              
-              // Arrow Icon
-              Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.grey[400],
-                size: 16,
-              ),
-            ],
+                const SizedBox(width: AppTheme.spaceMedium),
+                
+                // Sport Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        sport.name,
+                        style: AppTheme.titleLarge,
+                      ),
+                      const SizedBox(height: AppTheme.spaceXSmall),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.emoji_events,
+                            size: 16,
+                            color: AppTheme.textSecondary,
+                          ),
+                          const SizedBox(width: AppTheme.spaceXSmall),
+                          Text(
+                            '${sport.tournamentCount} giải đấu',
+                            style: AppTheme.bodyMedium.copyWith(
+                              color: AppTheme.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Arrow Icon
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: AppTheme.textHint,
+                  size: 18,
+                ),
+              ],
+            ),
           ),
         ),
       ),

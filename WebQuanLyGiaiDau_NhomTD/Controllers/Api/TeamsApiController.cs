@@ -79,48 +79,10 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
         {
             try
             {
+                // Load team trước
                 var team = await _context.Teams
                     .Include(t => t.Players)
-                    .Where(t => t.TeamId == id)
-                    .Select(t => new
-                    {
-                        t.TeamId,
-                        t.Name,
-                        t.Coach,
-                        t.LogoUrl,
-                        t.UserId,
-                        Players = t.Players.Select(p => new
-                        {
-                            p.PlayerId,
-                            p.FullName,
-                            p.Position,
-                            p.Number,
-                            p.ImageUrl
-                        }).ToList(),
-                        // Lấy lịch sử thi đấu
-                        MatchHistory = _context.Matches
-                            .Where(m => m.TeamA == t.Name || m.TeamB == t.Name)
-                            .Include(m => m.Tournament!)
-                            .ThenInclude(t => t.Sports!)
-                            .Select(m => new
-                            {
-                                m.Id,
-                                m.TeamA,
-                                m.TeamB,
-                                m.MatchDate,
-                                m.ScoreTeamA,
-                                m.ScoreTeamB,
-                                Tournament = new
-                                {
-                                    m.Tournament!.Name,
-                                    SportsName = m.Tournament.Sports!.Name
-                                }
-                            })
-                            .OrderByDescending(m => m.MatchDate)
-                            .Take(10)
-                            .ToList()
-                    })
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(t => t.TeamId == id);
 
                 if (team == null)
                 {
@@ -131,15 +93,60 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
                     });
                 }
 
+                // Load match history riêng để tránh lỗi EF Core
+                var matchHistory = await _context.Matches
+                    .Where(m => m.TeamA == team.Name || m.TeamB == team.Name)
+                    .Include(m => m.Tournament!)
+                    .ThenInclude(t => t.Sports!)
+                    .OrderByDescending(m => m.MatchDate)
+                    .Take(10)
+                    .Select(m => new
+                    {
+                        m.Id,
+                        m.TeamA,
+                        m.TeamB,
+                        m.MatchDate,
+                        m.ScoreTeamA,
+                        m.ScoreTeamB,
+                        Tournament = new
+                        {
+                            Name = m.Tournament!.Name,
+                            SportsName = m.Tournament.Sports!.Name
+                        }
+                    })
+                    .ToListAsync();
+
+                // Tạo response
+                var response = new
+                {
+                    team.TeamId,
+                    team.Name,
+                    team.Coach,
+                    team.LogoUrl,
+                    team.UserId,
+                    Players = team.Players.Select(p => new
+                    {
+                        p.PlayerId,
+                        p.FullName,
+                        p.Position,
+                        p.Number,
+                        p.ImageUrl
+                    }).ToList(),
+                    MatchHistory = matchHistory
+                };
+
                 return Ok(new
                 {
                     success = true,
                     message = "Lấy thông tin đội bóng thành công",
-                    data = team
+                    data = response
                 });
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"ERROR in GetTeam({id}): {ex.Message}");
+                Console.WriteLine($"StackTrace: {ex.StackTrace}");
+                
                 return StatusCode(500, new
                 {
                     success = false,

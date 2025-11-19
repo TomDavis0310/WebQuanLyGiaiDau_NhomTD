@@ -29,6 +29,11 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
   bool isLoading = true;
   String? errorMessage;
   late TabController _tabController;
+  
+  // Voting state
+  String? selectedTeamForVoting;
+  bool isSubmittingVote = false;
+  Map<String, dynamic>? votingStatistics;
 
   @override
   void initState() {
@@ -44,43 +49,187 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
   }
 
   Future<void> loadTournamentDetail() async {
+    print('=== Loading Tournament Detail ===');
+    print('Tournament ID: ${widget.tournamentId}');
+    
+    if (!mounted) return; // Check if widget is still mounted
+    
     setState(() {
       isLoading = true;
       errorMessage = null;
     });
 
     try {
+      print('Calling API: getTournamentDetail(${widget.tournamentId})');
       final response = await ApiService.getTournamentDetail(widget.tournamentId);
+      
+      if (!mounted) return; // Check again after async call
+      
+      print('API Response Success: ${response.success}');
+      print('API Response Message: ${response.message}');
+      print('API Response Data: ${response.data != null ? "Has Data" : "No Data"}');
 
       if (response.success && response.data != null) {
         // Add null safety checks for critical fields
         final tournamentData = response.data!;
+        print('Tournament Name: ${tournamentData.name}');
+        print('Max Teams: ${tournamentData.maxTeams}');
+        print('Teams Per Group: ${tournamentData.teamsPerGroup}');
         
-        // Validate required fields
+        // Validate required fields (allow 0 for teamsPerGroup for certain tournament formats)
         if (tournamentData.name.isNotEmpty && 
-            tournamentData.maxTeams > 0 &&
-            tournamentData.teamsPerGroup > 0) {
+            tournamentData.maxTeams > 0) {
+          print('Tournament data validated successfully');
+          
+          if (!mounted) return; // Final check before setState
+          
           setState(() {
             tournament = tournamentData;
             isLoading = false;
           });
+          
+          // Load voting statistics if voting is enabled
+          if (tournamentData.allowChampionVoting == true) {
+            print('Loading voting statistics...');
+            loadVotingStatistics();
+          }
         } else {
+          print('ERROR: Tournament data validation failed');
+          
+          if (!mounted) return;
+          
           setState(() {
             errorMessage = 'Dữ liệu giải đấu không hợp lệ';
             isLoading = false;
           });
         }
       } else {
+        print('ERROR: API returned failure or no data');
+        
+        if (!mounted) return;
+        
         setState(() {
-          errorMessage = response.message;
+          errorMessage = response.message.isNotEmpty 
+              ? response.message 
+              : 'Không thể tải thông tin giải đấu';
           isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('ERROR: Exception in loadTournamentDetail');
+      print('Exception: $e');
+      print('StackTrace: $stackTrace');
+      
+      if (!mounted) return;
+      
       setState(() {
         errorMessage = 'Lỗi kết nối: $e';
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> loadVotingStatistics() async {
+    try {
+      final response = await ApiService.getTournamentVoteStatistics(
+        widget.tournamentId,
+      );
+
+      if (!mounted) return; // Check if widget is still mounted
+
+      if (response.success && response.data != null) {
+        setState(() {
+          votingStatistics = response.data;
+        });
+      }
+    } catch (e) {
+      // Silently fail - statistics are optional
+      print('Failed to load voting statistics: $e');
+    }
+  }
+
+  Future<void> submitVote() async {
+    if (selectedTeamForVoting == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Vui lòng chọn đội để bình chọn'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (!authProvider.isAuthenticated) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Vui lòng đăng nhập để bình chọn'),
+          backgroundColor: Colors.red,
+          action: SnackBarAction(
+            label: 'Đăng nhập',
+            textColor: Colors.white,
+            onPressed: () {
+              if (!mounted) return;
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+              );
+            },
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() {
+      isSubmittingVote = true;
+    });
+
+    try {
+      final response = await ApiService.voteTournamentChampion(
+        tournamentId: widget.tournamentId,
+        votedTeamName: selectedTeamForVoting!,
+        notes: null,
+        token: authProvider.token!,
+      );
+
+      if (!mounted) return;
+
+      if (response.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response.message.isEmpty ? 'Bình chọn thành công! +5 điểm' : response.message),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // Reload tournament detail to update voting status
+        await loadTournamentDetail();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response.message.isEmpty ? 'Bình chọn thất bại' : response.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi kết nối: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isSubmittingVote = false;
+        });
+      }
     }
   }
 
@@ -121,27 +270,34 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _buildBody(),
-      bottomNavigationBar: tournament != null &&
-              tournament!.registrationStatus.toLowerCase() == 'upcoming'
-          ? _buildBottomBar()
-          : null,
-      floatingActionButton: tournament != null
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TournamentBracketScreen(tournament: tournament!),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.emoji_events),
-              label: const Text('Bảng Xếp Hạng'),
-              backgroundColor: Colors.amber[700],
-            )
-          : null,
+    print('Building TournamentDetailScreen (isLoading: $isLoading, hasData: ${tournament != null}, hasError: ${errorMessage != null})');
+    
+    return PopScope(
+      canPop: true,
+      child: Scaffold(
+        body: SafeArea(
+          child: _buildBody(),
+        ),
+        bottomNavigationBar: tournament != null &&
+                tournament!.registrationStatus.toLowerCase() == 'upcoming'
+            ? _buildBottomBar()
+            : null,
+        floatingActionButton: tournament != null
+            ? FloatingActionButton.extended(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TournamentBracketScreen(tournament: tournament!),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.emoji_events),
+                label: const Text('Bảng Xếp Hạng'),
+                backgroundColor: Colors.amber[700],
+              )
+            : null,
+      ),
     );
   }
 
@@ -217,6 +373,10 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
       expandedHeight: 250,
       pinned: true,
       backgroundColor: Theme.of(context).primaryColor,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () => Navigator.of(context).pop(),
+      ),
       flexibleSpace: FlexibleSpaceBar(
         title: Text(
           tournament!.name,
@@ -444,6 +604,11 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
             ],
           ),
           SizedBox(height: 16),
+          // Voting section
+          if (tournament!.allowChampionVoting == true)
+            _buildVotingCard(),
+          if (tournament!.allowChampionVoting == true)
+            SizedBox(height: 16),
           // Standings button
           SizedBox(
             width: double.infinity,
@@ -462,6 +627,28 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
               icon: Icon(Icons.table_chart),
               label: Text('Xem Bảng Xếp Hạng & Sơ Đồ Đấu'),
               style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 16),
+              ),
+            ),
+          ),
+          SizedBox(height: 12),
+          // Video Highlights button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                Navigator.pushNamed(
+                  context,
+                  '/video-highlights',
+                  arguments: {
+                    'tournamentId': widget.tournamentId,
+                    'searchQuery': tournament!.name,
+                  },
+                );
+              },
+              icon: Icon(Icons.video_library),
+              label: Text('Video Highlights'),
+              style: OutlinedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 16),
               ),
             ),
@@ -573,6 +760,199 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
               ),
               textAlign: TextAlign.right,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVotingCard() {
+    final hasVoted = tournament!.userHasVoted == true;
+    
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.how_to_vote, color: Colors.amber[700], size: 24),
+                SizedBox(width: 8),
+                Text(
+                  'Bình Chọn Vô Địch',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16),
+            
+            if (hasVoted) ...[
+              // User has already voted
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.green),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Bạn đã bình chọn',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green[800],
+                            ),
+                          ),
+                          if (tournament!.userVotedTeamName != null)
+                            Text(
+                              tournament!.userVotedTeamName!,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green[900],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ] else ...[
+              // User can vote
+              Text(
+                'Chọn đội bạn nghĩ sẽ vô địch:',
+                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+              ),
+              SizedBox(height: 12),
+              
+              // Team selection dropdown
+              DropdownButtonFormField<String>(
+                value: selectedTeamForVoting,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  hintText: 'Chọn đội...',
+                ),
+                items: tournament!.registeredTeams.map((team) {
+                  return DropdownMenuItem<String>(
+                    value: team.name,
+                    child: Text(team.name),
+                  );
+                }).toList(),
+                onChanged: isSubmittingVote ? null : (value) {
+                  setState(() {
+                    selectedTeamForVoting = value;
+                  });
+                },
+              ),
+              SizedBox(height: 12),
+              
+              // Vote button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: isSubmittingVote ? null : submitVote,
+                  icon: isSubmittingVote
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : Icon(Icons.how_to_vote),
+                  label: Text(isSubmittingVote ? 'Đang gửi...' : 'Bình Chọn (+5 điểm)'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber[700],
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ],
+            
+            // Voting statistics
+            if (votingStatistics != null) ...[
+              SizedBox(height: 16),
+              Divider(),
+              SizedBox(height: 8),
+              Text(
+                'Thống Kê Bình Chọn',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              SizedBox(height: 12),
+              ...((votingStatistics!['teamVotes'] as List<dynamic>?) ?? [])
+                  .map((vote) => _buildVoteStatItem(
+                        vote['teamName'] as String,
+                        vote['voteCount'] as int,
+                        vote['percentage'] as double,
+                      ))
+                  .toList(),
+              SizedBox(height: 8),
+              Text(
+                'Tổng số phiếu: ${votingStatistics!['totalVotes']}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVoteStatItem(String teamName, int voteCount, double percentage) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  teamName,
+                  style: TextStyle(fontSize: 13),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Text(
+                '${percentage.toStringAsFixed(1)}% ($voteCount)',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 4),
+          LinearProgressIndicator(
+            value: percentage / 100,
+            backgroundColor: Colors.grey[200],
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.amber[700]!),
           ),
         ],
       ),

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import '../models/search_result.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/loading_widget.dart';
+import '../widgets/empty_state_widget.dart';
 import 'team_detail_screen.dart';
 import 'player_detail_screen.dart';
 import 'match_detail_screen.dart';
@@ -162,8 +165,10 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildSearchHeader() {
     return Container(
-      padding: const EdgeInsets.all(16),
-      color: Theme.of(context).primaryColor.withOpacity(0.1),
+      padding: const EdgeInsets.all(AppTheme.spaceMedium),
+      decoration: BoxDecoration(
+        gradient: AppTheme.primaryGradient.scale(0.3),
+      ),
       child: TextField(
         controller: _searchController,
         focusNode: _searchFocusNode,
@@ -185,7 +190,7 @@ class _SearchScreenState extends State<SearchScreen> {
           filled: true,
           fillColor: Colors.white,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
             borderSide: BorderSide.none,
           ),
         ),
@@ -233,7 +238,7 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const LoadingWidget(message: 'Đang tìm kiếm...');
     }
 
     if (_searchResults != null) {

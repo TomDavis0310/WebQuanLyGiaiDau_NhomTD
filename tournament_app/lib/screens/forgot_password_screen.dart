@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/custom_button.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -346,30 +348,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         const SizedBox(height: 24),
 
         // Send Code Button
-        ElevatedButton(
-          onPressed: _isLoading ? null : _sendResetCode,
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: _isLoading
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : const Text(
-                  'Gửi Mã Xác Nhận',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+        CustomButton(
+          text: 'Gửi Mã Xác Nhận',
+          gradient: AppTheme.primaryGradient,
+          isLoading: _isLoading,
+          onPressed: _sendResetCode,
         ),
       ],
     );
@@ -500,35 +483,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           },
           enabled: !_isLoading,
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: AppTheme.spaceLarge),
 
         // Reset Password Button
-        ElevatedButton(
-          onPressed: _isLoading ? null : _verifyAndResetPassword,
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: _isLoading
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : const Text(
-                  'Đặt Lại Mật Khẩu',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+        CustomButton(
+          text: 'Đặt Lại Mật Khẩu',
+          gradient: AppTheme.primaryGradient,
+          isLoading: _isLoading,
+          onPressed: _verifyAndResetPassword,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppTheme.spaceMedium),
 
         // Resend Code
         Center(

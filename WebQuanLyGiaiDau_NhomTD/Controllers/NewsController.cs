@@ -12,6 +12,7 @@ using System.Security.Claims;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using WebQuanLyGiaiDau_NhomTD.Services;
 
 namespace WebQuanLyGiaiDau_NhomTD.Controllers
 {
@@ -19,11 +20,16 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IImageUploadService _imageUploadService;
 
-        public NewsController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public NewsController(
+            ApplicationDbContext context, 
+            IWebHostEnvironment webHostEnvironment,
+            IImageUploadService imageUploadService)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _imageUploadService = imageUploadService;
         }
 
         // GET: News
@@ -67,7 +73,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             }
 
             var news = await _context.News
-                .Include(n => n.Sports)
                 .FirstOrDefaultAsync(m => m.NewsId == id);
 
             if (news == null)
@@ -105,7 +110,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [Authorize(Roles = SD.Role_Admin)]
         public IActionResult Create()
         {
-            ViewData["SportsId"] = new SelectList(_context.Sports, "Id", "Name");
             return View();
         }
 
@@ -113,21 +117,20 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = SD.Role_Admin)]
-        public async Task<IActionResult> Create([Bind("NewsId,Title,Summary,Content,ImageUrl,PublishDate,Author,ViewCount,Category,IsVisible,IsFeatured,SportsId")] News news, IFormFile imageFile)
+        public async Task<IActionResult> Create([Bind("NewsId,Title,Summary,Content,ImageUrl,PublishDate,Author,ViewCount,Category,IsVisible,IsFeatured")] News news, IFormFile imageFile)
         {
             if (ModelState.IsValid)
             {
                 // Xử lý tải lên hình ảnh nếu có
                 if (imageFile != null && imageFile.Length > 0)
                 {
-                    news.ImageUrl = await SaveNewsImage(imageFile);
+                    news.ImageUrl = await _imageUploadService.SaveImageAsync(imageFile, "news");
                 }
 
                 _context.Add(news);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["SportsId"] = new SelectList(_context.Sports, "Id", "Name", news.SportsId);
             return View(news);
         }
 
@@ -145,7 +148,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             {
                 return NotFound();
             }
-            ViewData["SportsId"] = new SelectList(_context.Sports, "Id", "Name", news.SportsId);
             return View(news);
         }
 
@@ -153,7 +155,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = SD.Role_Admin)]
-        public async Task<IActionResult> Edit(int id, [Bind("NewsId,Title,Summary,Content,ImageUrl,PublishDate,Author,ViewCount,Category,IsVisible,IsFeatured,SportsId")] News news, IFormFile imageFile)
+        public async Task<IActionResult> Edit(int id, [Bind("NewsId,Title,Summary,Content,ImageUrl,PublishDate,Author,ViewCount,Category,IsVisible,IsFeatured")] News news, IFormFile imageFile)
         {
             if (id != news.NewsId)
             {
@@ -164,10 +166,23 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             {
                 try
                 {
+                    // Get existing news to preserve image URL if no new image
+                    var existingNews = await _context.News.AsNoTracking().FirstOrDefaultAsync(n => n.NewsId == id);
+
                     // Xử lý tải lên hình ảnh mới nếu có
                     if (imageFile != null && imageFile.Length > 0)
                     {
-                        news.ImageUrl = await SaveNewsImage(imageFile);
+                        // Delete old image
+                        if (!string.IsNullOrEmpty(existingNews?.ImageUrl))
+                        {
+                            await _imageUploadService.DeleteImageAsync(existingNews.ImageUrl);
+                        }
+                        news.ImageUrl = await _imageUploadService.SaveImageAsync(imageFile, "news");
+                    }
+                    else if (existingNews != null)
+                    {
+                        // Preserve old image URL if no new image
+                        news.ImageUrl = existingNews.ImageUrl;
                     }
 
                     _context.Update(news);
@@ -186,7 +201,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["SportsId"] = new SelectList(_context.Sports, "Id", "Name", news.SportsId);
             return View(news);
         }
 
@@ -200,7 +214,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             }
 
             var news = await _context.News
-                .Include(n => n.Sports)
                 .FirstOrDefaultAsync(m => m.NewsId == id);
             if (news == null)
             {
@@ -223,6 +236,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 {
                     _context.News.Remove(news);
                     await _context.SaveChangesAsync();
+
+                    // Delete associated image if exists
+                    if (!string.IsNullOrEmpty(news.ImageUrl))
+                    {
+                        await _imageUploadService.DeleteImageAsync(news.ImageUrl);
+                    }
                     
                     TempData["SuccessMessage"] = "Đã xóa tin tức thành công.";
                 }
@@ -289,66 +308,10 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // Phương thức lưu hình ảnh tin tức
+        [Obsolete("Use IImageUploadService.SaveImageAsync instead")]
         private async Task<string> SaveNewsImage(IFormFile image)
         {
-            try
-            {
-                if (image == null)
-                {
-                    throw new ArgumentNullException(nameof(image));
-                }
-
-                if (image.Length == 0)
-                {
-                    throw new ArgumentException("Empty file provided", nameof(image));
-                }
-
-                // Kiểm tra kích thước file (giới hạn 5MB)
-                if (image.Length > 5 * 1024 * 1024)
-                {
-                    throw new Exception("Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 5MB.");
-                }
-
-                // Kiểm tra loại file
-                string extension = Path.GetExtension(image.FileName).ToLower();
-                string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
-                
-                if (!allowedExtensions.Contains(extension))
-                {
-                    throw new Exception("Chỉ chấp nhận file hình ảnh có định dạng: .jpg, .jpeg, .png, .gif");
-                }
-
-                // Đảm bảo tên file không chứa ký tự đặc biệt
-                string fileName = Path.GetFileNameWithoutExtension(image.FileName);
-                // Thêm timestamp để tránh trùng tên file
-                string uniqueFileName = DateTime.Now.Ticks + "_" + fileName + extension;
-
-                // Tạo đường dẫn đầy đủ
-                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "news");
-
-                // Đảm bảo thư mục tồn tại
-                if (!Directory.Exists(uploadsFolder))
-                {
-                    Directory.CreateDirectory(uploadsFolder);
-                }
-
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                // Lưu file
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await image.CopyToAsync(fileStream);
-                }
-
-                // Trả về đường dẫn tương đối để lưu vào database
-                return "/images/news/" + uniqueFileName;
-            }
-            catch (Exception ex)
-            {
-                // Log lỗi
-                Console.WriteLine("Lỗi khi lưu ảnh tin tức: " + ex.Message);
-                throw new Exception("Lỗi khi lưu ảnh tin tức: " + ex.Message);
-            }
+            return await _imageUploadService.SaveImageAsync(image, "news");
         }
     }
 }

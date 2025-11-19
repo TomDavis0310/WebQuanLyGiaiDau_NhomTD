@@ -25,6 +25,11 @@ class MatchDetail {
   final String? highlightsVideoUrl;
   final String? liveStreamUrl;
   final String? videoDescription;
+  
+  // Voting properties
+  final bool? allowWinnerVoting;
+  final bool? userHasVoted;
+  final String? userVotedTeam;
 
   MatchDetail({
     required this.id,
@@ -45,6 +50,9 @@ class MatchDetail {
     this.highlightsVideoUrl,
     this.liveStreamUrl,
     this.videoDescription,
+    this.allowWinnerVoting,
+    this.userHasVoted,
+    this.userVotedTeam,
   });
 
   /// Check if match is live/ongoing

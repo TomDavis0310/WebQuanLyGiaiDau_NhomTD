@@ -25,7 +25,7 @@
     box-shadow: 0 5px 15px rgba(46, 125, 50, 0.4);
 }
 
-/* Fix cho dropdown menu */
+/* Fix cho dropdown menu với scrolling */
 .nav-item-enhanced.dropdown .dropdown-menu {
     display: block;
     visibility: hidden;
@@ -42,6 +42,10 @@
     border-radius: 12px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     padding: 0.5rem;
+    /* Thêm scrolling như textarea */
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .nav-item-enhanced.dropdown .dropdown-menu.show {
@@ -63,4 +67,30 @@
     background: linear-gradient(135deg, #ff6b35, #00e676);
     color: white;
     transform: translateX(5px);
+}
+
+/* Custom scrollbar cho admin dropdown */
+.nav-item-enhanced.dropdown .dropdown-menu::-webkit-scrollbar {
+    width: 8px;
+}
+
+.nav-item-enhanced.dropdown .dropdown-menu::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.nav-item-enhanced.dropdown .dropdown-menu::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #ff6b35, #00e676);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.nav-item-enhanced.dropdown .dropdown-menu::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #e55a2b, #00d069);
+}
+
+/* Firefox scrollbar */
+.nav-item-enhanced.dropdown .dropdown-menu {
+    scrollbar-width: thin;
+    scrollbar-color: #ff6b35 rgba(255, 255, 255, 0.1);
 }

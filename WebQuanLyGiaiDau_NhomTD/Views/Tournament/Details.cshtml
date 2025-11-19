@@ -668,6 +668,121 @@
             </div>
         </div>
     </div>
+
+    @* Phần bình chọn vô địch *@
+    @{
+        var userTournamentVote = ViewBag.UserTournamentVote as WebQuanLyGiaiDau_NhomTD.Models.TournamentVote;
+        var teamsForVoting = ViewBag.TeamsForVoting as List<string>;
+    }
+    
+    @* Admin controls for champion voting *@
+    @if (User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
+    {
+        <div class="row justify-content-center mt-3">
+            <div class="col-md-10">
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-gear me-2"></i>Admin: Quản lý bình chọn vô địch
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="toggleChampionVoting" 
+                                   checked="@Model.AllowChampionVoting" 
+                                   data-tournament-id="@Model.Id">
+                            <label class="form-check-label" for="toggleChampionVoting">
+                                <span id="championVotingLabel">@(Model.AllowChampionVoting ? "Bình chọn vô địch đang BẬT" : "Bình chọn vô địch đang TẮT")</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (User.Identity.IsAuthenticated && Model.AllowChampionVoting && teamsForVoting?.Any() == true)
+    {
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-10">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="bi bi-award me-2"></i>Bình Chọn Đội Vô Địch
+                            <span class="badge bg-success ms-2">+5 điểm</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @if (userTournamentVote != null)
+                        {
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Bạn đã bình chọn cho đội: <strong>@userTournamentVote.VotedTeamName</strong>
+                                <small class="d-block text-muted mt-1">Lúc @userTournamentVote.VoteTime.ToString("dd/MM/yyyy HH:mm")</small>
+                            </div>
+                        }
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label for="championVoteSelect" class="form-label fw-bold">Chọn đội bạn nghĩ sẽ vô địch:</label>
+                                    <select class="form-select" id="championVoteSelect" data-tournament-id="@Model.Id">
+                                        <option value="">-- Chọn đội --</option>
+                                        @foreach (var teamName in teamsForVoting.OrderBy(t => t))
+                                        {
+                                            <option value="@teamName" selected="@(userTournamentVote?.VotedTeamName == teamName)">@teamName</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="button" class="btn btn-warning w-100" id="voteChampionBtn" disabled>
+                                    <i class="bi bi-award me-2"></i>
+                                    Bình Chọn Vô Địch
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <small class="text-muted d-block mt-3">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Bạn sẽ nhận 5 điểm khi bình chọn vô địch lần đầu. Có thể thay đổi lựa chọn nhiều lần.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (!User.Identity.IsAuthenticated)
+    {
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-10">
+                <div class="card border-warning">
+                    <div class="card-body text-center">
+                        <i class="bi bi-lock display-4 text-warning"></i>
+                        <h5 class="mt-2">Đăng nhập để bình chọn vô địch</h5>
+                        <p class="text-muted">Bạn cần đăng nhập để có thể bình chọn đội vô địch</p>
+                        <a href="/Identity/Account/Login" class="btn btn-warning">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (!Model.AllowChampionVoting)
+    {
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-10">
+                <div class="card border-secondary">
+                    <div class="card-body text-center">
+                        <i class="bi bi-x-circle display-4 text-secondary"></i>
+                        <h5 class="mt-2">Bình chọn vô địch đã đóng</h5>
+                        <p class="text-muted">Chức năng bình chọn vô địch cho giải đấu này đã bị tắt bởi admin</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>
 
 @section Scripts {
@@ -774,5 +889,102 @@
                 });
             }
         });
+
+        // Tournament champion voting
+        const championSelect = document.getElementById('championVoteSelect');
+        const voteButton = document.getElementById('voteChampionBtn');
+        
+        if (championSelect && voteButton) {
+            championSelect.addEventListener('change', function() {
+                voteButton.disabled = !this.value;
+            });
+            
+            voteButton.addEventListener('click', function() {
+                const tournamentId = championSelect.getAttribute('data-tournament-id');
+                const votedTeam = championSelect.value;
+                
+                if (!votedTeam) return;
+                
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang bình chọn...';
+                
+                const formData = new FormData();
+                formData.append('tournamentId', tournamentId);
+                formData.append('votedTeamName', votedTeam);
+                formData.append('__RequestVerificationToken', 
+                    document.querySelector('input[name="__RequestVerificationToken"]').value);
+                
+                fetch('/Voting/VoteTournament', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
+                        alertDiv.innerHTML = `
+                            <i class="bi bi-check-circle me-2"></i>
+                            ${data.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        `;
+                        championSelect.parentElement.parentElement.parentElement.insertBefore(alertDiv, championSelect.parentElement.parentElement);
+                        
+                        // Auto hide after 5 seconds
+                        setTimeout(() => {
+                            alertDiv.remove();
+                        }, 5000);
+                    } else {
+                        alert('Lỗi: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi bình chọn');
+                })
+                .finally(() => {
+                    this.disabled = false;
+                    this.innerHTML = '<i class="bi bi-award me-2"></i>Bình Chọn Vô Địch';
+                });
+            });
+        }
+
+        // Admin toggle champion voting
+        const toggleChampionVoting = document.getElementById('toggleChampionVoting');
+        if (toggleChampionVoting) {
+            toggleChampionVoting.addEventListener('change', function() {
+                const tournamentId = this.getAttribute('data-tournament-id');
+                const label = document.getElementById('championVotingLabel');
+                
+                fetch('/Tournament/ToggleChampionVoting', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: `tournamentId=${tournamentId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        label.textContent = data.allowVoting ? "Bình chọn vô địch đang BẬT" : "Bình chọn vô địch đang TẮT";
+                        
+                        // Reload page to update voting UI
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        alert('Lỗi: ' + data.message);
+                        this.checked = !this.checked; // Revert toggle
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra');
+                    this.checked = !this.checked; // Revert toggle
+                });
+            });
+        }
     </script>
 }

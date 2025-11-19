@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/player_detail.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/loading_widget.dart';
 import 'match_detail_screen.dart';
 
 class PlayerDetailScreen extends StatefulWidget {
@@ -63,9 +65,14 @@ class _PlayerDetailScreenState extends State<PlayerDetailScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const LoadingWidget(message: 'Đang tải thông tin cầu thủ...')
           : _playerDetail == null
-              ? const Center(child: Text('Không tìm thấy thông tin cầu thủ'))
+              ? Center(
+                  child: Text(
+                    'Không tìm thấy thông tin cầu thủ',
+                    style: AppTheme.bodyLarge,
+                  ),
+                )
               : NestedScrollView(
                   headerSliverBuilder: (context, innerBoxIsScrolled) => [
                     SliverAppBar(
@@ -103,15 +110,8 @@ class _PlayerDetailScreenState extends State<PlayerDetailScreen>
   Widget _buildHeader() {
     final player = _playerDetail!;
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF1976D2),
-            Color(0xFF1565C0),
-          ],
-        ),
+      decoration: const BoxDecoration(
+        gradient: AppTheme.primaryGradient,
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -126,9 +126,9 @@ class _PlayerDetailScreenState extends State<PlayerDetailScreen>
               border: Border.all(color: Colors.white, width: 4),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black26,
+                  color: Colors.black.withValues(alpha: 0.26),
                   blurRadius: 10,
-                  offset: Offset(0, 5),
+                  offset: const Offset(0, 5),
                 ),
               ],
             ),
@@ -137,44 +137,44 @@ class _PlayerDetailScreenState extends State<PlayerDetailScreen>
               backgroundImage: player.imageUrl != null
                   ? NetworkImage(player.imageUrl!)
                   : null,
-              child: player.imageUrl == null
-                  ? Icon(Icons.person, size: 60, color: Colors.white)
-                  : null,
               backgroundColor: Colors.blue[300],
+              child: player.imageUrl == null
+                  ? const Icon(Icons.person, size: 60, color: Colors.white)
+                  : null,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spaceMedium),
           // Player name
           Text(
             player.fullName,
-            style: TextStyle(
-              fontSize: 28,
+            style: AppTheme.headlineLarge.copyWith(
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppTheme.spaceSmall),
           // Jersey number and position
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppTheme.spaceMedium,
+                  vertical: AppTheme.spaceSmall,
+                ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
                 ),
                 child: Text(
                   '#${player.number}',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                  style: AppTheme.titleLarge.copyWith(
                     color: Colors.white,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppTheme.spaceMedium),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(

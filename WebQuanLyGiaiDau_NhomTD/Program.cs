@@ -162,9 +162,19 @@ builder.Services.AddHealthChecks()
 // Add HttpClient for Health Checks
 builder.Services.AddHttpClient<ExternalServicesHealthCheck>();
 
+// Đăng ký Configuration Settings
+builder.Services.Configure<WebQuanLyGiaiDau_NhomTD.Configuration.ImageUploadSettings>(
+    builder.Configuration.GetSection("ImageUpload"));
+builder.Services.Configure<WebQuanLyGiaiDau_NhomTD.Configuration.MatchSettings>(
+    builder.Configuration.GetSection("MatchSettings"));
+
 // Đăng ký các services
 builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.TournamentScheduleService>();
 builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.IYouTubeService, WebQuanLyGiaiDau_NhomTD.Services.YouTubeService>();
+
+// Đăng ký Image Upload và Permission Services
+builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.IImageUploadService, WebQuanLyGiaiDau_NhomTD.Services.ImageUploadService>();
+builder.Services.AddScoped<WebQuanLyGiaiDau_NhomTD.Services.IPermissionService, WebQuanLyGiaiDau_NhomTD.Services.PermissionService>();
 
 // Đăng ký Email Configuration
 builder.Services.Configure<EmailConfiguration>(
@@ -266,6 +276,9 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine("Seed dữ liệu NewsData...");
         SeedNewsData.Initialize(dbContext);
         Console.WriteLine("Seed dữ liệu NewsData thành công.");
+        Console.WriteLine("Seed dữ liệu VotingSettings...");
+        SeedVotingSettings(dbContext);
+        Console.WriteLine("Seed dữ liệu VotingSettings thành công.");
         Console.WriteLine("Quá trình seed dữ liệu hoàn tất.");
     }
     catch (Exception ex)
@@ -676,4 +689,20 @@ static void SeedTwoBasketballTournaments(ApplicationDbContext context)
     }
 
     Console.WriteLine("Two basketball tournaments seeded successfully!");
+}
+
+static void SeedVotingSettings(ApplicationDbContext context)
+{
+    if (!context.VotingSettings.Any())
+    {
+        var votingSettings = new VotingSettings
+        {
+            AllowMatchVoting = true,
+            AllowTournamentVoting = true,
+            LastUpdated = DateTime.Now,
+            UpdatedBy = null
+        };
+        context.VotingSettings.Add(votingSettings);
+        context.SaveChanges();
+    }
 }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../theme/app_theme.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/custom_card.dart';
 import 'login_screen.dart';
 import 'edit_profile_screen.dart';
 import 'change_password_screen.dart';
@@ -30,88 +33,88 @@ class ProfileScreen extends StatelessWidget {
                 // Header with gradient
                 Container(
                   width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Theme.of(context).primaryColor,
-                        Theme.of(context).primaryColor.withOpacity(0.7),
-                      ],
-                    ),
+                  decoration: const BoxDecoration(
+                    gradient: AppTheme.primaryGradient,
                   ),
                   child: Column(
                     children: [
-                      const SizedBox(height: 32),
+                      const SizedBox(height: AppTheme.spaceXLarge),
                       
                       // Avatar
-                      CircleAvatar(
-                        radius: 60,
-                        backgroundColor: Colors.white,
-                        child: user.avatarUrl != null
-                            ? ClipOval(
-                                child: Image.network(
-                                  user.avatarUrl!,
-                                  width: 120,
-                                  height: 120,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Icon(
-                                      Icons.person,
-                                      size: 60,
-                                      color: Theme.of(context).primaryColor,
-                                    );
-                                  },
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: CircleAvatar(
+                          radius: 60,
+                          backgroundColor: Colors.white,
+                          child: user.avatarUrl != null
+                              ? ClipOval(
+                                  child: Image.network(
+                                    user.avatarUrl!,
+                                    width: 120,
+                                    height: 120,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(
+                                        Icons.person,
+                                        size: 60,
+                                        color: AppTheme.primaryBlue,
+                                      );
+                                    },
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.person,
+                                  size: 60,
+                                  color: AppTheme.primaryBlue,
                                 ),
-                              )
-                            : Icon(
-                                Icons.person,
-                                size: 60,
-                                color: Theme.of(context).primaryColor,
-                              ),
+                        ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppTheme.spaceMedium),
                       
                       // User Name
                       Text(
                         user.fullName ?? user.userName,
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
+                        style: AppTheme.headlineLarge.copyWith(
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppTheme.spaceSmall),
                       
                       // Email
                       Text(
                         user.email,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white.withOpacity(0.9),
+                        style: AppTheme.bodyLarge.copyWith(
+                          color: Colors.white.withValues(alpha: 0.95),
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: AppTheme.spaceXLarge),
                     ],
                   ),
                 ),
                 
                 // User Info Cards
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(AppTheme.spaceMedium),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Account Info Section
                       Text(
                         'Thông Tin Tài Khoản',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                        style: AppTheme.titleLarge.copyWith(
                           color: Colors.grey[700],
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppTheme.spaceMedium),
                       
                       _buildInfoCard(
                         context,
@@ -156,10 +159,13 @@ class ProfileScreen extends StatelessWidget {
                           value: _formatDate(user.createdAt!),
                         ),
                       
-                      const SizedBox(height: 24),
+                      const SizedBox(height: AppTheme.spaceLarge),
                       
                       // Action Buttons
-                      ElevatedButton.icon(
+                      CustomButton(
+                        text: 'Chỉnh Sửa Thông Tin',
+                        icon: Icons.edit,
+                        gradient: AppTheme.primaryGradient,
                         onPressed: () async {
                           await Navigator.push(
                             context,
@@ -172,18 +178,13 @@ class ProfileScreen extends StatelessWidget {
                             Provider.of<AuthProvider>(context, listen: false).refreshUserInfo();
                           }
                         },
-                        icon: Icon(Icons.edit),
-                        label: Text('Chỉnh Sửa Thông Tin'),
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppTheme.spaceMedium),
                       
-                      OutlinedButton.icon(
+                      CustomButton(
+                        text: 'Đổi Mật Khẩu',
+                        icon: Icons.lock_outline,
+                        isOutlined: true,
                         onPressed: () async {
                           final result = await Navigator.push(
                             context,
@@ -200,33 +201,14 @@ class ProfileScreen extends StatelessWidget {
                             );
                           }
                         },
-                        icon: Icon(Icons.lock_outline),
-                        label: Text('Đổi Mật Khẩu'),
-                        style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          side: BorderSide(
-                            color: Theme.of(context).primaryColor,
-                            width: 2,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppTheme.spaceMedium),
                       
-                      ElevatedButton.icon(
+                      CustomButton(
+                        text: 'Đăng Xuất',
+                        icon: Icons.logout,
+                        color: Colors.red,
                         onPressed: () => _handleLogout(context, authProvider),
-                        icon: Icon(Icons.logout),
-                        label: Text('Đăng Xuất'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
                       ),
                     ],
                   ),
@@ -242,7 +224,7 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildNotLoggedIn(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(AppTheme.spaceLarge),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -251,26 +233,25 @@ class ProfileScreen extends StatelessWidget {
               size: 100,
               color: Colors.grey[400],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppTheme.spaceLarge),
             Text(
               'Chưa Đăng Nhập',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+              style: AppTheme.headlineLarge.copyWith(
                 color: Colors.grey[700],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppTheme.spaceMedium),
             Text(
               'Đăng nhập để sử dụng đầy đủ tính năng của ứng dụng',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
+              style: AppTheme.bodyLarge.copyWith(
                 color: Colors.grey[600],
               ),
             ),
-            const SizedBox(height: 32),
-            ElevatedButton(
+            const SizedBox(height: AppTheme.spaceXLarge),
+            CustomButton(
+              text: 'Đăng Nhập Ngay',
+              gradient: AppTheme.primaryGradient,
               onPressed: () {
                 Navigator.of(context).pushReplacement(
                   MaterialPageRoute(
@@ -278,19 +259,6 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 );
               },
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: Text(
-                'Đăng Nhập Ngay',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
             ),
           ],
         ),
@@ -304,53 +272,44 @@ class ProfileScreen extends StatelessWidget {
     required String title,
     required String value,
   }) {
-    return Card(
-      margin: EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                icon,
-                color: Theme.of(context).primaryColor,
-                size: 24,
-              ),
+    return CustomCard(
+      margin: const EdgeInsets.only(bottom: AppTheme.spaceMedium),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spaceMedium),
+            decoration: BoxDecoration(
+              gradient: AppTheme.primaryGradient,
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 24,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: AppTheme.spaceMedium),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTheme.bodySmall.copyWith(
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: AppTheme.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

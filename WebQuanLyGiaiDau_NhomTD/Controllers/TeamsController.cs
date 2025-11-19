@@ -12,6 +12,7 @@ using WebQuanLyGiaiDau_NhomTD.Models;
 using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using WebQuanLyGiaiDau_NhomTD.Services;
 
 namespace WebQuanLyGiaiDau_NhomTD.Controllers
 {
@@ -19,11 +20,19 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<Models.ApplicationUser> _userManager;
+        private readonly IImageUploadService _imageUploadService;
+        private readonly IPermissionService _permissionService;
 
-        public TeamsController(ApplicationDbContext context, UserManager<Models.ApplicationUser> userManager)
+        public TeamsController(
+            ApplicationDbContext context, 
+            UserManager<Models.ApplicationUser> userManager,
+            IImageUploadService imageUploadService,
+            IPermissionService permissionService)
         {
             _context = context;
             _userManager = userManager;
+            _imageUploadService = imageUploadService;
+            _permissionService = permissionService;
         }
 
         // GET: Teams
@@ -99,7 +108,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     // Xử lý tải lên logo nếu có
                     if (logoFile != null && logoFile.Length > 0)
                     {
-                        team.LogoUrl = await SaveImage(logoFile);
+                        team.LogoUrl = await _imageUploadService.SaveImageAsync(logoFile, "teams");
                     }
 
                     _context.Add(team);
@@ -115,41 +124,10 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // Phương thức lưu hình ảnh
+        [Obsolete("Use IImageUploadService.SaveImageAsync instead")]
         private async Task<string> SaveImage(IFormFile image)
         {
-            try
-            {
-                // Đảm bảo tên file không chứa ký tự đặc biệt
-                string fileName = Path.GetFileName(image.FileName);
-                // Thêm timestamp để tránh trùng tên file
-                string uniqueFileName = DateTime.Now.Ticks + "_" + fileName;
-
-                // Tạo đường dẫn đầy đủ
-                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "teams");
-
-                // Đảm bảo thư mục tồn tại
-                if (!Directory.Exists(uploadsFolder))
-                {
-                    Directory.CreateDirectory(uploadsFolder);
-                }
-
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                // Lưu file
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await image.CopyToAsync(fileStream);
-                }
-
-                // Trả về đường dẫn tương đối để lưu vào database
-                return "/images/teams/" + uniqueFileName;
-            }
-            catch (Exception ex)
-            {
-                // Log lỗi
-                Console.WriteLine("Lỗi khi lưu ảnh: " + ex.Message);
-                throw;
-            }
+            return await _imageUploadService.SaveImageAsync(image, "teams");
         }
 
         // GET: Teams/Edit/5
@@ -208,7 +186,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     // Xử lý tải lên logo mới nếu có
                     if (logoFile != null && logoFile.Length > 0)
                     {
-                        team.LogoUrl = await SaveImage(logoFile);
+                        // Delete old image
+                        if (!string.IsNullOrEmpty(existingTeam?.LogoUrl))
+                        {
+                            await _imageUploadService.DeleteImageAsync(existingTeam.LogoUrl);
+                        }
+                        team.LogoUrl = await _imageUploadService.SaveImageAsync(logoFile, "teams");
                     }
                     else if (existingTeam != null)
                     {
@@ -307,6 +290,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
                     _context.Teams.Remove(team);
                     await _context.SaveChangesAsync();
+
+                    // Delete associated image if exists
+                    if (!string.IsNullOrEmpty(team.LogoUrl))
+                    {
+                        await _imageUploadService.DeleteImageAsync(team.LogoUrl);
+                    }
                     
                     TempData["SuccessMessage"] = "Đã xóa đội bóng thành công.";
                 }
@@ -326,34 +315,10 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // Helper method to check if user can manage team
+        [Obsolete("Use IPermissionService.CanUserManageTeamAsync instead")]
         private async Task<bool> CanUserManageTeam(int teamId)
         {
-            // Admin can manage all teams
-            if (User.IsInRole(SD.Role_Admin))
-            {
-                return true;
-            }
-
-            // Check if user is the coach/owner of the team
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentUser = await _userManager.GetUserAsync(User);
-
-            // Check if user created this team (coach field contains user's name or ID)
-            var team = await _context.Teams.FindAsync(teamId);
-            if (team != null)
-            {
-                // Check if coach field matches user's name or ID
-                if (team.Coach == currentUser?.FullName || team.Coach == userId || team.Coach == User.Identity.Name)
-                {
-                    return true;
-                }
-            }
-
-            // Alternative check: if user has players in this team
-            var hasPlayersInTeam = await _context.Players
-                .AnyAsync(p => p.TeamId == teamId && p.UserId == userId);
-
-            return hasPlayersInTeam;
+            return await _permissionService.CanUserManageTeamAsync(User, teamId);
         }
 
         // GET: Teams/AddPlayer
@@ -442,7 +407,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                         // Xử lý tải lên hình ảnh nếu có
                         if (imageFile != null && imageFile.Length > 0)
                         {
-                            player.ImageUrl = await SavePlayerImage(imageFile);
+                            player.ImageUrl = await _imageUploadService.SaveImageAsync(imageFile, "players");
                         }
 
                         // Set UserId for the player
@@ -596,7 +561,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                         // Xử lý tải lên ảnh mới nếu có
                         if (imageFile != null && imageFile.Length > 0)
                         {
-                            player.ImageUrl = await SavePlayerImage(imageFile);
+                            // Delete old image
+                            if (!string.IsNullOrEmpty(existingPlayer?.ImageUrl))
+                            {
+                                await _imageUploadService.DeleteImageAsync(existingPlayer.ImageUrl);
+                            }
+                            player.ImageUrl = await _imageUploadService.SaveImageAsync(imageFile, "players");
                         }
                         else
                         {
@@ -745,6 +715,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 _context.Players.Remove(player);
                 await _context.SaveChangesAsync();
 
+                // Delete associated image if exists
+                if (!string.IsNullOrEmpty(player.ImageUrl))
+                {
+                    await _imageUploadService.DeleteImageAsync(player.ImageUrl);
+                }
+
                 // Thông báo thành công
                 TempData["SuccessMessage"] = $"Đã xóa cầu thủ {playerName} khỏi đội {teamName} thành công.";
 
@@ -772,63 +748,10 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // Phương thức lưu hình ảnh cầu thủ
+        [Obsolete("Use IImageUploadService.SaveImageAsync instead")]
         private async Task<string> SavePlayerImage(IFormFile image)
         {
-            try
-            {
-                if (image == null || image.Length == 0)
-                {
-                    return null;
-                }
-
-                // Kiểm tra kích thước file (giới hạn 5MB)
-                if (image.Length > 5 * 1024 * 1024)
-                {
-                    throw new Exception("Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 5MB.");
-                }
-
-                // Kiểm tra loại file
-                string extension = Path.GetExtension(image.FileName).ToLower();
-                string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
-
-                if (!allowedExtensions.Contains(extension))
-                {
-                    throw new Exception("Chỉ chấp nhận file hình ảnh có định dạng: .jpg, .jpeg, .png, .gif");
-                }
-
-                // Đảm bảo tên file không chứa ký tự đặc biệt
-                string fileName = Path.GetFileNameWithoutExtension(image.FileName);
-                // Loại bỏ ký tự đặc biệt từ tên file
-                fileName = Regex.Replace(fileName, @"[^\w\d]", "_");
-                // Thêm timestamp để tránh trùng tên file
-                string uniqueFileName = DateTime.Now.Ticks + "_" + fileName + extension;
-
-                // Tạo đường dẫn đầy đủ
-                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "players");
-
-                // Đảm bảo thư mục tồn tại
-                if (!Directory.Exists(uploadsFolder))
-                {
-                    Directory.CreateDirectory(uploadsFolder);
-                }
-
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                // Lưu file
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await image.CopyToAsync(fileStream);
-                }
-
-                // Trả về đường dẫn tương đối để lưu vào database
-                return "/images/players/" + uniqueFileName;
-            }
-            catch (Exception ex)
-            {
-                // Log lỗi
-                Console.WriteLine("Lỗi khi lưu ảnh cầu thủ: " + ex.Message);
-                throw new Exception("Lỗi khi lưu ảnh cầu thủ: " + ex.Message);
-            }
+            return await _imageUploadService.SaveImageAsync(image, "players");
         }
     }
 }

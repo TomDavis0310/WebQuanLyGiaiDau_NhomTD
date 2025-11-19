@@ -91,8 +91,7 @@ namespace WebQuanLyGiaiDau_NhomTD
                     ViewCount = 120,
                     Category = "Giải đấu",
                     IsVisible = true,
-                    IsFeatured = true,
-                    SportsId = basketballId
+                    IsFeatured = true
                 },
                 new News
                 {
@@ -105,8 +104,7 @@ namespace WebQuanLyGiaiDau_NhomTD
                     ViewCount = 85,
                     Category = "Kỹ thuật",
                     IsVisible = true,
-                    IsFeatured = false,
-                    SportsId = basketballId
+                    IsFeatured = false
                 },
                 new News
                 {
@@ -119,8 +117,7 @@ namespace WebQuanLyGiaiDau_NhomTD
                     ViewCount = 210,
                     Category = "Cầu thủ",
                     IsVisible = true,
-                    IsFeatured = true,
-                    SportsId = basketballId
+                    IsFeatured = true
                 },
                 new News
                 {
@@ -133,8 +130,7 @@ namespace WebQuanLyGiaiDau_NhomTD
                     ViewCount = 150,
                     Category = "Luật chơi",
                     IsVisible = true,
-                    IsFeatured = false,
-                    SportsId = basketballId
+                    IsFeatured = false
                 },
                 new News
                 {
@@ -147,8 +143,7 @@ namespace WebQuanLyGiaiDau_NhomTD
                     ViewCount = 180,
                     Category = "Lịch thi đấu",
                     IsVisible = true,
-                    IsFeatured = true,
-                    SportsId = basketballId
+                    IsFeatured = true
                 }
             };
 

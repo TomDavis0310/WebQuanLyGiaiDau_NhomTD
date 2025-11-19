@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/google_signin_button.dart';
+import '../widgets/custom_button.dart';
+import '../theme/app_theme.dart';
 import 'register_screen.dart';
 import 'sports_list_screen.dart';
 import 'forgot_password_screen.dart';
@@ -99,54 +101,55 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Theme.of(context).primaryColor,
-              Theme.of(context).primaryColor.withOpacity(0.7),
-            ],
-          ),
+        decoration: const BoxDecoration(
+          gradient: AppTheme.primaryGradient,
         ),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(AppTheme.spaceLarge),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo
-                  AppLogo(height: 120),
-                  const SizedBox(height: 16),
+                  // Logo with animation
+                  Hero(
+                    tag: 'app_logo',
+                    child: AppLogo(height: 120),
+                  ),
+                  const SizedBox(height: AppTheme.spaceMedium),
                   
                   // App Name
                   Text(
                     'TDSports',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
+                    style: AppTheme.displayLarge.copyWith(
                       color: Colors.white,
+                      fontSize: 36,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppTheme.spaceSmall),
                   Text(
                     'Quản Lý Giải Đấu Thể Thao',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white.withOpacity(0.9),
+                    style: AppTheme.bodyLarge.copyWith(
+                      color: Colors.white.withOpacity(0.95),
                     ),
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: AppTheme.spaceXLarge),
                   
                   // Login Form Card
-                  Card(
-                    elevation: 8,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 24,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(24.0),
+                      padding: const EdgeInsets.all(AppTheme.spaceLarge),
                       child: Form(
                         key: _formKey,
                         child: Column(
@@ -155,28 +158,22 @@ class _LoginScreenState extends State<LoginScreen> {
                             // Title
                             Text(
                               'Đăng Nhập',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).primaryColor,
+                              style: AppTheme.headlineLarge.copyWith(
+                                color: AppTheme.primaryBlue,
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: AppTheme.spaceLarge),
                             
                             // Email Field
                             TextFormField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
-                              decoration: InputDecoration(
-                                labelText: 'Email',
-                                hintText: 'example@email.com',
-                                prefixIcon: Icon(Icons.email_outlined),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                filled: true,
-                                fillColor: Colors.grey[50],
+                              style: AppTheme.bodyMedium,
+                              decoration: AppTheme.inputDecoration(
+                                label: 'Email',
+                                hint: 'example@email.com',
+                                prefixIcon: Icons.email_outlined,
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
@@ -188,21 +185,23 @@ class _LoginScreenState extends State<LoginScreen> {
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppTheme.spaceMedium),
                             
                             // Password Field
                             TextFormField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
-                              decoration: InputDecoration(
-                                labelText: 'Mật khẩu',
-                                hintText: '••••••••',
-                                prefixIcon: Icon(Icons.lock_outlined),
+                              style: AppTheme.bodyMedium,
+                              decoration: AppTheme.inputDecoration(
+                                label: 'Mật khẩu',
+                                hint: '••••••••',
+                                prefixIcon: Icons.lock_outlined,
                                 suffixIcon: IconButton(
                                   icon: Icon(
                                     _obscurePassword 
                                         ? Icons.visibility_outlined 
                                         : Icons.visibility_off_outlined,
+                                    color: AppTheme.textSecondary,
                                   ),
                                   onPressed: () {
                                     setState(() {
@@ -210,11 +209,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     });
                                   },
                                 ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                filled: true,
-                                fillColor: Colors.grey[50],
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
@@ -226,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: AppTheme.spaceSmall),
                             
                             // Remember Me & Forgot Password
                             Row(
@@ -234,15 +228,23 @@ class _LoginScreenState extends State<LoginScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    Checkbox(
-                                      value: _rememberMe,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _rememberMe = value ?? false;
-                                        });
-                                      },
+                                    SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: Checkbox(
+                                        value: _rememberMe,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _rememberMe = value ?? false;
+                                          });
+                                        },
+                                      ),
                                     ),
-                                    Text('Ghi nhớ'),
+                                    const SizedBox(width: AppTheme.spaceSmall),
+                                    Text(
+                                      'Ghi nhớ',
+                                      style: AppTheme.bodyMedium,
+                                    ),
                                   ],
                                 ),
                                 TextButton(
@@ -254,40 +256,34 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                     );
                                   },
-                                  child: Text('Quên mật khẩu?'),
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                  ),
+                                  child: Text(
+                                    'Quên mật khẩu?',
+                                    style: AppTheme.bodyMedium.copyWith(
+                                      color: AppTheme.primaryBlue,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppTheme.spaceMedium),
                             
                             // Login Button
                             Consumer<AuthProvider>(
                               builder: (context, authProvider, child) {
-                                if (authProvider.isLoading) {
-                                  return Center(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                }
-                                
-                                return ElevatedButton(
+                                return CustomButton(
+                                  text: 'Đăng Nhập',
                                   onPressed: _handleLogin,
-                                  style: ElevatedButton.styleFrom(
-                                    padding: EdgeInsets.symmetric(vertical: 16),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Đăng Nhập',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                  isLoading: authProvider.isLoading,
+                                  gradient: AppTheme.primaryGradient,
+                                  width: double.infinity,
                                 );
                               },
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppTheme.spaceMedium),
                             
                             // Google Sign-In Button
                             Consumer<AuthProvider>(
@@ -298,26 +294,27 @@ class _LoginScreenState extends State<LoginScreen> {
                                 );
                               },
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppTheme.spaceMedium),
                             
                             // Divider
                             Row(
                               children: [
-                                Expanded(child: Divider()),
+                                Expanded(child: Divider(color: AppTheme.divider)),
                                 Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 16),
+                                  padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceMedium),
                                   child: Text(
                                     'hoặc',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: AppTheme.bodySmall,
                                   ),
                                 ),
-                                Expanded(child: Divider()),
+                                Expanded(child: Divider(color: AppTheme.divider)),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppTheme.spaceMedium),
                             
                             // Register Button
-                            OutlinedButton(
+                            CustomButton(
+                              text: 'Tạo Tài Khoản Mới',
                               onPressed: () {
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
@@ -325,25 +322,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 );
                               },
-                              style: OutlinedButton.styleFrom(
-                                padding: EdgeInsets.symmetric(vertical: 16),
-                                side: BorderSide(
-                                  color: Theme.of(context).primaryColor,
-                                  width: 2,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: Text(
-                                'Tạo Tài Khoản Mới',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              isOutlined: true,
+                              width: double.infinity,
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: AppTheme.spaceMedium),
                             
                             // Skip Login Button
                             TextButton(
@@ -356,8 +338,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               },
                               child: Text(
                                 'Bỏ qua đăng nhập',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
+                                style: AppTheme.bodyMedium.copyWith(
+                                  color: AppTheme.textSecondary,
                                 ),
                               ),
                             ),

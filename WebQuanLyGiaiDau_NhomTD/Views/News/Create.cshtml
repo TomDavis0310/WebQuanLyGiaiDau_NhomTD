@@ -1,0 +1,143 @@
+@model WebQuanLyGiaiDau_NhomTD.Models.News
+
+@{
+    ViewData["Title"] = "Tạo Tin Tức Mới";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-plus-circle"></i> Tạo Tin Tức Mới
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Title" class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+                                    <input asp-for="Title" class="form-control" placeholder="Nhập tiêu đề tin tức" />
+                                    <span asp-validation-for="Title" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label asp-for="Summary" class="form-label">Tóm tắt <span class="text-danger">*</span></label>
+                                    <textarea asp-for="Summary" class="form-control" rows="3" placeholder="Nhập tóm tắt nội dung"></textarea>
+                                    <span asp-validation-for="Summary" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label asp-for="Content" class="form-label">Nội dung <span class="text-danger">*</span></label>
+                                    <textarea asp-for="Content" class="form-control" rows="10" placeholder="Nhập nội dung chi tiết"></textarea>
+                                    <span asp-validation-for="Content" class="text-danger"></span>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="Author" class="form-label">Tác giả</label>
+                                            <input asp-for="Author" class="form-control" placeholder="Tên tác giả" />
+                                            <span asp-validation-for="Author" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="Category" class="form-label">Danh mục</label>
+                                            <select asp-for="Category" class="form-select">
+                                                <option value="">-- Chọn danh mục --</option>
+                                                <option value="Tin tức">Tin tức</option>
+                                                <option value="Kết quả">Kết quả</option>
+                                                <option value="Sự kiện">Sự kiện</option>
+                                                <option value="Phân tích">Phân tích</option>
+                                                <option value="Khác">Khác</option>
+                                            </select>
+                                            <span asp-validation-for="Category" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label asp-for="PublishDate" class="form-label">Ngày đăng</label>
+                                            <input asp-for="PublishDate" type="datetime-local" class="form-control" />
+                                            <span asp-validation-for="PublishDate" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-check mb-3">
+                                    <input asp-for="IsVisible" type="checkbox" class="form-check-input" checked />
+                                    <label asp-for="IsVisible" class="form-check-label">
+                                        Hiển thị công khai
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-3">
+                                    <input asp-for="IsFeatured" type="checkbox" class="form-check-input" />
+                                    <label asp-for="IsFeatured" class="form-check-label">
+                                        Tin tức nổi bật
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Hình ảnh</label>
+                                    <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                                    <div class="form-text">Chỉ chấp nhận file ảnh (JPG, PNG, GIF)</div>
+                                </div>
+                                
+                                <div id="imagePreview" class="mt-3" style="display: none;">
+                                    <img id="previewImage" src="#" alt="Preview" class="img-thumbnail" style="max-height: 200px;" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-success me-2">
+                                <i class="bi bi-check-circle"></i> Tạo Tin Tức
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Quay Lại
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Preview image when selected
+        $('input[type=file]').change(function() {
+            var file = this.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#previewImage').attr('src', e.target.result);
+                    $('#imagePreview').show();
+                }
+                reader.readAsDataURL(file);
+            } else {
+                $('#imagePreview').hide();
+            }
+        });
+
+        // Set default publish date to now
+        $(document).ready(function() {
+            var now = new Date();
+            var formattedDate = now.toISOString().slice(0, 16);
+            $('input[type=datetime-local]').val(formattedDate);
+        });
+    </script>
+}

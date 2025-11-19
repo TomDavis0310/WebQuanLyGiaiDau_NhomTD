@@ -4,11 +4,14 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.EntityFrameworkCore;
+    using System.Security.Claims;
     using WebQuanLyGiaiDau_NhomTD.Models;
     using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
     using Microsoft.AspNetCore.SignalR;
     using WebQuanLyGiaiDau_NhomTD.Models.ViewModels;
     using WebQuanLyGiaiDau_NhomTD.Services;
+    using Microsoft.Extensions.Options;
+    using WebQuanLyGiaiDau_NhomTD.Configuration;
 
     [Authorize]
     public class MatchController : Controller
@@ -16,12 +19,18 @@
         private readonly IHubContext<MatchHub> _hubContext;
         private readonly ApplicationDbContext _context;
         private readonly IYouTubeService _youtubeService;
+        private readonly MatchSettings _matchSettings;
 
-        public MatchController(ApplicationDbContext context, IYouTubeService youtubeService, IHubContext<MatchHub> hubContext)
+        public MatchController(
+            ApplicationDbContext context, 
+            IYouTubeService youtubeService, 
+            IHubContext<MatchHub> hubContext,
+            IOptions<MatchSettings> matchSettings)
         {
             _context = context;
             _youtubeService = youtubeService;
             _hubContext = hubContext;
+            _matchSettings = matchSettings.Value;
         }
 
         // GET: Match
@@ -84,26 +93,56 @@
             matchViewModel.MatchStatus = match.CalculatedStatus;
             matchViewModel.MatchEndTime = await CalculateMatchEndTime(match.MatchDate, match.TournamentId);
 
-            // Get YouTube video information if available - Tạm comment để fix migration
-            // if (!string.IsNullOrEmpty(match.HighlightsVideoUrl))
-            // {
-            //     var highlightsVideoId = _youtubeService.ExtractVideoIdFromUrl(match.HighlightsVideoUrl);
-            //     if (!string.IsNullOrEmpty(highlightsVideoId))
-            //     {
-            //         var highlightsVideo = await _youtubeService.GetVideoDetailsAsync(highlightsVideoId);
-            //         ViewBag.HighlightsVideo = highlightsVideo;
-            //     }
-            // }
+            // Get YouTube video information if available
+            if (!string.IsNullOrEmpty(match.HighlightsVideoUrl))
+            {
+                try
+                {
+                    var highlightsVideoId = _youtubeService.ExtractVideoIdFromUrl(match.HighlightsVideoUrl);
+                    if (!string.IsNullOrEmpty(highlightsVideoId))
+                    {
+                        var highlightsVideo = await _youtubeService.GetVideoDetailsAsync(highlightsVideoId);
+                        ViewBag.HighlightsVideo = highlightsVideo;
+                    }
+                }
+                catch (Exception)
+                {
+                    // Fallback: Create simple video object from URL
+                    ViewBag.HighlightsVideo = new
+                    {
+                        VideoUrl = match.HighlightsVideoUrl,
+                        EmbedUrl = match.HighlightsVideoUrl.Replace("watch?v=", "embed/"),
+                        Title = $"Highlights: {match.TeamA} vs {match.TeamB}",
+                        Description = match.VideoDescription ?? "Video highlights của trận đấu"
+                    };
+                }
+            }
 
-            // if (!string.IsNullOrEmpty(match.LiveStreamUrl)) // Tạm comment để fix migration
-            // {
-            //     var liveStreamVideoId = _youtubeService.ExtractVideoIdFromUrl(match.LiveStreamUrl);
-            //     if (!string.IsNullOrEmpty(liveStreamVideoId))
-            //     {
-            //         var liveStreamVideo = await _youtubeService.GetVideoDetailsAsync(liveStreamVideoId);
-            //         ViewBag.LiveStreamVideo = liveStreamVideo;
-            //     }
-            // }
+            if (!string.IsNullOrEmpty(match.LiveStreamUrl))
+            {
+                try
+                {
+                    var liveStreamVideoId = _youtubeService.ExtractVideoIdFromUrl(match.LiveStreamUrl);
+                    if (!string.IsNullOrEmpty(liveStreamVideoId))
+                    {
+                        var liveStreamVideo = await _youtubeService.GetVideoDetailsAsync(liveStreamVideoId);
+                        ViewBag.LiveStreamVideo = liveStreamVideo;
+                    }
+                }
+                catch (Exception)
+                {
+                    // Fallback: Create simple video object from URL
+                    ViewBag.LiveStreamVideo = new
+                    {
+                        VideoUrl = match.LiveStreamUrl,
+                        EmbedUrl = match.LiveStreamUrl.Replace("watch?v=", "embed/"),
+                        Title = $"Live Stream: {match.TeamA} vs {match.TeamB}",
+                        Description = match.VideoDescription ?? "Live stream của trận đấu",
+                        IsLiveStream = true,
+                        LiveStatus = "live"
+                    };
+                }
+            }
 
             // Get recommended videos based on tournament and sport
             if (match.Tournament != null && match.Tournament.Sports != null)
@@ -113,6 +152,18 @@
                     match.Tournament.Sports.Name,
                     5);
                 ViewBag.RecommendedVideos = recommendedVideos;
+            }
+
+            // Get voting settings and user's current vote
+            var votingSettings = await _context.VotingSettings.FirstOrDefaultAsync();
+            ViewBag.VotingSettings = votingSettings;
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userVote = await _context.MatchVotes
+                    .FirstOrDefaultAsync(v => v.MatchId == id && v.UserId == userId);
+                ViewBag.UserVote = userVote;
             }
 
             return View(matchViewModel);
@@ -644,8 +695,8 @@
         // Helper method to calculate match end time based on tournament type
         private async Task<DateTime> CalculateMatchEndTime(DateTime matchDate, int? tournamentId = null)
         {
-            // Default duration for 3v3 basketball (15 minutes)
-            TimeSpan duration = TimeSpan.FromMinutes(15);
+            // Default duration for 3v3 basketball from configuration
+            TimeSpan duration = TimeSpan.FromMinutes(_matchSettings.Match3v3DurationMinutes);
 
             if (tournamentId.HasValue)
             {
@@ -661,17 +712,13 @@
 
                     if (is5v5)
                     {
-                        // NBA 5v5 match duration calculation:
-                        // 4 quarters x 12 minutes = 48 minutes of play time
-                        // 3 x 2 minutes break between quarters = 6 minutes
-                        // 1 x 15 minutes halftime break = 15 minutes
-                        // Total: 48 + 6 + 15 = 69 minutes
-                        duration = TimeSpan.FromMinutes(69);
+                        // NBA 5v5 match duration from configuration
+                        duration = TimeSpan.FromMinutes(_matchSettings.Match5v5DurationMinutes);
                     }
                     else
                     {
-                        // 3v3 basketball: match lasts 15 minutes or until a team reaches 21 points
-                        duration = TimeSpan.FromMinutes(15);
+                        // 3v3 basketball: match duration from configuration
+                        duration = TimeSpan.FromMinutes(_matchSettings.Match3v3DurationMinutes);
                     }
                 }
             }
@@ -681,6 +728,28 @@
             DateTime endTime = matchDate.Add(duration);
 
             return endTime;
+        }
+
+        // POST: Match/ToggleWinnerVoting
+        [HttpPost]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        public async Task<IActionResult> ToggleWinnerVoting(int matchId)
+        {
+            var match = await _context.Matches.FindAsync(matchId);
+            if (match == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy trận đấu" });
+            }
+
+            match.AllowWinnerVoting = !match.AllowWinnerVoting;
+            await _context.SaveChangesAsync();
+
+            return Json(new 
+            { 
+                success = true, 
+                allowVoting = match.AllowWinnerVoting,
+                message = match.AllowWinnerVoting ? "Đã bật bình chọn đội thắng" : "Đã tắt bình chọn đội thắng"
+            });
         }
     }
 }

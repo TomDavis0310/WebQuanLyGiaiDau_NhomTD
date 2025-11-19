@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import '../models/news.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/loading_widget.dart';
+import '../widgets/empty_state_widget.dart';
+import '../widgets/error_widget.dart';
+import '../widgets/custom_card.dart';
 import 'news_detail_screen.dart';
 
 /// News List Screen - Danh sách tin tức
@@ -194,16 +199,8 @@ class _NewsListScreenState extends State<NewsListScreen>
 
   Widget _buildHeaderBackground() {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.blue.shade900,
-            Colors.blue.shade700,
-            Colors.blue.shade500,
-          ],
-        ),
+      decoration: const BoxDecoration(
+        gradient: AppTheme.primaryGradient,
       ),
       child: Stack(
         children: [
@@ -213,7 +210,7 @@ class _NewsListScreenState extends State<NewsListScreen>
             child: Icon(
               Icons.newspaper,
               size: 200,
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
             ),
           ),
         ],
@@ -222,35 +219,15 @@ class _NewsListScreenState extends State<NewsListScreen>
   }
 
   Widget _buildLoadingState() {
-    return const Center(
-      child: CircularProgressIndicator(),
+    return const LoadingWidget(
+      message: 'Đang tải tin tức...',
     );
   }
 
   Widget _buildErrorState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: Colors.red[300],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            _errorMessage ?? 'Đã xảy ra lỗi',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: _loadInitialData,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Thử Lại'),
-          ),
-        ],
-      ),
+    return CustomErrorWidget(
+      message: _errorMessage ?? 'Đã xảy ra lỗi',
+      onRetry: _onRefresh,
     );
   }
 
@@ -262,7 +239,7 @@ class _NewsListScreenState extends State<NewsListScreen>
     return RefreshIndicator(
       onRefresh: _onRefresh,
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.spaceMedium),
         itemCount: _featuredNews.length,
         itemBuilder: (context, index) {
           return _buildFeaturedNewsCard(_featuredNews[index]);

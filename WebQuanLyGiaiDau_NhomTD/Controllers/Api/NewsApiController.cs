@@ -44,18 +44,11 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
                     query = query.Where(n => n.IsFeatured == isFeatured.Value);
                 }
 
-                // Filter by sport
-                if (sportsId.HasValue)
-                {
-                    query = query.Where(n => n.SportsId == sportsId.Value);
-                }
-
                 // Get total count
                 var totalCount = await query.CountAsync();
 
                 // Pagination
                 var news = await query
-                    .Include(n => n.Sports)
                     .OrderByDescending(n => n.PublishDate)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
@@ -69,13 +62,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
                         n.Author,
                         n.ViewCount,
                         n.Category,
-                        n.IsFeatured,
-                        Sports = n.Sports != null ? new
-                        {
-                            n.Sports.Id,
-                            n.Sports.Name,
-                            n.Sports.ImageUrl
-                        } : null
+                        n.IsFeatured
                     })
                     .ToListAsync();
 
@@ -113,7 +100,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
             {
                 var news = await _context.News
                     .Where(n => n.IsVisible && n.IsFeatured)
-                    .Include(n => n.Sports)
                     .OrderByDescending(n => n.PublishDate)
                     .Take(count)
                     .Select(n => new
@@ -125,13 +111,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
                         n.PublishDate,
                         n.Author,
                         n.ViewCount,
-                        n.Category,
-                        Sports = n.Sports != null ? new
-                        {
-                            n.Sports.Id,
-                            n.Sports.Name,
-                            n.Sports.ImageUrl
-                        } : null
+                        n.Category
                     })
                     .ToListAsync();
 
@@ -162,7 +142,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
             try
             {
                 var news = await _context.News
-                    .Include(n => n.Sports)
                     .Where(n => n.NewsId == id && n.IsVisible)
                     .Select(n => new
                     {
@@ -175,13 +154,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
                         n.Author,
                         n.ViewCount,
                         n.Category,
-                        n.IsFeatured,
-                        Sports = n.Sports != null ? new
-                        {
-                            n.Sports.Id,
-                            n.Sports.Name,
-                            n.Sports.ImageUrl
-                        } : null
+                        n.IsFeatured
                     })
                     .FirstOrDefaultAsync();
 
@@ -241,13 +214,11 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
                     });
                 }
 
-                // Get related news (same category or sport)
+                // Get related news (same category)
                 var relatedNews = await _context.News
                     .Where(n => n.IsVisible && 
                                 n.NewsId != id &&
-                                (n.Category == currentNews.Category || 
-                                 n.SportsId == currentNews.SportsId))
-                    .Include(n => n.Sports)
+                                n.Category == currentNews.Category)
                     .OrderByDescending(n => n.PublishDate)
                     .Take(count)
                     .Select(n => new
@@ -258,12 +229,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
                         n.ImageUrl,
                         n.PublishDate,
                         n.ViewCount,
-                        n.Category,
-                        Sports = n.Sports != null ? new
-                        {
-                            n.Sports.Id,
-                            n.Sports.Name
-                        } : null
+                        n.Category
                     })
                     .ToListAsync();
 

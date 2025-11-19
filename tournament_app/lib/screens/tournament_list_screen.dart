@@ -6,6 +6,10 @@ import '../models/sport.dart';
 import '../services/api_service.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/loading_widget.dart';
+import '../widgets/empty_state_widget.dart';
+import '../widgets/error_widget.dart';
+import '../theme/app_theme.dart';
 import 'profile_screen.dart';
 import 'login_screen.dart';
 import 'tournament_detail_screen.dart';
@@ -275,76 +279,44 @@ class _TournamentListScreenState extends State<TournamentListScreen> {
 
   Widget _buildBody() {
     if (isLoading) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Đang tải giải đấu...'),
-          ],
-        ),
-      );
+      return const LoadingWidget(message: 'Đang tải giải đấu...');
     }
 
     if (errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red),
-            SizedBox(height: 16),
-            Text(
-              'Lỗi: $errorMessage',
-              style: TextStyle(color: Colors.red),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: loadTournaments,
-              child: Text('Thử Lại'),
-            ),
-          ],
-        ),
+      return CustomErrorWidget(
+        message: errorMessage!,
+        onRetry: loadTournaments,
       );
     }
 
     if (filteredTournaments.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.sports, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text(
-              searchQuery.isNotEmpty || selectedStatus != 'all'
-                  ? 'Không tìm thấy giải đấu phù hợp'
-                  : 'Chưa có giải đấu nào',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-            ),
-            if (searchQuery.isNotEmpty || selectedStatus != 'all') ...[
-              SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: () {
-                  setState(() {
-                    searchQuery = '';
-                    selectedStatus = 'all';
-                    _applyFilters();
-                  });
-                },
-                icon: Icon(Icons.clear_all),
-                label: Text('Xóa bộ lọc'),
-              ),
-            ],
-          ],
-        ),
+      return EmptyStateWidget(
+        icon: Icons.emoji_events,
+        title: searchQuery.isNotEmpty || selectedStatus != 'all'
+            ? 'Không tìm thấy giải đấu phù hợp'
+            : 'Chưa có giải đấu nào',
+        message: searchQuery.isNotEmpty || selectedStatus != 'all'
+            ? 'Thử thay đổi bộ lọc để tìm kiếm'
+            : 'Chưa có giải đấu nào cho môn ${widget.sport.name}',
+        buttonText: (searchQuery.isNotEmpty || selectedStatus != 'all') 
+            ? 'Xóa bộ lọc' 
+            : null,
+        onButtonPressed: (searchQuery.isNotEmpty || selectedStatus != 'all')
+            ? () {
+                setState(() {
+                  searchQuery = '';
+                  selectedStatus = 'all';
+                  _applyFilters();
+                });
+              }
+            : null,
       );
     }
 
     return RefreshIndicator(
       onRefresh: loadTournaments,
       child: ListView.builder(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.spaceMedium),
         itemCount: filteredTournaments.length,
         itemBuilder: (context, index) {
           final tournament = filteredTournaments[index];
@@ -365,13 +337,27 @@ class _TournamentListScreenState extends State<TournamentListScreen> {
         borderRadius: BorderRadius.circular(12),
         onTap: () {
           // Navigate to tournament detail
+          print('=== Navigating to Tournament Detail ===');
+          print('Tournament ID: ${tournament.id}');
+          print('Tournament Name: ${tournament.name}');
+          
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => TournamentDetailScreen(
                 tournamentId: tournament.id,
               ),
             ),
-          );
+          ).then((value) {
+            print('Returned from Tournament Detail Screen');
+          }).catchError((error) {
+            print('ERROR navigating to Tournament Detail: $error');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Lỗi: $error'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          });
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

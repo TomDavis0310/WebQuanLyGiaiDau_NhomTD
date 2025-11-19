@@ -19,12 +19,21 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         private readonly ApplicationDbContext _context;
         private readonly TournamentScheduleService _scheduleService;
         private readonly ITournamentEmailService _emailService;
+        private readonly IImageUploadService _imageUploadService;
+        private readonly IPermissionService _permissionService;
 
-        public TournamentController(ApplicationDbContext context, WebQuanLyGiaiDau_NhomTD.Services.TournamentScheduleService scheduleService, ITournamentEmailService emailService)
+        public TournamentController(
+            ApplicationDbContext context, 
+            TournamentScheduleService scheduleService, 
+            ITournamentEmailService emailService,
+            IImageUploadService imageUploadService,
+            IPermissionService permissionService)
         {
             _context = context;
             _scheduleService = scheduleService;
             _emailService = emailService;
+            _imageUploadService = imageUploadService;
+            _permissionService = permissionService;
         }
 
         // GET: Tournament/GenerateSchedule
@@ -344,6 +353,21 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             ViewBag.IsUserApproved = isUserApproved;
             ViewBag.HasTeamForTournament = hasTeamForTournament;
 
+            // Get voting settings and user's tournament vote
+            var votingSettings = await _context.VotingSettings.FirstOrDefaultAsync();
+            ViewBag.VotingSettings = votingSettings;
+
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userTournamentVote = await _context.TournamentVotes
+                    .FirstOrDefaultAsync(v => v.TournamentId == id && v.UserId == userId);
+                ViewBag.UserTournamentVote = userTournamentVote;
+            }
+
+            // Get teams for voting dropdown
+            ViewBag.TeamsForVoting = teamNames.ToList();
+
             return View(tournament);
         }
 
@@ -418,7 +442,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 {
                     if (imageUrl != null)
                     {
-                        tournament.ImageUrl = await SaveImage(imageUrl);
+                        tournament.ImageUrl = await _imageUploadService.SaveImageAsync(imageUrl, "tournaments");
                     }
 
                     // Cập nhật thông tin thể thức thi đấu
@@ -476,59 +500,10 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             ViewBag.Sports = new SelectList(sports, "Id", "Name");
             return View(tournament);
         }
+        [Obsolete("Use IImageUploadService.SaveImageAsync instead")]
         private async Task<string> SaveImage(IFormFile image)
         {
-            try
-            {
-                if (image == null || image.Length == 0)
-                {
-                    return string.Empty; // Return empty string instead of null
-                }
-
-                // Kiểm tra kích thước file (giới hạn 5MB)
-                if (image.Length > 5 * 1024 * 1024)
-                {
-                    throw new Exception("Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 5MB.");
-                }
-
-                // Kiểm tra loại file
-                string extension = Path.GetExtension(image.FileName).ToLower();
-                string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
-
-                if (!allowedExtensions.Contains(extension))
-                {
-                    throw new Exception("Chỉ chấp nhận file hình ảnh có định dạng: .jpg, .jpeg, .png, .gif");
-                }
-
-                // Đảm bảo tên file không chứa ký tự đặc biệt
-                string fileName = Path.GetFileNameWithoutExtension(image.FileName);
-                // Thêm timestamp để tránh trùng tên file
-                string uniqueFileName = DateTime.Now.Ticks + "_" + fileName + extension;
-
-                // Tạo đường dẫn đầy đủ
-                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "tournaments");
-
-                // Đảm bảo thư mục tồn tại
-                if (!Directory.Exists(uploadsFolder))
-                {
-                    Directory.CreateDirectory(uploadsFolder);
-                }
-
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                // Lưu file
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await image.CopyToAsync(fileStream);
-                }
-
-                // Trả về đường dẫn tương đối để lưu vào database
-                return "/images/tournaments/" + uniqueFileName;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Lỗi khi lưu hình ảnh: " + ex.Message);
-            }
+            return await _imageUploadService.SaveImageAsync(image, "tournaments");
         }
 
 
@@ -666,8 +641,13 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
                     if (imageFile != null)
                     {
+                        // Delete old image
+                        if (!string.IsNullOrEmpty(existingTournament.ImageUrl))
+                        {
+                            await _imageUploadService.DeleteImageAsync(existingTournament.ImageUrl);
+                        }
                         // Upload new image
-                        tournament.ImageUrl = await SaveImage(imageFile);
+                        tournament.ImageUrl = await _imageUploadService.SaveImageAsync(imageFile, "tournaments");
                     }
                     else
                     {
@@ -807,6 +787,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
                     _context.Tournaments.Remove(tournament);
                     await _context.SaveChangesAsync();
+
+                    // Delete associated image if exists
+                    if (!string.IsNullOrEmpty(tournament.ImageUrl))
+                    {
+                        await _imageUploadService.DeleteImageAsync(tournament.ImageUrl);
+                    }
 
                     TempData["SuccessMessage"] = "Đã xóa giải đấu thành công.";
 
@@ -2026,6 +2012,28 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 .ToListAsync();
 
             return View(approvedTournaments);
+        }
+
+        // POST: Tournament/ToggleChampionVoting
+        [HttpPost]
+        [Authorize(Roles = WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin)]
+        public async Task<IActionResult> ToggleChampionVoting(int tournamentId)
+        {
+            var tournament = await _context.Tournaments.FindAsync(tournamentId);
+            if (tournament == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy giải đấu" });
+            }
+
+            tournament.AllowChampionVoting = !tournament.AllowChampionVoting;
+            await _context.SaveChangesAsync();
+
+            return Json(new 
+            { 
+                success = true, 
+                allowVoting = tournament.AllowChampionVoting,
+                message = tournament.AllowChampionVoting ? "Đã bật bình chọn vô địch" : "Đã tắt bình chọn vô địch"
+            });
         }
     }
 }

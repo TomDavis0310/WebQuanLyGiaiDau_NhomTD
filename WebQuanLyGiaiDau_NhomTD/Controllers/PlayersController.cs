@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebQuanLyGiaiDau_NhomTD.Models;
 using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
+using WebQuanLyGiaiDau_NhomTD.Services;
 
 namespace WebQuanLyGiaiDau_NhomTD.Controllers
 {
@@ -16,10 +17,17 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
     public class PlayersController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IImageUploadService _imageUploadService;
+        private readonly IPermissionService _permissionService;
 
-        public PlayersController(ApplicationDbContext context)
+        public PlayersController(
+            ApplicationDbContext context,
+            IImageUploadService imageUploadService,
+            IPermissionService permissionService)
         {
             _context = context;
+            _imageUploadService = imageUploadService;
+            _permissionService = permissionService;
         }
 
         // GET: Players
@@ -127,7 +135,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     // Xử lý tải lên hình ảnh nếu có
                     if (imageFile != null && imageFile.Length > 0)
                     {
-                        player.ImageUrl = await SaveImage(imageFile);
+                        player.ImageUrl = await _imageUploadService.SaveImageAsync(imageFile, "players");
                     }
 
                     // Nếu người dùng không phải Admin, lưu UserId
@@ -150,41 +158,10 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         }
 
         // Phương thức lưu hình ảnh
+        [Obsolete("Use IImageUploadService.SaveImageAsync instead")]
         private async Task<string> SaveImage(IFormFile image)
         {
-            try
-            {
-                // Đảm bảo tên file không chứa ký tự đặc biệt
-                string fileName = Path.GetFileName(image.FileName);
-                // Thêm timestamp để tránh trùng tên file
-                string uniqueFileName = DateTime.Now.Ticks + "_" + fileName;
-
-                // Tạo đường dẫn đầy đủ
-                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "players");
-
-                // Đảm bảo thư mục tồn tại
-                if (!Directory.Exists(uploadsFolder))
-                {
-                    Directory.CreateDirectory(uploadsFolder);
-                }
-
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                // Lưu file
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await image.CopyToAsync(fileStream);
-                }
-
-                // Trả về đường dẫn tương đối để lưu vào database
-                return "/images/players/" + uniqueFileName;
-            }
-            catch (Exception ex)
-            {
-                // Log lỗi
-                Console.WriteLine("Lỗi khi lưu ảnh: " + ex.Message);
-                throw;
-            }
+            return await _imageUploadService.SaveImageAsync(image, "players");
         }
 
         // GET: Players/Edit/5
@@ -277,7 +254,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     // Xử lý tải lên hình ảnh mới nếu có
                     if (imageFile != null && imageFile.Length > 0)
                     {
-                        player.ImageUrl = await SaveImage(imageFile);
+                        // Delete old image
+                        if (!string.IsNullOrEmpty(existingPlayer?.ImageUrl))
+                        {
+                            await _imageUploadService.DeleteImageAsync(existingPlayer.ImageUrl);
+                        }
+                        player.ImageUrl = await _imageUploadService.SaveImageAsync(imageFile, "players");
                     }
                     else if (existingPlayer != null)
                     {
@@ -376,6 +358,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
                     _context.Players.Remove(player);
                     await _context.SaveChangesAsync();
+
+                    // Delete associated image if exists
+                    if (!string.IsNullOrEmpty(player.ImageUrl))
+                    {
+                        await _imageUploadService.DeleteImageAsync(player.ImageUrl);
+                    }
                     
                     TempData["SuccessMessage"] = "Đã xóa cầu thủ thành công.";
                 }

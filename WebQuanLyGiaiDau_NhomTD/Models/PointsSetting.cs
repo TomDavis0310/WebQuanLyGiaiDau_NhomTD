@@ -18,5 +18,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
         // Points for voting team
         [Range(0, int.MaxValue)]
         public int VoteTeamPoints { get; set; } = 3;
+
+        // Points for voting tournament champion
+        [Range(0, int.MaxValue)]
+        public int VoteTournamentPoints { get; set; } = 5;
     }
 }

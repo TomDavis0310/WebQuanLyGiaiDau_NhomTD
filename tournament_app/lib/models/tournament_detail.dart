@@ -24,6 +24,11 @@ class TournamentDetail {
   final Sport sports;
   final List<Match> matches;
   final List<Team> registeredTeams;
+  
+  // Voting properties
+  final bool? allowChampionVoting;
+  final bool? userHasVoted;
+  final String? userVotedTeamName;
 
   TournamentDetail({
     required this.id,
@@ -39,6 +44,9 @@ class TournamentDetail {
     required this.sports,
     required this.matches,
     required this.registeredTeams,
+    this.allowChampionVoting,
+    this.userHasVoted,
+    this.userVotedTeamName,
   });
 
   static String? _imageUrlFromJson(String? url) => ApiService.convertImageUrl(url);

@@ -142,6 +142,42 @@ class _DashboardScreenState extends State<DashboardScreen>
               _buildStatsGrid(_overview!.stats),
               const SizedBox(height: 24),
 
+              // Quick Actions
+              _buildSectionHeader('Truy Cập Nhanh', Icons.flash_on),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildQuickAction(
+                      'Video Highlights',
+                      Icons.video_library,
+                      Colors.purple,
+                      () {
+                        Navigator.pushNamed(
+                          context,
+                          '/video-highlights',
+                          arguments: {
+                            'searchQuery': 'basketball highlights',
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildQuickAction(
+                      'Tìm Kiếm',
+                      Icons.search,
+                      Colors.teal,
+                      () {
+                        Navigator.pushNamed(context, '/search');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
               // My Teams Section
               if (_overview!.myTeams.isNotEmpty) ...[
                 _buildSectionHeader('Đội Của Tôi', Icons.group),
@@ -238,6 +274,34 @@ class _DashboardScreenState extends State<DashboardScreen>
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickAction(String title, IconData icon, Color color, VoidCallback onTap) {
+    return Card(
+      elevation: 2,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 36, color: color),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );

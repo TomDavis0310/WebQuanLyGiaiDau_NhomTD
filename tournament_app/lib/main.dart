@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'screens/splash_screen.dart';
+import 'theme/app_theme.dart';
 
 // Import all screens for navigation
 import 'screens/login_screen.dart';
@@ -26,6 +27,7 @@ import 'screens/my_teams_list_screen.dart';
 import 'screens/create_edit_team_screen.dart';
 import 'screens/add_edit_player_screen.dart';
 import 'screens/tournament_registration_screen.dart';
+import 'screens/video_highlights_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,31 +58,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'TDSports',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        primaryColor: Colors.blue[600],
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        appBarTheme: AppBarTheme(
-          backgroundColor: Colors.blue[600],
-          foregroundColor: Colors.white,
-          elevation: 2,
-        ),
-        cardTheme: CardThemeData(
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue[600],
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        ),
-      ),
+      theme: AppTheme.lightTheme,
       home: const SplashScreen(),
       onGenerateRoute: _onGenerateRoute,
     );
@@ -110,6 +88,7 @@ class MyApp extends StatelessWidget {
   static const String routeAddPlayer = '/add-player';
   static const String routeEditPlayer = '/edit-player';
   static const String routeTournamentRegistration = '/tournament-registration';
+  static const String routeVideoHighlights = '/video-highlights';
 
   Route<dynamic>? _onGenerateRoute(RouteSettings settings) {
     final args = settings.arguments as Map<String, dynamic>?;
@@ -244,6 +223,14 @@ class MyApp extends StatelessWidget {
           );
         }
         break;
+      
+      case routeVideoHighlights:
+        return MaterialPageRoute(
+          builder: (_) => VideoHighlightsScreen(
+            tournamentId: args?['tournamentId'] as int?,
+            searchQuery: args?['searchQuery'] as String?,
+          ),
+        );
 
       default:
         return null;

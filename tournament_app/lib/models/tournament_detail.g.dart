@@ -25,6 +25,9 @@ TournamentDetail _$TournamentDetailFromJson(Map<String, dynamic> json) =>
       registeredTeams: (json['registeredTeams'] as List<dynamic>)
           .map((e) => Team.fromJson(e as Map<String, dynamic>))
           .toList(),
+      allowChampionVoting: json['allowChampionVoting'] as bool?,
+      userHasVoted: json['userHasVoted'] as bool?,
+      userVotedTeamName: json['userVotedTeamName'] as String?,
     );
 
 Map<String, dynamic> _$TournamentDetailToJson(TournamentDetail instance) =>
@@ -42,4 +45,7 @@ Map<String, dynamic> _$TournamentDetailToJson(TournamentDetail instance) =>
       'sports': instance.sports,
       'matches': instance.matches,
       'registeredTeams': instance.registeredTeams,
+      'allowChampionVoting': instance.allowChampionVoting,
+      'userHasVoted': instance.userHasVoted,
+      'userVotedTeamName': instance.userVotedTeamName,
     };

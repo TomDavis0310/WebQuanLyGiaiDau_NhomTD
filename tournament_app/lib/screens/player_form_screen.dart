@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/player_model.dart';
 import '../services/api_service.dart';
 import '../providers/auth_provider.dart';
@@ -32,6 +34,8 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
   DateTime? _dateOfBirth;
   bool _isLoading = false;
   bool get _isEditMode => widget.player != null;
+  File? _selectedPhotoFile;
+  bool _isUploadingPhoto = false;
 
   final List<String> _positions = [
     'Point Guard',
@@ -82,6 +86,129 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
 
     if (picked != null) {
       setState(() => _dateOfBirth = picked);
+    }
+  }
+
+  Future<void> _pickPhoto() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      
+      final ImageSource? source = await showDialog<ImageSource>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Chọn nguồn ảnh'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Thư viện'),
+                  onTap: () => Navigator.pop(context, ImageSource.gallery),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.camera_alt),
+                  title: const Text('Máy ảnh'),
+                  onTap: () => Navigator.pop(context, ImageSource.camera),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+      if (source == null) return;
+
+      final XFile? pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 85,
+      );
+
+      if (pickedFile == null) return;
+
+      setState(() {
+        _selectedPhotoFile = File(pickedFile.path);
+      });
+
+      await _uploadPhoto();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi chọn ảnh: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _uploadPhoto() async {
+    if (_selectedPhotoFile == null) return;
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final token = authProvider.token;
+
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng đăng nhập'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isUploadingPhoto = true;
+    });
+
+    try {
+      final response = await ApiService.uploadImage(
+        file: _selectedPhotoFile!,
+        uploadType: 'PlayerPhoto',
+        token: token,
+      );
+
+      if (response.success && response.data != null) {
+        final imageUrl = response.data!['imageUrl'] as String?;
+        
+        if (imageUrl != null) {
+          setState(() {
+            _photoUrlController.text = imageUrl;
+            _isUploadingPhoto = false;
+          });
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Upload ảnh thành công'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } else {
+          throw Exception('Không nhận được URL ảnh');
+        }
+      } else {
+        throw Exception(response.message);
+      }
+    } catch (e) {
+      setState(() {
+        _isUploadingPhoto = false;
+        _selectedPhotoFile = null;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Upload ảnh thất bại: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -174,24 +301,68 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
           children: [
             // Photo Preview
             Center(
-              child: Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.blue[50],
-                  border: Border.all(color: Colors.blue[200]!, width: 2),
-                  image: _photoUrlController.text.isNotEmpty
-                      ? DecorationImage(
-                          image: NetworkImage(_photoUrlController.text),
-                          fit: BoxFit.cover,
-                          onError: (_, __) {},
-                        )
-                      : null,
-                ),
-                child: _photoUrlController.text.isEmpty
-                    ? Icon(Icons.person, size: 60, color: Colors.blue[300])
-                    : null,
+              child: Stack(
+                children: [
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.blue[50],
+                      border: Border.all(color: Colors.blue[200]!, width: 2),
+                      image: _selectedPhotoFile != null
+                          ? DecorationImage(
+                              image: FileImage(_selectedPhotoFile!),
+                              fit: BoxFit.cover,
+                            )
+                          : (_photoUrlController.text.isNotEmpty
+                              ? DecorationImage(
+                                  image: NetworkImage(_photoUrlController.text),
+                                  fit: BoxFit.cover,
+                                  onError: (_, __) {},
+                                )
+                              : null),
+                    ),
+                    child: _selectedPhotoFile == null && _photoUrlController.text.isEmpty
+                        ? Icon(Icons.person, size: 60, color: Colors.blue[300])
+                        : null,
+                  ),
+                  if (_isUploadingPhoto)
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black.withOpacity(0.5),
+                        ),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: CircleAvatar(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      radius: 18,
+                      child: IconButton(
+                        icon: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                        onPressed: _isUploadingPhoto ? null : _pickPhoto,
+                        padding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton.icon(
+                onPressed: _isUploadingPhoto ? null : _pickPhoto,
+                icon: const Icon(Icons.upload),
+                label: Text(_isUploadingPhoto ? 'Đang upload...' : 'Tải lên ảnh cầu thủ'),
               ),
             ),
             const SizedBox(height: 24),

@@ -1,4 +1,5 @@
 ﻿import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../models/api_response.dart';
 import '../models/sport.dart';
@@ -18,9 +19,9 @@ import '../models/notification.dart';
 class ApiService {
   // Sử dụng địa chỉ IP thực của máy tính để điện thoại có thể kết nối
   // Backend API đang chạy trên port 8080
-  // IP address updated: 192.168.1.2 (check with ipconfig command)
-  static const String baseUrl = 'http://192.168.1.2:8080/api';
-  static const String baseWebUrl = 'http://192.168.1.2:8080';
+  // IP address updated: 192.168.1.5 (check with ipconfig command)
+  static const String baseUrl = 'http://192.168.1.5:8080/api';
+  static const String baseWebUrl = 'http://192.168.1.5:8080';
   
   /// Convert relative image URLs to absolute URLs
   static String? convertImageUrl(String? imageUrl) {
@@ -2562,6 +2563,424 @@ class ApiService {
       return ApiResponse<List<NotificationType>>(
         success: false,
         message: 'Error: $e',
+      );
+    }
+  }
+
+  // ==================== VOTING API ====================
+
+  /// Vote for tournament champion
+  static Future<ApiResponse<Map<String, dynamic>>> voteTournamentChampion({
+    required int tournamentId,
+    required String votedTeamName,
+    String? notes,
+    required String token,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/VotingApi/tournament'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'tournamentId': tournamentId,
+          'votedTeamName': votedTeamName,
+          'notes': notes,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return ApiResponse<Map<String, dynamic>>(
+          success: jsonData['success'] ?? false,
+          message: jsonData['message'] ?? 'Unknown error',
+          data: jsonData['data'],
+        );
+      } else {
+        return ApiResponse<Map<String, dynamic>>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<Map<String, dynamic>>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Vote for match winner
+  static Future<ApiResponse<Map<String, dynamic>>> voteMatchWinner({
+    required int matchId,
+    required String votedTeam,
+    String? notes,
+    required String token,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/VotingApi/match'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'matchId': matchId,
+          'votedTeam': votedTeam,
+          'notes': notes,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return ApiResponse<Map<String, dynamic>>(
+          success: jsonData['success'] ?? false,
+          message: jsonData['message'] ?? 'Unknown error',
+          data: jsonData['data'],
+        );
+      } else {
+        return ApiResponse<Map<String, dynamic>>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<Map<String, dynamic>>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Get user's tournament vote
+  static Future<ApiResponse<Map<String, dynamic>>> getTournamentVote({
+    required int tournamentId,
+    required String token,
+  }) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/VotingApi/tournament/$tournamentId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return ApiResponse<Map<String, dynamic>>(
+          success: jsonData['success'] ?? false,
+          message: jsonData['message'] ?? 'Unknown error',
+          data: jsonData['data'],
+        );
+      } else {
+        return ApiResponse<Map<String, dynamic>>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<Map<String, dynamic>>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Get user's match vote
+  static Future<ApiResponse<Map<String, dynamic>>> getMatchVote({
+    required int matchId,
+    required String token,
+  }) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/VotingApi/match/$matchId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return ApiResponse<Map<String, dynamic>>(
+          success: jsonData['success'] ?? false,
+          message: jsonData['message'] ?? 'Unknown error',
+          data: jsonData['data'],
+        );
+      } else {
+        return ApiResponse<Map<String, dynamic>>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<Map<String, dynamic>>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Get tournament voting statistics
+  static Future<ApiResponse<Map<String, dynamic>>> getTournamentVoteStatistics(int tournamentId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/VotingApi/tournament/$tournamentId/statistics'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return ApiResponse<Map<String, dynamic>>(
+          success: jsonData['success'] ?? false,
+          message: jsonData['message'] ?? 'Unknown error',
+          data: jsonData['data'],
+        );
+      } else {
+        return ApiResponse<Map<String, dynamic>>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<Map<String, dynamic>>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  /// Get match voting statistics
+  static Future<ApiResponse<Map<String, dynamic>>> getMatchVoteStatistics(int matchId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/VotingApi/match/$matchId/statistics'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return ApiResponse<Map<String, dynamic>>(
+          success: jsonData['success'] ?? false,
+          message: jsonData['message'] ?? 'Unknown error',
+          data: jsonData['data'],
+        );
+      } else {
+        return ApiResponse<Map<String, dynamic>>(
+          success: false,
+          message: 'HTTP Error: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<Map<String, dynamic>>(
+        success: false,
+        message: 'Error: $e',
+      );
+    }
+  }
+
+  // ==================== IMAGE UPLOAD ====================
+
+  /// Upload image to server
+  /// uploadType: 'ProfileImage', 'TeamLogo', 'PlayerPhoto', etc.
+  static Future<ApiResponse<Map<String, dynamic>>> uploadImage({
+    required File file,
+    required String uploadType,
+    required String token,
+  }) async {
+    try {
+      final uri = Uri.parse('$baseUrl/ImageUpload/upload');
+      final request = http.MultipartRequest('POST', uri);
+
+      // Add authorization header
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // Add upload type field
+      request.fields['uploadType'] = uploadType;
+
+      // Add file
+      final fileStream = http.ByteStream(file.openRead());
+      final fileLength = await file.length();
+      final multipartFile = http.MultipartFile(
+        'file',
+        fileStream,
+        fileLength,
+        filename: file.path.split('/').last,
+      );
+      request.files.add(multipartFile);
+
+      // Send request
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return ApiResponse<Map<String, dynamic>>(
+          success: jsonData['success'] ?? false,
+          message: jsonData['message'] ?? 'Upload successful',
+          data: jsonData['data'],
+        );
+      } else {
+        final jsonData = json.decode(response.body);
+        return ApiResponse<Map<String, dynamic>>(
+          success: false,
+          message: jsonData['message'] ?? 'Upload failed: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<Map<String, dynamic>>(
+        success: false,
+        message: 'Error uploading image: $e',
+      );
+    }
+  }
+
+  // ==================== YOUTUBE API ====================
+
+  /// Search YouTube videos
+  static Future<ApiResponse<Map<String, dynamic>>> searchVideos({
+    required String query,
+    int maxResults = 10,
+    String type = 'video',
+  }) async {
+    try {
+      final uri = Uri.parse('$baseUrl/YouTubeApi/search').replace(
+        queryParameters: {
+          'query': query,
+          'maxResults': maxResults.toString(),
+          'type': type,
+        },
+      );
+
+      final response = await http.get(
+        uri,
+        headers: {'Content-Type': 'application/json; charset=utf-8'},
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return ApiResponse<Map<String, dynamic>>(
+          success: jsonData['success'] ?? false,
+          message: jsonData['message'] ?? '',
+          data: jsonData['data'],
+        );
+      } else {
+        return ApiResponse<Map<String, dynamic>>(
+          success: false,
+          message: 'Failed to search videos: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<Map<String, dynamic>>(
+        success: false,
+        message: 'Error searching videos: $e',
+      );
+    }
+  }
+
+  /// Search highlight videos
+  static Future<ApiResponse<Map<String, dynamic>>> searchHighlights({
+    required String query,
+    int maxResults = 10,
+  }) async {
+    try {
+      final uri = Uri.parse('$baseUrl/YouTubeApi/highlights').replace(
+        queryParameters: {
+          'query': query,
+          'maxResults': maxResults.toString(),
+        },
+      );
+
+      final response = await http.get(
+        uri,
+        headers: {'Content-Type': 'application/json; charset=utf-8'},
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return ApiResponse<Map<String, dynamic>>(
+          success: jsonData['success'] ?? false,
+          message: jsonData['message'] ?? '',
+          data: jsonData['data'],
+        );
+      } else {
+        return ApiResponse<Map<String, dynamic>>(
+          success: false,
+          message: 'Failed to search highlights: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      return ApiResponse<Map<String, dynamic>>(
+        success: false,
+        message: 'Error searching highlights: $e',
+      );
+    }
+  }
+
+  /// Get match videos by match ID
+  static Future<ApiResponse<List<Map<String, dynamic>>>> getMatchVideos(int matchId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/YouTubeApi/match/$matchId/videos'),
+        headers: {'Content-Type': 'application/json; charset=utf-8'},
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        if (jsonData['success'] == true) {
+          final List<dynamic> videos = jsonData['data'] ?? [];
+          final List<Map<String, dynamic>> videosList = videos.cast<Map<String, dynamic>>();
+          return ApiResponse<List<Map<String, dynamic>>>(
+            success: true,
+            message: jsonData['message'] ?? '',
+            data: videosList,
+          );
+        }
+      }
+      
+      return ApiResponse<List<Map<String, dynamic>>>(
+        success: false,
+        message: 'Failed to fetch match videos',
+        data: [],
+      );
+    } catch (e) {
+      return ApiResponse<List<Map<String, dynamic>>>(
+        success: false,
+        message: 'Error fetching match videos: $e',
+        data: [],
+      );
+    }
+  }
+
+  /// Get tournament highlights
+  static Future<ApiResponse<List<Map<String, dynamic>>>> getTournamentHighlights(int tournamentId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/YouTubeApi/tournament/$tournamentId/highlights'),
+        headers: {'Content-Type': 'application/json; charset=utf-8'},
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        if (jsonData['success'] == true) {
+          final List<dynamic> videos = jsonData['data'] ?? [];
+          final List<Map<String, dynamic>> videosList = videos.cast<Map<String, dynamic>>();
+          return ApiResponse<List<Map<String, dynamic>>>(
+            success: true,
+            message: jsonData['message'] ?? '',
+            data: videosList,
+          );
+        }
+      }
+      
+      return ApiResponse<List<Map<String, dynamic>>>(
+        success: false,
+        message: 'Failed to fetch tournament highlights',
+        data: [],
+      );
+    } catch (e) {
+      return ApiResponse<List<Map<String, dynamic>>>(
+        success: false,
+        message: 'Error fetching tournament highlights: $e',
+        data: [],
       );
     }
   }

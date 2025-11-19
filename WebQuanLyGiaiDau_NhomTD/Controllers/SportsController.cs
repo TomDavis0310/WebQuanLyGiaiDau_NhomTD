@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebQuanLyGiaiDau_NhomTD.Models;
 using WebQuanLyGiaiDau_NhomTD.Models.UserModel;
+using WebQuanLyGiaiDau_NhomTD.Services;
 
 namespace WebQuanLyGiaiDau_NhomTD.Controllers
 {
@@ -15,10 +16,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
     public class SportsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IImageUploadService _imageUploadService;
 
-        public SportsController(ApplicationDbContext context)
+        public SportsController(ApplicationDbContext context, IImageUploadService imageUploadService)
         {
             _context = context;
+            _imageUploadService = imageUploadService;
         }
 
         // Trang chọn môn thể thao (hiển thị các logo môn thể thao)
@@ -88,11 +91,13 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 {
                     if (imageUrl != null)
                     {
-                        sports.ImageUrl = await SaveImage(imageUrl);
+                        sports.ImageUrl = await _imageUploadService.SaveImageAsync(imageUrl, "sports");
                     }
 
                     _context.Add(sports);
                     await _context.SaveChangesAsync();
+                    
+                    TempData["SuccessMessage"] = "Đã tạo môn thể thao thành công!";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
@@ -105,57 +110,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
         private async Task<string> SaveImage(IFormFile image)
         {
-            try
-            {
-                if (image == null || image.Length == 0)
-                {
-                    return null;
-                }
-
-                // Kiểm tra kích thước file (giới hạn 5MB)
-                if (image.Length > 5 * 1024 * 1024)
-                {
-                    throw new Exception("Kích thước file quá lớn. Vui lòng chọn file nhỏ hơn 5MB.");
-                }
-
-                // Kiểm tra loại file
-                string extension = Path.GetExtension(image.FileName).ToLower();
-                string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
-
-                if (!allowedExtensions.Contains(extension))
-                {
-                    throw new Exception("Chỉ chấp nhận file hình ảnh có định dạng: .jpg, .jpeg, .png, .gif");
-                }
-
-                // Đảm bảo tên file không chứa ký tự đặc biệt
-                string fileName = Path.GetFileNameWithoutExtension(image.FileName);
-                // Thêm timestamp để tránh trùng tên file
-                string uniqueFileName = DateTime.Now.Ticks + "_" + fileName + extension;
-
-                // Tạo đường dẫn đầy đủ
-                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "sports");
-
-                // Đảm bảo thư mục tồn tại
-                if (!Directory.Exists(uploadsFolder))
-                {
-                    Directory.CreateDirectory(uploadsFolder);
-                }
-
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                // Lưu file
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await image.CopyToAsync(fileStream);
-                }
-
-                // Trả về đường dẫn tương đối để lưu vào database
-                return "/images/sports/" + uniqueFileName;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Lỗi khi lưu hình ảnh: " + ex.Message);
-            }
+            // Deprecated: Use IImageUploadService instead
+            return await _imageUploadService.SaveImageAsync(image, "sports");
         }
 
         // GET: Sports/Edit/5
@@ -195,8 +151,14 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
                     if (imageUrl != null)
                     {
+                        // Delete old image if exists
+                        if (!string.IsNullOrEmpty(existingSport?.ImageUrl))
+                        {
+                            await _imageUploadService.DeleteImageAsync(existingSport.ImageUrl);
+                        }
+                        
                         // Upload new image
-                        sports.ImageUrl = await SaveImage(imageUrl);
+                        sports.ImageUrl = await _imageUploadService.SaveImageAsync(imageUrl, "sports");
                     }
                     else if (existingSport != null)
                     {
@@ -206,6 +168,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
                     _context.Update(sports);
                     await _context.SaveChangesAsync();
+                    
+                    TempData["SuccessMessage"] = "Đã cập nhật môn thể thao thành công!";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
@@ -265,17 +229,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     return NotFound();
                 }
 
-                // Check if there are any news articles for this sport
-                var hasNews = await _context.News
-                    .AnyAsync(n => n.SportsId == id);
-
-                if (hasNews)
-                {
-                    TempData["ErrorMessage"] = "Không thể xóa môn thể thao này vì có tin tức liên quan. Vui lòng xóa tin tức trước.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                // Check if there are any active tournaments for this sport
+                // Xóa môn thể thao
                 // Cannot use CalculatedStatus (NotMapped property) in query, so load tournaments and check in memory
                 var currentTime = DateTime.Now;
                 var tournaments = await _context.Tournaments
@@ -304,6 +258,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 // Delete the sport
                 _context.Sports.Remove(sport);
                 await _context.SaveChangesAsync();
+
+                // Delete associated image if exists
+                if (!string.IsNullOrEmpty(sport.ImageUrl))
+                {
+                    await _imageUploadService.DeleteImageAsync(sport.ImageUrl);
+                }
 
                 TempData["SuccessMessage"] = "Môn thể thao đã được xóa thành công.";
                 return RedirectToAction(nameof(Index));

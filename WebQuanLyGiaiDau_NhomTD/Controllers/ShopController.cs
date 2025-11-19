@@ -207,6 +207,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     cfg.ReadNewsPoints = model.ReadNewsPoints;
                     cfg.ViewTournamentPoints = model.ViewTournamentPoints;
                     cfg.VoteTeamPoints = model.VoteTeamPoints;
+                    cfg.VoteTournamentPoints = model.VoteTournamentPoints;
                     _context.Update(cfg);
                 }
                 await _context.SaveChangesAsync();

@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
 
@@ -21,6 +23,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isSaving = false;
   String? _errorMessage;
   String? _imageUrl;
+  File? _selectedImageFile;
+  bool _isUploadingImage = false;
 
   @override
   void initState() {
@@ -162,13 +166,129 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _pickImage() async {
-    // TODO: Implement image picker
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Tính năng upload ảnh đang được phát triển'),
-        backgroundColor: Colors.orange,
-      ),
-    );
+    try {
+      final ImagePicker picker = ImagePicker();
+      
+      // Show source selection dialog
+      final ImageSource? source = await showDialog<ImageSource>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Chọn nguồn ảnh'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Thư viện'),
+                  onTap: () => Navigator.pop(context, ImageSource.gallery),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.camera_alt),
+                  title: const Text('Máy ảnh'),
+                  onTap: () => Navigator.pop(context, ImageSource.camera),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+      if (source == null) return;
+
+      // Pick image
+      final XFile? pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (pickedFile == null) return;
+
+      setState(() {
+        _selectedImageFile = File(pickedFile.path);
+      });
+
+      // Upload image immediately
+      await _uploadImage();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi chọn ảnh: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _uploadImage() async {
+    if (_selectedImageFile == null) return;
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final token = authProvider.token;
+
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng đăng nhập'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isUploadingImage = true;
+    });
+
+    try {
+      final response = await ApiService.uploadImage(
+        file: _selectedImageFile!,
+        uploadType: 'ProfileImage',
+        token: token,
+      );
+
+      if (response.success && response.data != null) {
+        final imageUrl = response.data!['imageUrl'] as String?;
+        
+        if (imageUrl != null) {
+          setState(() {
+            _imageUrl = imageUrl;
+            _isUploadingImage = false;
+          });
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Upload ảnh thành công'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } else {
+          throw Exception('Không nhận được URL ảnh');
+        }
+      } else {
+        throw Exception(response.message);
+      }
+    } catch (e) {
+      setState(() {
+        _isUploadingImage = false;
+        _selectedImageFile = null;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Upload ảnh thất bại: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -215,13 +335,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         children: [
                           CircleAvatar(
                             radius: 60,
-                            backgroundImage: _imageUrl != null && _imageUrl!.isNotEmpty
-                                ? NetworkImage(_imageUrl!)
-                                : null,
-                            child: _imageUrl == null || _imageUrl!.isEmpty
+                            backgroundImage: _selectedImageFile != null
+                                ? FileImage(_selectedImageFile!)
+                                : (_imageUrl != null && _imageUrl!.isNotEmpty
+                                    ? NetworkImage(_imageUrl!)
+                                    : null) as ImageProvider?,
+                            child: _selectedImageFile == null && 
+                                   (_imageUrl == null || _imageUrl!.isEmpty)
                                 ? const Icon(Icons.person, size: 60)
                                 : null,
                           ),
+                          if (_isUploadingImage)
+                            Positioned.fill(
+                              child: CircleAvatar(
+                                radius: 60,
+                                backgroundColor: Colors.black.withOpacity(0.5),
+                                child: const CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              ),
+                            ),
                           Positioned(
                             bottom: 0,
                             right: 0,
@@ -230,7 +363,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               radius: 18,
                               child: IconButton(
                                 icon: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
-                                onPressed: _pickImage,
+                                onPressed: _isUploadingImage ? null : _pickImage,
                                 padding: EdgeInsets.zero,
                               ),
                             ),
@@ -241,8 +374,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     const SizedBox(height: 8),
                     Center(
                       child: TextButton(
-                        onPressed: _pickImage,
-                        child: const Text('Thay đổi ảnh đại diện'),
+                        onPressed: _isUploadingImage ? null : _pickImage,
+                        child: Text(_isUploadingImage ? 'Đang upload...' : 'Thay đổi ảnh đại diện'),
                       ),
                     ),
                     const SizedBox(height: 32),

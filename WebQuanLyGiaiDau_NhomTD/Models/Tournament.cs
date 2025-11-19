@@ -83,6 +83,12 @@
                     return "Giải đấu đã kết thúc";
             }
         }
+
+        // Navigation properties
+        public virtual ICollection<TournamentVote>? TournamentVotes { get; set; }
+        
+        // Admin control for champion voting on this specific tournament
+        public bool AllowChampionVoting { get; set; } = true;
     }
 
 }

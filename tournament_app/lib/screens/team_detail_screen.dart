@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import '../models/team_detail.dart';
 import '../models/player_scoring.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/loading_widget.dart';
+import '../widgets/error_widget.dart';
+import '../widgets/custom_card.dart';
 import 'match_detail_screen.dart';
 import 'player_detail_screen.dart';
 
@@ -80,54 +84,15 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
   }
 
   Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(),
-          const SizedBox(height: 16),
-          Text(
-            'Đang tải thông tin đội bóng...',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
-          ),
-        ],
-      ),
+    return const LoadingWidget(
+      message: 'Đang tải thông tin đội bóng...',
     );
   }
 
   Widget _buildErrorState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red[300],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _errorMessage ?? 'Đã xảy ra lỗi',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.red,
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _loadTeamDetail,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Thử Lại'),
-            ),
-          ],
-        ),
-      ),
+    return CustomErrorWidget(
+      message: _errorMessage ?? 'Đã xảy ra lỗi',
+      onRetry: _loadTeamDetail,
     );
   }
 
@@ -256,13 +221,18 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
 
   Widget _buildTeamStats() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: AppTheme.spaceLarge),
+      padding: const EdgeInsets.all(AppTheme.spaceMedium),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withValues(alpha: 0.2),
+            Colors.white.withValues(alpha: 0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         border: Border.all(
-          color: Colors.white.withOpacity(0.3),
+          color: Colors.white.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -278,17 +248,16 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
                   size: 16,
                   color: Colors.white70,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppTheme.spaceSmall),
                 Text(
                   'HLV: ${_teamDetail!.coach}',
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: AppTheme.bodyMedium.copyWith(
                     color: Colors.white70,
                   ),
                 ),
               ],
             ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppTheme.spaceMedium),
           // Stats Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -323,12 +292,10 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
           size: 20,
           color: Colors.white,
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppTheme.spaceXSmall),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+          style: AppTheme.headlineMedium.copyWith(
             color: Colors.white,
           ),
         ),

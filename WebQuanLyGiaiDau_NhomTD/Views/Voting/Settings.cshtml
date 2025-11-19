@@ -1,0 +1,82 @@
+@model WebQuanLyGiaiDau_NhomTD.Models.VotingSettings
+@{
+    ViewData["Title"] = "Cài đặt bình chọn";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-gear me-2"></i>Cài Đặt Bình Chọn
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["Success"]</div>
+                    }
+
+                    <form asp-action="Settings" method="post">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" asp-for="AllowMatchVoting" id="allowMatchVoting">
+                                    <label class="form-check-label" for="allowMatchVoting">
+                                        <strong>Cho phép bình chọn trận đấu</strong>
+                                        <small class="d-block text-muted">Người dùng có thể bình chọn đội thắng trong từng trận</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" asp-for="AllowTournamentVoting" id="allowTournamentVoting">
+                                    <label class="form-check-label" for="allowTournamentVoting">
+                                        <strong>Cho phép bình chọn vô địch</strong>
+                                        <small class="d-block text-muted">Người dùng có thể bình chọn đội vô địch giải</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save me-2"></i>Lưu Cài Đặt
+                                </button>
+                                <a asp-action="Statistics" class="btn btn-outline-info ms-2">
+                                    <i class="bi bi-graph-up me-2"></i>Xem Thống Kê
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Thông Tin
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Cập nhật lần cuối:</strong></p>
+                    <p class="text-muted">@(Model.LastUpdated.ToString("dd/MM/yyyy HH:mm"))</p>
+                    
+                    <hr>
+                    
+                    <h6><i class="bi bi-gift me-2"></i>Điểm Thưởng:</h6>
+                    <ul class="list-unstyled">
+                        <li>• Bình chọn trận đấu: <span class="badge bg-success">+3 điểm</span></li>
+                        <li>• Bình chọn vô địch: <span class="badge bg-warning">+5 điểm</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

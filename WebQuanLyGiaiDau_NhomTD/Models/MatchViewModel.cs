@@ -19,6 +19,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
         public List<dynamic> MatchSets { get; set; } = new List<dynamic>();
         public string MatchStatus { get; set; } = string.Empty;
         public DateTime MatchEndTime { get; set; } = DateTime.Now;
+        public bool AllowWinnerVoting { get; set; } = true;
 
         // Convert from Match to MatchViewModel
         public static MatchViewModel FromMatch(Match match)
@@ -41,7 +42,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
                 Statistics = new List<Statistic>(),
                 MatchSets = new List<dynamic>(),
                 MatchStatus = match.CalculatedStatus,
-                MatchEndTime = match.MatchDate.Add(match.MatchTime ?? TimeSpan.FromHours(1))
+                MatchEndTime = match.MatchDate.Add(match.MatchTime ?? TimeSpan.FromHours(1)),
+                AllowWinnerVoting = match.AllowWinnerVoting
             };
 
             // Create virtual match sets (for basketball 5v5 NBA, 4 quarters)

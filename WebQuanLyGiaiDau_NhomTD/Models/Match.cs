@@ -81,5 +81,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
         public Tournament? Tournament { get; set; }
         public ICollection<Statistic>? Statistics { get; set; }
         public ICollection<MatchSet>? MatchSets { get; set; }
+        public virtual ICollection<MatchVote>? MatchVotes { get; set; }
+        
+        // Admin control for winner voting on this specific match
+        public bool AllowWinnerVoting { get; set; } = true;
     }
 }

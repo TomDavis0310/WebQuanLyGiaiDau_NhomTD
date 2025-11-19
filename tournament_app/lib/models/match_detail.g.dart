@@ -33,6 +33,9 @@ MatchDetail _$MatchDetailFromJson(Map<String, dynamic> json) => MatchDetail(
   highlightsVideoUrl: json['highlightsVideoUrl'] as String?,
   liveStreamUrl: json['liveStreamUrl'] as String?,
   videoDescription: json['videoDescription'] as String?,
+  allowWinnerVoting: json['allowWinnerVoting'] as bool?,
+  userHasVoted: json['userHasVoted'] as bool?,
+  userVotedTeam: json['userVotedTeam'] as String?,
 );
 
 Map<String, dynamic> _$MatchDetailToJson(MatchDetail instance) =>
@@ -55,6 +58,9 @@ Map<String, dynamic> _$MatchDetailToJson(MatchDetail instance) =>
       'highlightsVideoUrl': instance.highlightsVideoUrl,
       'liveStreamUrl': instance.liveStreamUrl,
       'videoDescription': instance.videoDescription,
+      'allowWinnerVoting': instance.allowWinnerVoting,
+      'userHasVoted': instance.userHasVoted,
+      'userVotedTeam': instance.userVotedTeam,
     };
 
 TournamentInfo _$TournamentInfoFromJson(Map<String, dynamic> json) =>

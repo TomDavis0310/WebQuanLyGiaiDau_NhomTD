@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/app_logo.dart';
+import '../theme/app_theme.dart';
+import '../widgets/custom_button.dart';
 import 'sports_list_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -80,33 +82,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Theme.of(context).primaryColor,
-              Theme.of(context).primaryColor.withOpacity(0.7),
-            ],
-          ),
+        decoration: const BoxDecoration(
+          gradient: AppTheme.primaryGradient,
         ),
         child: SafeArea(
           child: Column(
             children: [
               // App Bar
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(AppTheme.spaceMedium),
                 child: Row(
                   children: [
                     IconButton(
-                      icon: Icon(Icons.arrow_back, color: Colors.white),
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                     Text(
                       'Đăng Ký Tài Khoản',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                      style: AppTheme.titleLarge.copyWith(
                         color: Colors.white,
                       ),
                     ),
@@ -128,10 +121,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       Card(
                         elevation: 8,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(24.0),
+                          padding: const EdgeInsets.all(AppTheme.spaceLarge),
                           child: Form(
                             key: _formKey,
                             child: Column(
@@ -296,32 +289,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     return null;
                                   },
                                 ),
-                                const SizedBox(height: 24),
+                                const SizedBox(height: AppTheme.spaceLarge),
                                 
                                 // Register Button
                                 Consumer<AuthProvider>(
                                   builder: (context, authProvider, child) {
-                                    if (authProvider.isLoading) {
-                                      return Center(
-                                        child: CircularProgressIndicator(),
-                                      );
-                                    }
-                                    
-                                    return ElevatedButton(
+                                    return CustomButton(
+                                      text: 'Đăng Ký',
+                                      gradient: AppTheme.primaryGradient,
+                                      isLoading: authProvider.isLoading,
                                       onPressed: _handleRegister,
-                                      style: ElevatedButton.styleFrom(
-                                        padding: EdgeInsets.symmetric(vertical: 16),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        'Đăng Ký',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
                                     );
                                   },
                                 ),

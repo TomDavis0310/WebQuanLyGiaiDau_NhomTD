@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/team_model.dart';
 import '../services/api_service.dart';
 import '../providers/auth_provider.dart';
@@ -21,6 +23,8 @@ class _TeamFormScreenState extends State<TeamFormScreen> {
   
   bool _isLoading = false;
   bool get _isEditMode => widget.team != null;
+  File? _selectedLogoFile;
+  bool _isUploadingLogo = false;
 
   @override
   void initState() {
@@ -38,6 +42,129 @@ class _TeamFormScreenState extends State<TeamFormScreen> {
     _descriptionController.dispose();
     _logoUrlController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickLogo() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      
+      final ImageSource? source = await showDialog<ImageSource>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Chọn nguồn ảnh'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Thư viện'),
+                  onTap: () => Navigator.pop(context, ImageSource.gallery),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.camera_alt),
+                  title: const Text('Máy ảnh'),
+                  onTap: () => Navigator.pop(context, ImageSource.camera),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+      if (source == null) return;
+
+      final XFile? pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 85,
+      );
+
+      if (pickedFile == null) return;
+
+      setState(() {
+        _selectedLogoFile = File(pickedFile.path);
+      });
+
+      await _uploadLogo();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi chọn ảnh: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _uploadLogo() async {
+    if (_selectedLogoFile == null) return;
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final token = authProvider.token;
+
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng đăng nhập'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isUploadingLogo = true;
+    });
+
+    try {
+      final response = await ApiService.uploadImage(
+        file: _selectedLogoFile!,
+        uploadType: 'TeamLogo',
+        token: token,
+      );
+
+      if (response.success && response.data != null) {
+        final imageUrl = response.data!['imageUrl'] as String?;
+        
+        if (imageUrl != null) {
+          setState(() {
+            _logoUrlController.text = imageUrl;
+            _isUploadingLogo = false;
+          });
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Upload logo thành công'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } else {
+          throw Exception('Không nhận được URL logo');
+        }
+      } else {
+        throw Exception(response.message);
+      }
+    } catch (e) {
+      setState(() {
+        _isUploadingLogo = false;
+        _selectedLogoFile = null;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Upload logo thất bại: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _saveTeam() async {
@@ -115,24 +242,68 @@ class _TeamFormScreenState extends State<TeamFormScreen> {
           children: [
             // Logo Preview
             Center(
-              child: Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.blue[200]!, width: 2),
-                  image: _logoUrlController.text.isNotEmpty
-                      ? DecorationImage(
-                          image: NetworkImage(_logoUrlController.text),
-                          fit: BoxFit.cover,
-                          onError: (_, __) {},
-                        )
-                      : null,
-                ),
-                child: _logoUrlController.text.isEmpty
-                    ? Icon(Icons.groups, size: 60, color: Colors.blue[300])
-                    : null,
+              child: Stack(
+                children: [
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.blue[200]!, width: 2),
+                      image: _selectedLogoFile != null
+                          ? DecorationImage(
+                              image: FileImage(_selectedLogoFile!),
+                              fit: BoxFit.cover,
+                            )
+                          : (_logoUrlController.text.isNotEmpty
+                              ? DecorationImage(
+                                  image: NetworkImage(_logoUrlController.text),
+                                  fit: BoxFit.cover,
+                                  onError: (_, __) {},
+                                )
+                              : null),
+                    ),
+                    child: _selectedLogoFile == null && _logoUrlController.text.isEmpty
+                        ? Icon(Icons.groups, size: 60, color: Colors.blue[300])
+                        : null,
+                  ),
+                  if (_isUploadingLogo)
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: CircleAvatar(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      radius: 18,
+                      child: IconButton(
+                        icon: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                        onPressed: _isUploadingLogo ? null : _pickLogo,
+                        padding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton.icon(
+                onPressed: _isUploadingLogo ? null : _pickLogo,
+                icon: const Icon(Icons.upload),
+                label: Text(_isUploadingLogo ? 'Đang upload...' : 'Tải lên logo'),
               ),
             ),
             const SizedBox(height: 24),

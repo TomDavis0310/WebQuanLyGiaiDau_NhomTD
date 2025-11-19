@@ -41,11 +41,5 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
 
         [Display(Name = "Nổi bật")]
         public bool IsFeatured { get; set; } = false;
-
-        // Thêm mối quan hệ với Sports nếu cần
-        public int? SportsId { get; set; }
-        
-        [ForeignKey("SportsId")]
-        public Sports? Sports { get; set; }
     }
 }

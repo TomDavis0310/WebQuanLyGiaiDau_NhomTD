@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '../models/news.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/loading_widget.dart';
+import '../widgets/error_widget.dart';
 
 /// News Detail Screen - Chi tiết tin tức
 class NewsDetailScreen extends StatefulWidget {
@@ -84,35 +87,15 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
   }
 
   Widget _buildLoadingState() {
-    return const Center(
-      child: CircularProgressIndicator(),
+    return const LoadingWidget(
+      message: 'Đang tải tin tức...',
     );
   }
 
   Widget _buildErrorState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: Colors.red[300],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            _errorMessage ?? 'Đã xảy ra lỗi',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: _loadNewsDetail,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Thử Lại'),
-          ),
-        ],
-      ),
+    return CustomErrorWidget(
+      message: _errorMessage ?? 'Đã xảy ra lỗi',
+      onRetry: _loadNewsDetail,
     );
   }
 
