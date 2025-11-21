@@ -13,8 +13,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
         [ForeignKey("PlayerId")]
         public Player? Player { get; set; }
         
-        [Required]
-        public int TeamId { get; set; }
+        public int? TeamId { get; set; }
         
         [ForeignKey("TeamId")]
         public Team? Team { get; set; }

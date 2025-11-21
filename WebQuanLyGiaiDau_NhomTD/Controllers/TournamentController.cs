@@ -684,18 +684,6 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 var tournament = await _context.Tournaments.FindAsync(id);
                 if (tournament != null)
                 {
-                    // Check if there are any registrations for this tournament
-                    bool hasRegistrations = false;
-                    try
-                    {
-                        hasRegistrations = await _context.TournamentRegistrations
-                            .AnyAsync(r => r.TournamentId == id);
-                    }
-                    catch (Exception)
-                    {
-                        // Table might not exist yet, ignore this check
-                    }
-
                     // Check if there are any matches for this tournament
                     bool hasMatches = false;
                     try
@@ -708,14 +696,26 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                         // Table might not exist yet, ignore this check
                     }
 
-                    if (hasRegistrations || hasMatches)
+                    if (hasMatches)
                     {
                         // If there are related records, return to the delete view with an error message
-                        ViewData["error"] = "Không thể xóa giải đấu này vì có đăng ký hoặc trận đấu liên quan.";
+                        ViewData["error"] = "Không thể xóa giải đấu này vì có trận đấu liên quan.";
                         tournament = await _context.Tournaments
                             .FirstOrDefaultAsync(m => m.Id == id);
                         return View(tournament);
                     }
+
+                    // Delete all TournamentTeam and TournamentRegistration records associated with this tournament
+                    // This ensures teams are NOT deleted, but their registration is removed
+                    var tournamentTeams = await _context.TournamentTeams
+                        .Where(tt => tt.TournamentId == id)
+                        .ToListAsync();
+                    _context.TournamentTeams.RemoveRange(tournamentTeams);
+
+                    var tournamentRegistrations = await _context.TournamentRegistrations
+                        .Where(tr => tr.TournamentId == id)
+                        .ToListAsync();
+                    _context.TournamentRegistrations.RemoveRange(tournamentRegistrations);
 
                     // Store the sportsId before removing the tournament
                     int? sportsId = tournament.SportsId;
@@ -740,9 +740,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
                 // Format a more user-friendly error message
                 string errorMessage = "Lỗi khi xóa giải đấu: ";
-                if (ex.Message.Contains("TournamentRegistrations"))
+                if (ex.Message.Contains("TournamentTeams"))
                 {
-                    errorMessage += "Có đăng ký tham gia giải đấu này. Vui lòng xóa các đăng ký trước.";
+                    errorMessage += "Có đội tham gia giải đấu này. Vui lòng hủy đăng ký các đội trước.";
                 }
                 else if (ex.Message.Contains("Matches"))
                 {

@@ -94,8 +94,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 
                 // Get teams where user is a player
                 var playerTeamIds = _context.Players
-                    .Where(p => p.UserId == userId)
-                    .Select(p => p.TeamId)
+                    .Where(p => p.UserId == userId && p.TeamId != null)
+                    .Select(p => p.TeamId.Value)
                     .ToList();
                     
                 var userTeams = _context.Teams
@@ -233,8 +233,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     
                 // Get teams where user is a player
                 var playerTeamIds = await _context.Players
-                    .Where(p => p.UserId == userId)
-                    .Select(p => p.TeamId)
+                    .Where(p => p.UserId == userId && p.TeamId != null)
+                    .Select(p => p.TeamId.Value)
                     .ToListAsync();
                     
                 // Combine the two lists

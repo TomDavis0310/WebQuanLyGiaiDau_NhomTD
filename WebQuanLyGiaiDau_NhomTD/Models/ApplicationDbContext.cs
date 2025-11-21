@@ -28,6 +28,31 @@
                 .WithMany()
                 .HasForeignKey(sd => sd.SportId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            // Ensure deleting a Team does NOT cascade-delete Players, and vice-versa.
+            // By default EF created cascade on the Player -> Team FK. We explicitly set
+            // SetNull so when a Team is deleted, Players' TeamId is set to NULL.
+            modelBuilder.Entity<Player>()
+                .HasOne(p => p.Team)
+                .WithMany(t => t.Players)
+                .HasForeignKey(p => p.TeamId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Configure TournamentTeam relationship:
+            // When a Tournament is deleted, TournamentTeam records are cascade-deleted (NO ACTION is safer, but we allow cascade here for cleanup)
+            // When a Team is deleted, TournamentTeam records are cascade-deleted (NO ACTION to prevent Team deletion if registered)
+            // This ensures Teams are NOT deleted when Tournament is deleted, and Teams CANNOT be deleted when registered in Tournament
+            modelBuilder.Entity<TournamentTeam>()
+                .HasOne(tt => tt.Tournament)
+                .WithMany()
+                .HasForeignKey(tt => tt.TournamentId)
+                .OnDelete(DeleteBehavior.Cascade); // Deleting Tournament will delete TournamentTeam records
+
+            modelBuilder.Entity<TournamentTeam>()
+                .HasOne(tt => tt.Team)
+                .WithMany()
+                .HasForeignKey(tt => tt.TeamId)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent Team deletion if it has TournamentTeam records
         }
 
         public DbSet<Team> Teams { get; set; }

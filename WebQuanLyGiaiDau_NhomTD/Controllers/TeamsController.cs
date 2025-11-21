@@ -167,6 +167,16 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return NotFound();
             }
 
+            // Check if team is registered in any tournament
+            var isRegisteredInTournament = await _context.TournamentTeams
+                .AnyAsync(tt => tt.TeamId == id);
+
+            if (isRegisteredInTournament)
+            {
+                TempData["ErrorMessage"] = "Không thể chỉnh sửa đội bóng này vì đội đã đăng ký tham gia giải đấu. Vui lòng hủy đăng ký trước.";
+                return RedirectToAction(nameof(Index));
+            }
+
             // Kiểm tra quyền: Admin có thể sửa tất cả, người dùng thường chỉ có thể sửa đội của mình
             if (!User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
             {
@@ -196,6 +206,16 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             if (id != team.TeamId)
             {
                 return NotFound();
+            }
+
+            // Check if team is registered in any tournament
+            var isRegisteredInTournament = await _context.TournamentTeams
+                .AnyAsync(tt => tt.TeamId == id);
+
+            if (isRegisteredInTournament)
+            {
+                TempData["ErrorMessage"] = "Không thể chỉnh sửa đội bóng này vì đội đã đăng ký tham gia giải đấu. Vui lòng hủy đăng ký trước.";
+                return RedirectToAction(nameof(Index));
             }
 
             if (ModelState.IsValid)
@@ -255,6 +275,16 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return NotFound();
             }
 
+            // Check if team is registered in any tournament
+            var isRegisteredInTournament = await _context.TournamentTeams
+                .AnyAsync(tt => tt.TeamId == id);
+
+            if (isRegisteredInTournament)
+            {
+                TempData["ErrorMessage"] = "Không thể xóa đội bóng này vì đội đã đăng ký tham gia giải đấu. Vui lòng hủy đăng ký trước.";
+                return RedirectToAction(nameof(Index));
+            }
+
             // Kiểm tra quyền: Admin có thể xóa tất cả, người dùng thường chỉ có thể xóa đội của mình
             if (!User.IsInRole(WebQuanLyGiaiDau_NhomTD.Models.UserModel.SD.Role_Admin))
             {
@@ -281,8 +311,19 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         {
             try
             {
-                var team = await _context.Teams.FindAsync(id);
-                if (team != null)
+                // Double-check that the team is not registered in any tournament
+                var isRegisteredInTournament = await _context.TournamentTeams
+                    .AnyAsync(tt => tt.TeamId == id);
+
+                if (isRegisteredInTournament)
+                {
+                    var team = await _context.Teams.FindAsync(id);
+                    ViewData["error"] = "Không thể xóa đội bóng này vì đội đã đăng ký tham gia giải đấu.";
+                    return View(team);
+                }
+
+                var teamToDelete = await _context.Teams.FindAsync(id);
+                if (teamToDelete != null)
                 {
                     // Check if there are any players in this team
                     var hasPlayers = await _context.Players
@@ -290,18 +331,18 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
 
                     // Check if there are any matches for this team
                     var hasMatches = await _context.Matches
-                        .AnyAsync(m => m.TeamA == team.Name || m.TeamB == team.Name);
+                        .AnyAsync(m => m.TeamA == teamToDelete.Name || m.TeamB == teamToDelete.Name);
 
                     if (hasPlayers || hasMatches)
                     {
                         // If there are related records, return to the delete view with an error message
                         ViewData["error"] = "Không thể xóa đội bóng này vì có cầu thủ hoặc trận đấu liên quan.";
-                        team = await _context.Teams
+                        teamToDelete = await _context.Teams
                             .FirstOrDefaultAsync(m => m.TeamId == id);
-                        return View(team);
+                        return View(teamToDelete);
                     }
 
-                    _context.Teams.Remove(team);
+                    _context.Teams.Remove(teamToDelete);
                     await _context.SaveChangesAsync();
                 }
                 return RedirectToAction(nameof(Index));
@@ -381,7 +422,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         public async Task<IActionResult> AddPlayer([Bind("FullName,Position,Number,TeamId")] Player player, IFormFile imageFile)
         {
             // Lưu teamId để sử dụng trong trường hợp lỗi
-            int teamId = player.TeamId;
+            if (player.TeamId == null)
+            {
+                TempData["ErrorMessage"] = "Đội bóng không hợp lệ.";
+                return RedirectToAction(nameof(Index));
+            }
+            int teamId = player.TeamId ?? 0;
 
             try
             {
@@ -521,7 +567,12 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         public async Task<IActionResult> EditPlayer(int id, [Bind("PlayerId,FullName,Position,Number,TeamId")] Player player, IFormFile imageFile)
         {
             // Lưu teamId để sử dụng trong trường hợp lỗi
-            int teamId = player.TeamId;
+            if (player.TeamId == null)
+            {
+                TempData["ErrorMessage"] = "Đội bóng không hợp lệ.";
+                return RedirectToAction(nameof(Index));
+            }
+            int teamId = player.TeamId ?? 0;
 
             try
             {

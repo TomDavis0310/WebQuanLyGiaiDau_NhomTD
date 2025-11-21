@@ -25,10 +25,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
         [Display(Name = "Ảnh Cầu Thủ")]
         public string? ImageUrl { get; set; } // URL ảnh nếu bạn muốn hiển thị
 
-        // Foreign key
-        [Required(ErrorMessage = "Vui lòng chọn đội bóng")]
+        // Foreign key (nullable): nếu Team bị xóa, TeamId sẽ được đặt thành NULL
         [Display(Name = "Đội Bóng")]
-        public int TeamId { get; set; }
+        public int? TeamId { get; set; }
 
         public Team? Team { get; set; }
 
