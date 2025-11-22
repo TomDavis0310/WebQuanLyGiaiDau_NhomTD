@@ -19,9 +19,9 @@ import '../models/notification.dart';
 class ApiService {
   // Sử dụng địa chỉ IP thực của máy tính để điện thoại có thể kết nối
   // Backend API đang chạy trên port 8080
-  // IP address updated: 192.168.1.5 (check with ipconfig command)
-  static const String baseUrl = 'http://192.168.1.5:8080/api';
-  static const String baseWebUrl = 'http://192.168.1.5:8080';
+  // IP address updated: 192.168.1.166 (check with ipconfig command)
+  static const String baseUrl = 'http://192.168.1.166:8080/api';
+  static const String baseWebUrl = 'http://192.168.1.166:8080';
   
   /// Convert relative image URLs to absolute URLs
   static String? convertImageUrl(String? imageUrl) {

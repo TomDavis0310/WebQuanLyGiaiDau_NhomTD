@@ -20,11 +20,13 @@
                     <a class="btn btn-outline-secondary btn-sm me-2" asp-action="ManagePoints" asp-controller="Shop">Quản lý điểm</a>
                 </div>
             }
-            @* Nếu user đã đăng nhập, hiển thị link Lịch sử giao dịch *@
+            @* Nếu user đã đăng nhập, hiển thị link Túi quà tặng *@
             @if (User.Identity?.IsAuthenticated == true)
             {
                 <div>
-                    <a class="btn btn-link btn-sm" asp-action="Transactions" asp-controller="Shop">Lịch sử giao dịch</a>
+                    <a class="btn btn-success btn-sm" asp-action="MyRewards" asp-controller="Shop">
+                        <i class="bi bi-gift-fill"></i> Túi quà tặng
+                    </a>
                 </div>
             }
         </div>
@@ -45,90 +47,39 @@
             <div class="col-md-4">
                 @* Thêm data-cost để JS kiểm tra xem user có đủ điểm hay không *@
                 <div class="card product-card" data-id="@item.Id" data-cost="@item.PointsCost" style="cursor:pointer;">
+                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                    {
+                        <img src="@item.ImageUrl" class="card-img-top" alt="@item.Name" style="height: 200px; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="bi bi-gift" style="font-size: 4rem; color: white;"></i>
+                        </div>
+                    }
                     <div class="card-body">
                         <h5 class="card-title">@item.Name</h5>
                         <p class="card-text">@item.Description</p>
-                        <p class="fw-bold">Điểm cần: @item.PointsCost</p>
+                        <p class="fw-bold text-danger">Điểm cần: @item.PointsCost</p>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a asp-action="RedeemProduct" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
+                                <i class="bi bi-cart-plus"></i> Đổi quà
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-sm btn-outline-primary">
+                                Đăng nhập để đổi
+                            </a>
+                        }
                     </div>
                 </div>
             </div>
         }
     </div>
-
-        <div class="mt-4 text-center">
-                <form asp-action="Redeem" method="post" id="redeemForm">
-                        <input type="hidden" name="productId" id="selectedProductId" />
-                        <button id="redeemBtn" class="btn btn-light text-dark" disabled type="button">Đổi</button>
-                </form>
-        </div>
-
-        <!-- Confirmation modal -->
-        <div class="modal fade" id="confirmRedeemModal" tabindex="-1" aria-labelledby="confirmRedeemModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="confirmRedeemModalLabel">Xác nhận đổi điểm</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        Bạn có chắc chắn muốn đổi sản phẩm này không?
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Từ chối</button>
-                        <button type="button" id="confirmRedeemBtn" class="btn btn-danger">Đồng ý</button>
-                    </div>
-                </div>
-            </div>
-        </div>
 </div>
 
 @section Scripts {
-    <script>
-        (function(){
-            const userPoints = @userPoints;
-            const cards = document.querySelectorAll('.product-card');
-            let selected = null;
-            cards.forEach(c => c.addEventListener('click', ()=>{
-                if (selected) selected.classList.remove('border-success');
-                c.classList.add('border-success');
-                selected = c;
-                const id = c.dataset.id;
-                const cost = parseInt(c.dataset.cost || '0', 10);
-                document.getElementById('selectedProductId').value = id;
-                const btn = document.getElementById('redeemBtn');
-                // chỉ bật nút nếu user có đủ điểm
-                if (userPoints >= cost) {
-                    btn.disabled = false;
-                    btn.classList.remove('btn-light','text-dark');
-                    btn.classList.add('btn-danger','text-white');
-                    btn.textContent = 'Đổi';
-                } else {
-                    btn.disabled = true;
-                    btn.classList.remove('btn-danger','text-white');
-                    btn.classList.add('btn-light','text-dark');
-                    btn.textContent = 'Không đủ điểm';
-                }
-            }));
-
-            const redeemForm = document.getElementById('redeemForm');
-            const redeemBtn = document.getElementById('redeemBtn');
-            const confirmModalEl = document.getElementById('confirmRedeemModal');
-            const confirmRedeemBtn = document.getElementById('confirmRedeemBtn');
-            // bootstrap sẽ được load trong _Layout.cshtml sau RenderBody,
-            // nên ở đây global 'bootstrap' phải tồn tại khi section Scripts được render.
-            const bootstrapModal = new bootstrap.Modal(confirmModalEl);
-
-            redeemBtn.addEventListener('click', function(){
-                if (!document.getElementById('selectedProductId').value) return;
-                // nếu nút bị disabled thì thoát
-                if (redeemBtn.disabled) return;
-                bootstrapModal.show();
-            });
-
-            confirmRedeemBtn.addEventListener('click', function(){
-                // submit the form when user confirms
-                redeemForm.submit();
-            });
-        })();
-    </script>
 }
+

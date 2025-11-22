@@ -1,0 +1,105 @@
+@model WebQuanLyGiaiDau_NhomTD.Models.RewardProduct
+@{
+    ViewData["Title"] = "Xác nhận đổi quà";
+    var userPoints = ViewData["UserPoints"] as int? ?? 0;
+    var canAfford = ViewData["CanAfford"] as bool? ?? false;
+}
+
+<div class="container mt-4">
+    <h2>Xác nhận đổi quà</h2>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" class="card-img-top" alt="@Model.Name" style="max-height: 300px; object-fit: cover;">
+                }
+                else
+                {
+                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 300px;">
+                        <i class="bi bi-gift" style="font-size: 5rem; color: white;"></i>
+                    </div>
+                }
+                <div class="card-body">
+                    <h4 class="card-title">@Model.Name</h4>
+                    <p class="card-text">@Model.Description</p>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <strong>Điểm cần:</strong>
+                            <span class="text-danger h5">@Model.PointsCost</span>
+                        </div>
+                        <div>
+                            <strong>Điểm hiện có:</strong>
+                            <span class="h5 @(canAfford ? "text-success" : "text-danger")">@userPoints</span>
+                        </div>
+                    </div>
+
+                    @if (!canAfford)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Bạn không đủ điểm để đổi sản phẩm này.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            Sau khi đổi, bạn sẽ còn: <strong>@(userPoints - Model.PointsCost)</strong> điểm
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">Thông tin đổi quà</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            Bạn sẽ nhận được mã quà tặng sau khi xác nhận
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            Mã quà tặng có dạng: RWD-YYYYMMDD-XXXXX
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            Mã sẽ được lưu trong Túi quà tặng của bạn
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            Xuất trình mã khi đến nhận quà
+                        </li>
+                    </ul>
+
+                    @if (canAfford)
+                    {
+                        <form asp-action="RedeemProduct" method="post" asp-route-id="@Model.Id">
+                            @Html.AntiForgeryToken()
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="bi bi-gift-fill"></i> Xác nhận đổi quà
+                                </button>
+                                <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-secondary btn-lg" disabled>
+                                <i class="bi bi-x-circle"></i> Không đủ điểm
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

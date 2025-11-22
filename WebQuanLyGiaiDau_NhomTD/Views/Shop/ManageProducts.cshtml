@@ -9,6 +9,7 @@
     <table class="table table-striped">
         <thead>
             <tr>
+                <th>Hình ảnh</th>
                 <th>Tên</th>
                 <th>Điểm</th>
                 <th>Mô tả</th>
@@ -19,6 +20,16 @@
             @foreach(var p in Model)
             {
                 <tr>
+                    <td>
+                        @if (!string.IsNullOrEmpty(p.ImageUrl))
+                        {
+                            <img src="@p.ImageUrl" alt="@p.Name" class="img-thumbnail" style="max-width: 80px; max-height: 80px; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <span class="text-muted">Chưa có</span>
+                        }
+                    </td>
                     <td>@p.Name</td>
                     <td>@p.PointsCost</td>
                     <td>@p.Description</td>

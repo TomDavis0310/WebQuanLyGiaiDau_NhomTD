@@ -1,42 +1,41 @@
 /* Sports Theme CSS - Dynamic 24/7 Sports Platform */
+/* This file extends the theme.css with sports-specific styling */
+
+/* Stadium Background Override */
+body.sports-body {
+    background-image: url('/images/hinh-nen-san-bong-dep-banner.webp') !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
+}
 
 :root {
-    /* Dynamic Sports Color Palette - Energetic & Professional */
-    --primary-color: #ff6b35;       /* Vibrant Orange - Energy and passion */
-    --primary-light: #ff8c69;       /* Lighter orange for hover states */
-    --primary-dark: #e55a2b;        /* Darker orange for active states */
-
-    --secondary-color: #1a237e;     /* Deep Blue - Trust and stability */
-    --secondary-light: #3949ab;     /* Lighter blue for hover states */
-    --secondary-dark: #0d1b69;      /* Darker blue for active states */
-
-    --accent-color: #00e676;        /* Bright Green - Success and victory */
-    --accent-light: #69f0ae;        /* Lighter green for hover states */
-    --accent-dark: #00c853;         /* Darker green for active states */
-
-    --danger-color: #ff1744;        /* Bright Red - Alerts and warnings */
-    --danger-light: #ff5983;        /* Lighter red for hover states */
-    --danger-dark: #d50000;         /* Darker red for active states */
-
-    --warning-color: #ffc107;       /* Golden Yellow - Warnings and highlights */
-    --info-color: #00bcd4;          /* Cyan - Information and stats */
-    --success-color: #4caf50;       /* Green - Success messages */
-
-    /* Dynamic Background Colors */
-    --bg-primary: #ffffff;          /* Pure white for main content */
-    --bg-secondary: #f5f7fa;        /* Light gray with blue tint */
-    --bg-tertiary: #e8f4fd;         /* Light blue for cards */
-    --bg-dark: #1a237e;             /* Deep blue for headers/footers */
-    --bg-dark-secondary: #283593;   /* Lighter blue for secondary dark areas */
-    --bg-gradient: linear-gradient(135deg, #ff6b35 0%, #1a237e 100%);
-
-    /* Dynamic Text Colors */
-    --text-primary: #1a237e;        /* Deep blue for primary text */
-    --text-secondary: #424242;      /* Dark gray for secondary text */
-    --text-muted: #757575;          /* Medium gray for muted text */
-    --text-light: #ffffff;          /* White text for dark backgrounds */
-    --text-inverse: #f5f5f5;        /* Light text for dark backgrounds */
-    --text-accent: #ff6b35;         /* Orange accent text */
+    /* Sports-specific colors that complement the main theme */
+    --sports-primary: var(--color-primary);
+    --sports-secondary: var(--color-secondary);
+    --sports-accent: var(--color-accent);
+    
+    /* Legacy color mappings for backward compatibility */
+    --primary-color: var(--color-primary);
+    --primary-light: var(--color-primary-hover);
+    --primary-dark: var(--color-primary);
+    
+    --secondary-color: #1a237e;
+    --secondary-light: #3949ab;
+    --secondary-dark: #0d1b69;
+    
+    --accent-color: var(--color-success);
+    --accent-light: var(--color-success-hover);
+    --accent-dark: var(--color-success);
+    
+    --danger-color: var(--color-danger);
+    --danger-light: var(--color-danger-hover);
+    --danger-dark: var(--color-danger);
+    
+    --warning-color: var(--color-warning);
+    --info-color: var(--color-info);
+    --success-color: var(--color-success);
 
     /* Dynamic Sports Gradients */
     --gradient-primary: linear-gradient(135deg, #ff6b35 0%, #ff8c69 50%, #ffab91 100%);
@@ -119,7 +118,7 @@
 body {
     font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     color: var(--text-primary);
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-primary);
     line-height: 1.6;
     overflow-x: hidden;
     margin: 0;
@@ -128,6 +127,7 @@ body {
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Typography Scale */
@@ -192,7 +192,8 @@ html {
 /* ===== NAVIGATION STYLES ===== */
 
 .sports-navbar {
-    background: var(--gradient-dark);
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--border-color);
     padding: var(--space-4) 0;
     box-shadow: var(--shadow-lg);
     transition: var(--transition-normal);
@@ -234,7 +235,7 @@ html {
 }
 
 .sports-navbar .nav-link {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--nav-text);
     font-weight: 600;
     font-size: var(--text-sm);
     padding: var(--space-3) var(--space-4);
@@ -261,8 +262,8 @@ html {
 }
 
 .sports-navbar .nav-link:hover {
-    color: var(--text-light);
-    background-color: rgba(255, 255, 255, 0.15);
+    color: var(--color-primary);
+    background-color: var(--nav-hover);
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }

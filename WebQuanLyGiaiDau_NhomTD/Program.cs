@@ -279,6 +279,12 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine("Seed dữ liệu VotingSettings...");
         SeedVotingSettings(dbContext);
         Console.WriteLine("Seed dữ liệu VotingSettings thành công.");
+        Console.WriteLine("Seed dữ liệu PointsSettings...");
+        SeedPointsSettings(dbContext);
+        Console.WriteLine("Seed dữ liệu PointsSettings thành công.");
+        Console.WriteLine("Seed dữ liệu RewardProducts...");
+        SeedRewardProducts(dbContext);
+        Console.WriteLine("Seed dữ liệu RewardProducts thành công.");
         Console.WriteLine("Quá trình seed dữ liệu hoàn tất.");
     }
     catch (Exception ex)
@@ -704,5 +710,239 @@ static void SeedVotingSettings(ApplicationDbContext context)
         };
         context.VotingSettings.Add(votingSettings);
         context.SaveChanges();
+    }
+}
+
+static void SeedPointsSettings(ApplicationDbContext context)
+{
+    if (!context.PointsSettings.Any())
+    {
+        var pointsSettings = new PointsSetting
+        {
+            ReadNewsPoints = 5,
+            ViewTournamentPoints = 10,
+            VoteTeamPoints = 15,
+            VoteTournamentPoints = 20
+        };
+        context.PointsSettings.Add(pointsSettings);
+        context.SaveChanges();
+        Console.WriteLine("Đã tạo cấu hình điểm mặc định: Đọc tin +5đ, Xem giải đấu +10đ, Vote đội +15đ, Vote giải đấu +20đ");
+    }
+}
+
+static void SeedRewardProducts(ApplicationDbContext context)
+{
+    // Update ImageUrl for existing products if they don't have one
+    var imageUpdates = new Dictionary<string, string>
+    {
+        { "Sticker TDSports", "/image/Sticker TDSports.jpg" },
+        { "Móc khóa Bóng Rổ", "/image/Móc khóa Bóng Rổ.jpg" },
+        { "Băng đô thể thao", "/image/Băng đô thể thao.jpg" },
+        { "Tất thể thao TDSports", "/image/Tất thể thao TDSports.jpg" },
+        { "Khăn lau mồ hôi thể thao", "/image/Khăn lau mồ hôi thể thao.jpg" },
+        { "Bình nước thể thao 500ml", "/image/Bình nước thể thao 500ml.jpg" },
+        { "Băng quấn cổ tay", "/image/Băng quấn cổ tay.jpg" },
+        { "Túi đựng giày thể thao", "/image/Túi đựng giày thể thao.jpg" },
+        { "Găng tay thể thao", "/image/Găng tay thể thao.jpg" },
+        { "Áo thun thể thao TDSports", "/image/Áo thun thể thao TDSports.jpg" },
+        { "Bình nước thể thao 1L", "/image/Bình nước thể thao 1L.jpg" },
+        { "Túi thể thao đeo chéo", "/image/Túi thể thao đeo chéo.jpg" }
+    };
+
+    int updatedCount = 0;
+    foreach (var (productName, imageUrl) in imageUpdates)
+    {
+        var product = context.RewardProducts.FirstOrDefault(p => p.Name == productName);
+        if (product != null && string.IsNullOrEmpty(product.ImageUrl))
+        {
+            product.ImageUrl = imageUrl;
+            updatedCount++;
+        }
+    }
+    
+    if (updatedCount > 0)
+    {
+        context.SaveChanges();
+        Console.WriteLine($"✅ Đã cập nhật hình ảnh cho {updatedCount} sản phẩm!");
+    }
+
+    if (!context.RewardProducts.Any())
+    {
+        var rewardProducts = new List<RewardProduct>
+        {
+            // Phần thưởng cấp thấp (100-500 điểm)
+            new RewardProduct
+            {
+                Name = "Sticker TDSports",
+                PointsCost = 100,
+                Description = "Bộ sticker độc quyền TDSports với thiết kế thể thao năng động. Hoàn hảo để trang trí laptop, điện thoại hoặc sổ tay.",
+                ImageUrl = "/image/Sticker TDSports.jpg"
+            },
+            new RewardProduct
+            {
+                Name = "Móc khóa Bóng Rổ",
+                PointsCost = 150,
+                Description = "Móc khóa hình quả bóng rổ mini, chất liệu cao su bền đẹp. Phụ kiện nhỏ xinh cho fan bóng rổ.",
+                ImageUrl = "/image/Móc khóa Bóng Rổ.jpg"
+            },
+            new RewardProduct
+            {
+                Name = "Băng đô thể thao",
+                PointsCost = 200,
+                Description = "Băng đô thấm mồ hôi cao cấp, thích hợp cho mọi hoạt động thể thao. Nhiều màu sắc lựa chọn.",
+                ImageUrl = "/image/Băng đô thể thao.jpg"
+            },
+            new RewardProduct
+            {
+                Name = "Tất thể thao TDSports",
+                PointsCost = 250,
+                Description = "Đôi tất thể thao chuyên dụng, chất liệu cotton thoáng mát, có đệm bảo vệ. Size 39-43.",
+                ImageUrl = "/image/Tất thể thao TDSports.jpg"
+            },
+            new RewardProduct
+            {
+                Name = "Khăn lau mồ hôi thể thao",
+                PointsCost = 300,
+                Description = "Khăn lau mồ hôi microfiber siêu thấm, kích thước 30x80cm. Logo TDSports in nổi bật.",
+                ImageUrl = "/image/Khăn lau mồ hôi thể thao.jpg"
+            },
+            new RewardProduct
+            {
+                Name = "Bình nước thể thao 500ml",
+                PointsCost = 400,
+                Description = "Bình nước nhựa cao cấp không BPA, dung tích 500ml. Thiết kế tiện lợi, dễ mang theo.",
+                ImageUrl = "/image/Bình nước thể thao 500ml.jpg"
+            },
+            new RewardProduct
+            {
+                Name = "Băng quấn cổ tay",
+                PointsCost = 500,
+                Description = "Cặp băng quấn cổ tay thể thao, hỗ trợ và bảo vệ cổ tay khi chơi thể thao. Chất liệu co giãn tốt.",
+                ImageUrl = "/image/Băng quấn cổ tay.jpg"
+            },
+
+            // Phần thưởng cấp trung (600-1500 điểm)
+            new RewardProduct
+            {
+                Name = "Túi đựng giày thể thao",
+                PointsCost = 600,
+                Description = "Túi đựng giày chống nước, có ngăn thoát khí. Tiện lợi để mang giày đến sân tập.",
+                ImageUrl = "/image/Túi đựng giày thể thao.jpg"
+            },
+            new RewardProduct
+            {
+                Name = "Găng tay thể thao",
+                PointsCost = 700,
+                Description = "Găng tay tập gym và thể thao cao cấp, chống trượt, bảo vệ bàn tay. Size M, L, XL.",
+                ImageUrl = "/image/Găng tay thể thao.jpg"
+            },
+            new RewardProduct
+            {
+                Name = "Áo thun thể thao TDSports",
+                PointsCost = 800,
+                Description = "Áo thun thể thao vải DRI-FIT, thoáng mát và nhanh khô. Logo TDSports độc quyền. Size S-XXL.",
+                ImageUrl = "/image/Áo thun thể thao TDSports.jpg"
+            },
+            new RewardProduct
+            {
+                Name = "Bình nước thể thao 1L",
+                PointsCost = 900,
+                Description = "Bình nước Inox giữ nhiệt, dung tích 1 lít. Giữ lạnh 24h, giữ nóng 12h. Thiết kế cao cấp.",
+                ImageUrl = "/image/Bình nước thể thao 1L.jpg"
+            },
+            new RewardProduct
+            {
+                Name = "Túi thể thao đeo chéo",
+                PointsCost = 1000,
+                Description = "Túi đeo chéo chống nước, nhiều ngăn tiện dụng. Phù hợp đựng đồ tập gym hoặc chạy bộ.",
+                ImageUrl = "/image/Túi thể thao đeo chéo.jpg"
+            },
+            new RewardProduct
+            {
+                Name = "Dây nhảy thể thao Pro",
+                PointsCost = 1200,
+                Description = "Dây nhảy có đếm số và đếm calorie, tay cầm foam êm ái. Dây cáp thép bền bỉ, điều chỉnh được chiều dài."
+            },
+            new RewardProduct
+            {
+                Name = "Quần short thể thao",
+                PointsCost = 1500,
+                Description = "Quần short thể thao vải DRI-FIT, có túi khóa an toàn. Thích hợp tập luyện và thi đấu. Size S-XXL."
+            },
+
+            // Phần thưởng cấp cao (2000-5000 điểm)
+            new RewardProduct
+            {
+                Name = "Ba lô thể thao TDSports",
+                PointsCost = 2000,
+                Description = "Ba lô thể thao cao cấp, chống nước, nhiều ngăn tiện dụng. Ngăn laptop 15 inch, ngăn giày riêng biệt."
+            },
+            new RewardProduct
+            {
+                Name = "Bộ quần áo thể thao",
+                PointsCost = 2500,
+                Description = "Set áo + quần thể thao DRI-FIT cao cấp. Thiết kế năng động, nhiều màu lựa chọn. Size S-XXL."
+            },
+            new RewardProduct
+            {
+                Name = "Giày thể thao TDSports",
+                PointsCost = 3000,
+                Description = "Giày thể thao đa năng, đế êm ái, bám tốt. Phù hợp chơi bóng rổ, chạy bộ và gym. Size 39-44."
+            },
+            new RewardProduct
+            {
+                Name = "Vé xem trận đấu VIP",
+                PointsCost = 3500,
+                Description = "Vé xem trận đấu bóng rổ khu vực VIP (2 vé). Bao gồm đồ uống và snack. Áp dụng cho các trận đấu trong mùa giải."
+            },
+            new RewardProduct
+            {
+                Name = "Quả bóng rổ Spalding chính hãng",
+                PointsCost = 4000,
+                Description = "Quả bóng rổ Spalding size 7 chính hãng. Chất liệu da composite cao cấp, bám tốt, độ bền cao."
+            },
+            new RewardProduct
+            {
+                Name = "Áo thi đấu có chữ ký cầu thủ",
+                PointsCost = 5000,
+                Description = "Áo thi đấu chính thức có chữ ký của cầu thủ nổi tiếng VBA. Phiên bản giới hạn, có chứng nhận."
+            },
+
+            // Phần thưởng đặc biệt (6000+ điểm)
+            new RewardProduct
+            {
+                Name = "Thẻ tập gym 3 tháng",
+                PointsCost = 6000,
+                Description = "Thẻ tập gym 3 tháng tại các phòng gym đối tác của TDSports. Sử dụng mọi thiết bị và lớp học nhóm."
+            },
+            new RewardProduct
+            {
+                Name = "Đồng hồ thể thao thông minh",
+                PointsCost = 8000,
+                Description = "Đồng hồ thể thao đo nhịp tim, bước chân, calo. Kết nối Bluetooth với điện thoại. Pin 7 ngày."
+            },
+            new RewardProduct
+            {
+                Name = "Voucher mua sắm 1.000.000đ",
+                PointsCost = 10000,
+                Description = "Voucher mua sắm trị giá 1.000.000đ tại các cửa hàng thể thao đối tác. Áp dụng cho mọi sản phẩm."
+            },
+            new RewardProduct
+            {
+                Name = "Gặp gỡ cầu thủ VBA",
+                PointsCost = 15000,
+                Description = "Cơ hội gặp gỡ và chụp ảnh cùng cầu thủ VBA yêu thích. Bao gồm ăn trưa và quà tặng đặc biệt."
+            },
+            new RewardProduct
+            {
+                Name = "Vé mùa giải VIP trọn gói",
+                PointsCost = 20000,
+                Description = "Vé xem toàn bộ mùa giải VBA tại khu vực VIP (2 vé). Bao gồm đồ ăn, đồ uống và áo đội miễn phí."
+            }
+        };
+
+        context.RewardProducts.AddRange(rewardProducts);
+        context.SaveChanges();
+        Console.WriteLine($"Đã thêm {rewardProducts.Count} sản phẩm đổi điểm vào cơ sở dữ liệu.");
     }
 }

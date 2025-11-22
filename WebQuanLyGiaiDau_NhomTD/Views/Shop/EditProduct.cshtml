@@ -5,8 +5,9 @@
 
 <div class="container mt-4">
     <h2>Sửa sản phẩm</h2>
-    <form asp-action="EditProduct" method="post">
+    <form asp-action="EditProduct" method="post" enctype="multipart/form-data">
         <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="ImageUrl" />
         <div class="mb-3">
             <label class="form-label">Tên</label>
             <input class="form-control" asp-for="Name" />
@@ -19,6 +20,22 @@
             <label class="form-label">Mô tả</label>
             <textarea class="form-control" asp-for="Description"></textarea>
         </div>
+        <div class="mb-3">
+            <label class="form-label">Hình ảnh hiện tại</label>
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <div class="mb-2">
+                    <img src="@Model.ImageUrl" alt="@Model.Name" class="img-thumbnail" style="max-height: 200px;" />
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">Chưa có hình ảnh</p>
+            }
+            <input type="file" class="form-control" name="imageFile" accept="image/*" />
+            <small class="text-muted">Chọn hình ảnh mới nếu muốn thay đổi</small>
+        </div>
         <button class="btn btn-primary">Lưu</button>
+        <a class="btn btn-secondary" asp-action="ManageProducts">Hủy</a>
     </form>
 </div>

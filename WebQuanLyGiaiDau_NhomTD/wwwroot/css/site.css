@@ -1,5 +1,11 @@
+/* ========================================
+   Site.css - Updated with Theme Support
+   Pastel Color Palette Integration
+   ======================================== */
+
 html {
   font-size: 14px;
+  scroll-behavior: smooth;
 }
 
 @media (min-width: 768px) {
@@ -8,8 +14,13 @@ html {
   }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+/* Focus Styles with Theme Colors */
+.btn:focus, 
+.btn:active:focus, 
+.btn-link.nav-link:focus, 
+.form-control:focus, 
+.form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem var(--bg-tertiary), 0 0 0 0.25rem var(--color-primary);
 }
 
 html {
@@ -19,43 +30,85 @@ html {
 
 body {
   margin-bottom: 60px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
+/* Form Floating Labels */
+.form-floating > .form-control-plaintext::placeholder, 
+.form-floating > .form-control::placeholder {
+  color: var(--input-placeholder);
   text-align: end;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+.form-floating > .form-control-plaintext:focus::placeholder, 
+.form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
 
+/* ========================================
+   Navigation Bar
+   ======================================== */
+
 .navbar {
     font-size: 1.05rem;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    background: var(--nav-bg);
+    box-shadow: var(--shadow-md);
+    border-bottom: 1px solid var(--border-color);
 }
+
+/* ========================================
+   Dropdown Menus
+   ======================================== */
 
 .dropdown-menu {
     border-radius: 10px;
     padding: 0.5rem;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
 }
 
-.dropdown-item:hover {
-    background-color: #e3f2fd;
+.dropdown-item {
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
     border-radius: 8px;
 }
 
-.btn-info {
-    background-color: #00b0f0;
-    border-color: #00b0f0;
+.dropdown-item:hover {
+    background: var(--bg-hover);
+    color: var(--color-primary);
+    transform: translateX(5px);
 }
 
-    .btn-info:hover {
-        background-color: #0095d9;
-    }
+.dropdown-item i {
+    width: 20px;
+    text-align: center;
+    margin-right: 8px;
+}
 
-/* User profile dropdown styles */
+/* ========================================
+   Buttons
+   ======================================== */
+
+.btn-info {
+    background: var(--color-info);
+    border: none;
+    color: var(--text-inverse);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-info:hover {
+    background: var(--color-info-hover);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* ========================================
+   User Profile Dropdown
+   ======================================== */
+
 .navbar-nav .dropdown-menu {
     right: 0;
     left: auto;
@@ -68,17 +121,7 @@ body {
 
 .user-profile-dropdown {
     font-weight: 500;
-}
-
-.dropdown-item {
-    padding: 0.5rem 1rem;
-    transition: all 0.2s ease;
-}
-
-.dropdown-item i {
-    width: 20px;
-    text-align: center;
-    margin-right: 8px;
+    color: var(--text-primary);
 }
 
 #logout {
@@ -87,18 +130,26 @@ body {
     width: 100%;
     text-align: left;
     padding: 0.5rem 1rem;
-    color: #dc3545;
+    color: var(--color-danger);
+    transition: all 0.2s ease;
 }
 
 #logout:hover {
-    background-color: rgba(220, 53, 69, 0.1);
-    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--color-danger-hover);
 }
 
-/* Rules Page Styles */
+/* ========================================
+   Rules Page Styles
+   ======================================== */
+
 .rule-nav {
     position: sticky;
     top: 20px;
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: var(--shadow-sm);
 }
 
 .rule-section {
@@ -109,71 +160,150 @@ body {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     border-radius: 10px;
     overflow: hidden;
-    border-top: 4px solid #0d6efd;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-top: 4px solid var(--color-primary);
+    box-shadow: var(--shadow-sm);
 }
 
 .rule-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--card-hover-shadow);
 }
 
 .rule-card .card-title {
-    color: #0d6efd;
-    border-bottom: 1px solid #e9ecef;
+    color: var(--color-primary);
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 10px;
     margin-bottom: 15px;
+    font-weight: 600;
 }
 
+/* ========================================
+   Tables
+   ======================================== */
+
 .table-differences th {
-    background-color: #0d6efd;
-    color: white;
+    background: var(--gradient-primary) !important;
+    color: var(--text-inverse) !important;
+    font-weight: 600;
 }
 
 .table-differences {
     border-radius: 10px;
     overflow: hidden;
+    box-shadow: var(--shadow-sm);
 }
 
 /* 3x3 Basketball specific styles */
 #category-8 .rule-card {
-    border-top-color: #ff6b00;
+    border-top-color: var(--color-accent);
 }
 
 #category-8 .card-header {
-    background-color: #ff6b00 !important;
+    background: var(--color-accent) !important;
 }
 
 #category-8 .rule-card .card-title {
-    color: #ff6b00;
+    color: var(--color-accent);
 }
 
 #category-8 .rule-card:hover {
-    box-shadow: 0 10px 20px rgba(255, 107, 0, 0.2);
+    box-shadow: 0 10px 20px rgba(255, 211, 182, 0.3);
 }
 
-/* FAQ Accordion Styles */
+/* ========================================
+   FAQ Accordion Styles
+   ======================================== */
+
+.accordion-button {
+    background: var(--card-bg);
+    color: var(--text-primary);
+}
+
 .accordion-button:not(.collapsed) {
-    background-color: #e7f1ff;
-    color: #0d6efd;
+    background: var(--bg-hover);
+    color: var(--color-primary);
+    box-shadow: none;
 }
 
 .accordion-button:focus {
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    box-shadow: 0 0 0 0.25rem rgba(255, 154, 139, 0.25);
 }
 
 .accordion-item {
     margin-bottom: 10px;
     border-radius: 8px;
     overflow: hidden;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
 }
 
-/* Team name responsive styles */
+.accordion-body {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+/* ========================================
+   Team Name Styles
+   ======================================== */
+
 .team-name {
     font-size: 1.5rem;
     font-weight: 600;
+    color: var(--text-primary);
 }
 
-/* Responsive adjustments */
+/* ========================================
+   Card Enhancements
+   ======================================== */
+
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: var(--card-hover-shadow);
+}
+
+.card-header {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.card-body {
+    color: var(--text-primary);
+}
+
+.card-footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+}
+
+/* ========================================
+   Link Styles
+   ======================================== */
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+/* ========================================
+   Responsive Adjustments
+   ======================================== */
+
 @media (max-width: 768px) {
     .rule-nav {
         position: static;
@@ -227,4 +357,108 @@ body {
         padding-left: 10px;
         padding-right: 10px;
     }
+}
+
+/* ========================================
+   Additional Theme Enhancements
+   ======================================== */
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+/* Text Muted */
+.text-muted {
+    color: var(--text-tertiary) !important;
+}
+
+/* Borders */
+.border {
+    border-color: var(--border-color) !important;
+}
+
+/* List Group */
+.list-group-item {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.list-group-item:hover {
+    background: var(--bg-hover);
+}
+
+/* Progress Bar */
+.progress {
+    background: var(--bg-secondary);
+}
+
+.progress-bar {
+    background: var(--gradient-primary);
+}
+
+/* Tooltip */
+.tooltip-inner {
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+/* Popover */
+.popover {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+.popover-header {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.popover-body {
+    color: var(--text-primary);
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    background: var(--bg-secondary);
+}
+
+.breadcrumb-item a {
+    color: var(--color-primary);
+}
+
+.breadcrumb-item.active {
+    color: var(--text-secondary);
+}
+
+/* Nav Tabs */
+.nav-tabs {
+    border-bottom-color: var(--border-color);
+}
+
+.nav-tabs .nav-link {
+    color: var(--text-secondary);
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: var(--border-color);
+    color: var(--color-primary);
+}
+
+.nav-tabs .nav-link.active {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--color-primary);
+}
+
+/* Smooth Transitions */
+.theme-transition-enabled * {
+    transition: background-color 0.3s ease, 
+                color 0.3s ease, 
+                border-color 0.3s ease,
+                box-shadow 0.3s ease !important;
 }

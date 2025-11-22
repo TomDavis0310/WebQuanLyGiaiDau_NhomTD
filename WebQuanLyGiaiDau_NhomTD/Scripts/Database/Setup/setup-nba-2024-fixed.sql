@@ -324,7 +324,53 @@ END
 PRINT 'Created NBA Players for all teams';
 
 -- =============================================
--- 4. TẠO CÁC TRẬN ĐẤU (Sample matches)
+-- 4. ĐĂNG KÝ CÁC ĐỘI VÀO GIẢI ĐẤU
+-- =============================================
+PRINT 'Registering NBA Teams to Tournament...';
+
+-- Lấy danh sách tất cả các đội NBA
+DECLARE TeamCursor CURSOR FOR
+SELECT TeamId, Name FROM Teams 
+WHERE Name IN (
+    N'Boston Celtics', N'Milwaukee Bucks', N'Philadelphia 76ers', 
+    N'Miami Heat', N'New York Knicks', N'Cleveland Cavaliers',
+    N'Brooklyn Nets', N'Atlanta Hawks', N'Denver Nuggets',
+    N'Los Angeles Lakers', N'Golden State Warriors', N'Phoenix Suns',
+    N'Dallas Mavericks', N'Los Angeles Clippers', N'Sacramento Kings',
+    N'Minnesota Timberwolves'
+);
+
+DECLARE @CurrentTeamId INT;
+DECLARE @CurrentTeamName NVARCHAR(100);
+DECLARE @TeamsRegistered INT = 0;
+
+OPEN TeamCursor;
+FETCH NEXT FROM TeamCursor INTO @CurrentTeamId, @CurrentTeamName;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    -- Kiểm tra xem đội đã đăng ký chưa
+    IF NOT EXISTS (SELECT 1 FROM TournamentTeams 
+                   WHERE TournamentId = @TournamentId 
+                   AND TeamId = @CurrentTeamId)
+    BEGIN
+        INSERT INTO TournamentTeams (TournamentId, TeamId, RegistrationDate, Status, Notes)
+        VALUES (@TournamentId, @CurrentTeamId, DATEADD(day, -30, GETDATE()), N'Approved', N'Registered for NBA 2024 Season');
+        
+        SET @TeamsRegistered = @TeamsRegistered + 1;
+        PRINT 'Registered team: ' + @CurrentTeamName;
+    END
+    
+    FETCH NEXT FROM TeamCursor INTO @CurrentTeamId, @CurrentTeamName;
+END
+
+CLOSE TeamCursor;
+DEALLOCATE TeamCursor;
+
+PRINT 'Registered ' + CAST(@TeamsRegistered AS VARCHAR) + ' teams to NBA 2024 Tournament';
+
+-- =============================================
+-- 5. TẠO CÁC TRẬN ĐẤU (Sample matches)
 -- =============================================
 PRINT 'Creating NBA Matches...';
 
@@ -381,13 +427,13 @@ END
 PRINT 'Created NBA Matches';
 
 -- =============================================
--- 5. TẠO TIN TỨC VỀ NBA 2024
+-- 6. TẠO TIN TỨC VỀ NBA 2024
 -- =============================================
 PRINT 'Creating NBA News...';
 
 IF NOT EXISTS (SELECT 1 FROM News WHERE Title LIKE N'%NBA 2024%')
 BEGIN
-    INSERT INTO News (Title, Summary, Content, ImageUrl, PublishDate, Author, ViewCount, Category, IsVisible, IsFeatured, SportsId)
+    INSERT INTO News (Title, Summary, Content, ImageUrl, PublishDate, Author, ViewCount, Category, IsVisible, IsFeatured)
     VALUES 
         (N'NBA 2024: Mùa giải hấp dẫn với nhiều ngôi sao sáng giá',
          N'Mùa giải NBA 2024 bắt đầu với nhiều trận đấu kịch tính',
@@ -398,8 +444,7 @@ BEGIN
          0,
          N'Basketball',
          1,
-         1,
-         @SportsId),
+         1),
         (N'Stephen Curry phá kỷ lục ba điểm trong trận đấu với Lakers',
          N'Curry ghi 8 quả ba điểm xuất sắc',
          N'Ngôi sao Golden State Warriors Stephen Curry đã có màn trình diễn xuất sắc với 8 quả ba điểm trong trận thua Lakers 108-115. Curry hiện dẫn đầu về số ba điểm ghi được trong lịch sử NBA.',
@@ -409,8 +454,7 @@ BEGIN
          0,
          N'Basketball',
          1,
-         1,
-         @SportsId),
+         1),
         (N'Giannis Antetokounmpo: "Chúng tôi sẽ chiến đấu vì chức vô địch"',
          N'Giannis quyết tâm cùng Bucks vô địch',
          N'Sau trận thua sát nút trước Celtics, Giannis Antetokounmpo khẳng định Milwaukee Bucks sẽ quay trở lại mạnh mẽ hơn. Với sự bổ sung của Damian Lillard, Bucks được kỳ vọng sẽ đi sâu trong playoffs.',
@@ -420,8 +464,7 @@ BEGIN
          0,
          N'Basketball',
          1,
-         0,
-         @SportsId),
+         0),
         (N'NBA Christmas Games: Lakers vs Nuggets sẽ là trận đấu tâm điểm',
          N'Trận đấu Giáng sinh đáng chờ đợi',
          N'Trận đấu giữa Los Angeles Lakers và Denver Nuggets vào ngày Giáng sinh hứa hẹn sẽ là cuộc đối đầu đáng xem nhất. LeBron James và Nikola Jokic, hai siêu sao hàng đầu, sẽ đối đầu trực tiếp.',
@@ -431,8 +474,7 @@ BEGIN
          0,
          N'Basketball',
          1,
-         1,
-         @SportsId);
+         1);
     
     PRINT 'Created 4 NBA News articles';
 END
@@ -446,7 +488,7 @@ PRINT 'Tournament ID: ' + CAST(@TournamentId AS VARCHAR);
 PRINT '================================================';
 PRINT 'Created:';
 PRINT '- 1 NBA 2024 Tournament';
-PRINT '- 16 NBA Teams';
+PRINT '- 16 NBA Teams (All registered to tournament)';
 PRINT '- 40+ NBA Players';
 PRINT '- 6 Matches (3 completed, 3 upcoming)';
 PRINT '- 4 News articles';

@@ -106,9 +106,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
                 int completedMatches = matches.Count(m => m.Status == "completed");
                 int upcomingMatches = matches.Count(m => m.Status == "upcoming");
 
-                // Lấy thông tin teams đã đăng ký
+                // Lấy thông tin teams đã đăng ký (bao gồm cả Pending và Approved)
                 var registeredTeams = await _context.TournamentTeams
-                    .Where(tt => tt.TournamentId == id && tt.Status == "Approved")
+                    .Where(tt => tt.TournamentId == id && (tt.Status == "Approved" || tt.Status == "Pending"))
                     .Include(tt => tt.Team)
                     .Select(tt => new
                     {

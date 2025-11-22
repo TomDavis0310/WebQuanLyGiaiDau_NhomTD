@@ -36,19 +36,20 @@
 }
 
 .youtube-content {
-    background: white;
+    background: var(--card-bg);
     padding: 40px 30px;
+    transition: background-color 0.3s ease;
 }
 
 /* Video Cards */
 .video-card {
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-md);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     height: 100%;
-    background: white;
-    border: 2px solid transparent;
+    background: var(--card-bg);
+    border: 2px solid var(--card-border);
 }
 
 .video-card:hover {
@@ -101,11 +102,13 @@
 
 /* Video Info */
 .video-info {
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    background: var(--bg-secondary);
     padding: 25px;
     border-radius: 15px;
     margin: 15px;
-    border: 1px solid rgba(0,0,0,0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Recommended Videos */
@@ -219,14 +222,15 @@
 }
 
 .stats-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 15px;
     padding: 25px;
     text-align: center;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-md);
     transition: all 0.3s ease;
     position: relative;
     z-index: 1;
+    color: var(--text-primary);
 }
 
 .stats-card:hover {

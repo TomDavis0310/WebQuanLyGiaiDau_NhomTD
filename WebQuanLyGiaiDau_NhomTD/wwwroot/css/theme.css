@@ -1,0 +1,782 @@
+/* ========================================
+   THEME SYSTEM - Dark Mode & Light Mode
+   Pastel Color Palette for Modern UI
+   ======================================== */
+
+:root {
+    /* Light Mode - Pastel Colors */
+    --bg-primary: rgba(254, 249, 243, 0.85);
+    --bg-secondary: rgba(255, 245, 240, 0.90);
+    --bg-tertiary: rgba(255, 255, 255, 0.95);
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --bg-hover: rgba(255, 238, 230, 0.92);
+    
+    /* Text Colors */
+    --text-primary: #2d3142;
+    --text-secondary: #5a6273;
+    --text-tertiary: #8b93a7;
+    --text-inverse: #ffffff;
+    
+    /* Accent Colors - Pastel Palette */
+    --color-primary: #ff9a8b;
+    --color-primary-hover: #ff8577;
+    --color-secondary: #a8e6cf;
+    --color-secondary-hover: #8dd9b8;
+    --color-accent: #ffd3b6;
+    --color-accent-hover: #ffbf9f;
+    --color-info: #a8dadc;
+    --color-info-hover: #8fcfd1;
+    --color-success: #b4f8c8;
+    --color-success-hover: #9cf0b3;
+    --color-warning: #ffe5b4;
+    --color-warning-hover: #ffd99f;
+    --color-danger: #ffaaa5;
+    --color-danger-hover: #ff9591;
+    
+    /* Gradient Colors */
+    --gradient-primary: linear-gradient(135deg, #ff9a8b 0%, #ff6a88 50%, #ff99ac 100%);
+    --gradient-secondary: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+    --gradient-accent: linear-gradient(135deg, #ffd3b6 0%, #ffaaa5 100%);
+    --gradient-cool: linear-gradient(135deg, #a8dadc 0%, #b4f8c8 100%);
+    --gradient-warm: linear-gradient(135deg, #ffe5b4 0%, #ffd3b6 100%);
+    
+    /* Border & Shadow */
+    --border-color: #ffe0d6;
+    --border-light: #fff0ea;
+    --shadow-sm: 0 2px 8px rgba(255, 154, 139, 0.1);
+    --shadow-md: 0 4px 16px rgba(255, 154, 139, 0.15);
+    --shadow-lg: 0 8px 32px rgba(255, 154, 139, 0.2);
+    --shadow-hover: 0 12px 40px rgba(255, 154, 139, 0.25);
+    
+    /* Sidebar */
+    --sidebar-bg: rgba(255, 255, 255, 0.98);
+    --sidebar-hover: rgba(255, 238, 230, 0.98);
+    --sidebar-active: linear-gradient(135deg, #ff9a8b 0%, #ff6a88 100%);
+    --sidebar-border: rgba(255, 224, 214, 0.7);
+    
+    /* Navigation */
+    --nav-bg: rgba(255, 255, 255, 0.98);
+    --nav-hover: rgba(255, 238, 230, 0.98);
+    --nav-active: #ff9a8b;
+    --nav-text: #2d3142;
+    
+    /* Cards */
+    --card-bg: #ffffff;
+    --card-border: #ffe0d6;
+    --card-hover-shadow: 0 8px 24px rgba(255, 154, 139, 0.2);
+    
+    /* Forms */
+    --input-bg: rgba(255, 255, 255, 0.95);
+    --input-border: rgba(255, 224, 214, 0.8);
+    --input-focus: #ff9a8b;
+    --input-text: #2d3142;
+    --input-placeholder: #b8bfcc;
+    
+    /* Buttons */
+    --btn-primary-bg: linear-gradient(135deg, #ff9a8b 0%, #ff6a88 100%);
+    --btn-primary-hover: linear-gradient(135deg, #ff8577 0%, #ff5577 100%);
+    --btn-secondary-bg: linear-gradient(135deg, #a8e6cf 0%, #8dd9b8 100%);
+    --btn-secondary-hover: linear-gradient(135deg, #8dd9b8 0%, #7ac9a3 100%);
+    
+    /* Footer */
+    --footer-bg: linear-gradient(135deg, #2d3142 0%, #3f4456 100%);
+    --footer-text: #e8eaed;
+    --footer-link: #a8e6cf;
+    
+    /* Loading & Overlays */
+    --overlay-bg: rgba(255, 249, 243, 0.95);
+    --loader-color: #ff9a8b;
+    
+    /* Transition */
+    --transition-speed: 0.3s;
+}
+
+/* Dark Mode Theme */
+[data-theme="dark"] {
+    /* Background Colors */
+    --bg-primary: rgba(26, 29, 46, 0.90);
+    --bg-secondary: rgba(34, 38, 58, 0.92);
+    --bg-tertiary: rgba(42, 47, 69, 0.95);
+    --card-bg: rgba(42, 47, 69, 0.95);
+    --bg-hover: rgba(51, 56, 82, 0.92);
+    
+    /* Text Colors */
+    --text-primary: #f0f4f8;
+    --text-secondary: #c5cdd9;
+    --text-tertiary: #9ea7b8;
+    --text-inverse: #1a1d2e;
+    
+    /* Accent Colors - Darker Pastel for Dark Mode */
+    --color-primary: #ff8577;
+    --color-primary-hover: #ff9a8b;
+    --color-secondary: #7ac9a3;
+    --color-secondary-hover: #8dd9b8;
+    --color-accent: #ffbf9f;
+    --color-accent-hover: #ffd3b6;
+    --color-info: #6db8c4;
+    --color-info-hover: #8fcfd1;
+    --color-success: #85e3a4;
+    --color-success-hover: #9cf0b3;
+    --color-warning: #ffd99f;
+    --color-warning-hover: #ffe5b4;
+    --color-danger: #ff9591;
+    --color-danger-hover: #ffaaa5;
+    
+    /* Gradient Colors - Adjusted for dark mode */
+    --gradient-primary: linear-gradient(135deg, #ff8577 0%, #ff5577 50%, #ff7799 100%);
+    --gradient-secondary: linear-gradient(135deg, #7ac9a3 0%, #a8d99e 100%);
+    --gradient-accent: linear-gradient(135deg, #ffbf9f 0%, #ff9591 100%);
+    --gradient-cool: linear-gradient(135deg, #6db8c4 0%, #85e3a4 100%);
+    --gradient-warm: linear-gradient(135deg, #ffd99f 0%, #ffbf9f 100%);
+    
+    /* Border & Shadow */
+    --border-color: #3d4359;
+    --border-light: #333852;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.6);
+    
+    /* Sidebar */
+    --sidebar-bg: rgba(34, 38, 58, 0.90);
+    --sidebar-hover: rgba(42, 47, 69, 0.90);
+    --sidebar-active: linear-gradient(135deg, #ff8577 0%, #ff5577 100%);
+    --sidebar-border: rgba(61, 67, 89, 0.5);
+    
+    /* Navigation */
+    --nav-bg: rgba(34, 38, 58, 0.90);
+    --nav-hover: rgba(42, 47, 69, 0.90);
+    --nav-active: #ff8577;
+    --nav-text: #f0f4f8;
+    
+    /* Cards */
+    --card-bg: #2a2f45;
+    --card-border: #3d4359;
+    --card-hover-shadow: 0 8px 24px rgba(255, 133, 119, 0.3);
+    
+    /* Forms */
+    --input-bg: rgba(34, 38, 58, 0.85);
+    --input-border: rgba(61, 67, 89, 0.6);
+    --input-focus: #ff8577;
+    --input-text: #f0f4f8;
+    --input-placeholder: #7a8296;
+    
+    /* Buttons */
+    --btn-primary-bg: linear-gradient(135deg, #ff8577 0%, #ff5577 100%);
+    --btn-primary-hover: linear-gradient(135deg, #ff9a8b 0%, #ff6a88 100%);
+    --btn-secondary-bg: linear-gradient(135deg, #7ac9a3 0%, #65b48e 100%);
+    --btn-secondary-hover: linear-gradient(135deg, #8dd9b8 0%, #7ac9a3 100%);
+    
+    /* Footer */
+    --footer-bg: linear-gradient(135deg, #16192b 0%, #1a1d2e 100%);
+    --footer-text: #c5cdd9;
+    --footer-link: #7ac9a3;
+    
+    /* Loading & Overlays */
+    --overlay-bg: rgba(26, 29, 46, 0.95);
+    --loader-color: #ff8577;
+}
+
+/* ========================================
+   Global Styles with Theme Support
+   ======================================== */
+
+* {
+    transition: background-color var(--transition-speed) ease,
+                color var(--transition-speed) ease,
+                border-color var(--transition-speed) ease;
+}
+
+body {
+    background: var(--bg-primary) !important;
+    color: var(--text-primary);
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: relative;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+body.sports-body {
+    background-image: url('/images/hinh-nen-san-bong-dep-banner.webp') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
+}
+
+html {
+    min-height: 100vh;
+}
+
+/* Stadium Background with Blur Effect */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/images/hinh-nen-san-bong-dep-banner.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    filter: blur(2px) brightness(0.8);
+    z-index: -2;
+    opacity: 0.8;
+    will-change: transform;
+}
+
+/* Overlay for better readability */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+        rgba(254, 249, 243, 0.85) 0%, 
+        rgba(255, 245, 240, 0.90) 50%, 
+        rgba(254, 249, 243, 0.85) 100%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+[data-theme="dark"] body::before {
+    filter: blur(2px) brightness(0.3);
+    opacity: 0.5;
+}
+
+[data-theme="dark"] body::after {
+    background: linear-gradient(135deg, 
+        rgba(26, 29, 46, 0.90) 0%, 
+        rgba(34, 38, 58, 0.92) 50%, 
+        rgba(26, 29, 46, 0.90) 100%);
+}
+
+/* ========================================
+   Theme Toggle Button
+   ======================================== */
+
+.theme-toggle {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    border: 3px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: var(--shadow-hover);
+}
+
+.theme-toggle i {
+    font-size: 26px;
+    color: var(--text-inverse);
+    transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover i {
+    transform: rotate(-15deg);
+}
+
+/* Theme icon switching */
+[data-theme="light"] .theme-toggle .bi-moon-stars-fill {
+    display: block;
+}
+
+[data-theme="light"] .theme-toggle .bi-sun-fill {
+    display: none;
+}
+
+[data-theme="dark"] .theme-toggle .bi-moon-stars-fill {
+    display: none;
+}
+
+[data-theme="dark"] .theme-toggle .bi-sun-fill {
+    display: block;
+}
+
+/* ========================================
+   Sidebar Theme Styles
+   ======================================== */
+
+.sidebar {
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--sidebar-border);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+.sidebar-header {
+    background: var(--gradient-primary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-brand {
+    color: var(--text-inverse) !important;
+}
+
+.sidebar-profile {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.nav-link {
+    color: var(--nav-text);
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    background: var(--nav-hover);
+    color: var(--color-primary);
+    transform: translateX(5px);
+}
+
+.nav-link.active,
+.nav-link:active {
+    background: var(--sidebar-active);
+    color: var(--text-inverse);
+}
+
+.nav-divider {
+    color: var(--text-tertiary);
+    border-top: 1px solid var(--border-color);
+}
+
+/* ========================================
+   Card Theme Styles
+   ======================================== */
+
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.card:hover {
+    box-shadow: var(--card-hover-shadow);
+    transform: translateY(-5px);
+}
+
+.card-header {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.card-body {
+    color: var(--text-primary);
+}
+
+.card-footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+}
+
+/* ========================================
+   Form Theme Styles
+   ======================================== */
+
+.form-control,
+.form-select {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--input-text);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.form-control:focus,
+.form-select:focus {
+    background: var(--input-bg);
+    border-color: var(--input-focus);
+    color: var(--input-text);
+    box-shadow: 0 0 0 0.25rem rgba(255, 154, 139, 0.25);
+}
+
+.form-control::placeholder {
+    color: var(--input-placeholder);
+}
+
+.form-label {
+    color: var(--text-secondary);
+}
+
+/* ========================================
+   Button Theme Styles
+   ======================================== */
+
+.btn-primary,
+.btn-sports {
+    background: var(--btn-primary-bg);
+    border: none;
+    color: var(--text-inverse);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover,
+.btn-sports:hover {
+    background: var(--btn-primary-hover);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: var(--btn-secondary-bg);
+    border: none;
+    color: var(--text-inverse);
+}
+
+.btn-secondary:hover {
+    background: var(--btn-secondary-hover);
+}
+
+.btn-success {
+    background: var(--color-success);
+    color: var(--text-primary);
+}
+
+.btn-success:hover {
+    background: var(--color-success-hover);
+}
+
+.btn-info {
+    background: var(--color-info);
+    color: var(--text-inverse);
+}
+
+.btn-info:hover {
+    background: var(--color-info-hover);
+}
+
+.btn-warning {
+    background: var(--color-warning);
+    color: var(--text-primary);
+}
+
+.btn-warning:hover {
+    background: var(--color-warning-hover);
+}
+
+.btn-danger {
+    background: var(--color-danger);
+    color: var(--text-inverse);
+}
+
+.btn-danger:hover {
+    background: var(--color-danger-hover);
+}
+
+/* ========================================
+   Table Theme Styles
+   ======================================== */
+
+.table {
+    color: var(--text-primary);
+}
+
+.table > :not(caption) > * > * {
+    background-color: var(--bg-tertiary);
+    border-bottom-color: var(--border-color);
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: var(--bg-secondary);
+}
+
+.table-hover > tbody > tr:hover > * {
+    background-color: var(--bg-hover);
+}
+
+thead {
+    background: var(--gradient-primary) !important;
+    color: var(--text-inverse) !important;
+}
+
+thead th {
+    color: var(--text-inverse) !important;
+}
+
+/* ========================================
+   Modal Theme Styles
+   ======================================== */
+
+.modal-content {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+.modal-header {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.modal-body {
+    color: var(--text-primary);
+}
+
+.modal-footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+}
+
+.modal-backdrop {
+    background-color: var(--bg-primary);
+}
+
+/* ========================================
+   Footer Theme Styles
+   ======================================== */
+
+.sports-footer {
+    background: var(--footer-bg);
+    color: var(--footer-text);
+}
+
+.sports-footer h5 {
+    color: var(--text-inverse);
+}
+
+.sports-footer a {
+    color: var(--footer-link);
+}
+
+.sports-footer a:hover {
+    color: var(--color-primary);
+}
+
+.footer-divider {
+    border-color: var(--border-color);
+}
+
+/* ========================================
+   Badge & Alert Theme Styles
+   ======================================== */
+
+.badge {
+    box-shadow: var(--shadow-sm);
+}
+
+.alert {
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.alert-success {
+    background: var(--color-success);
+    color: var(--text-primary);
+}
+
+.alert-info {
+    background: var(--color-info);
+    color: var(--text-inverse);
+}
+
+.alert-warning {
+    background: var(--color-warning);
+    color: var(--text-primary);
+}
+
+.alert-danger {
+    background: var(--color-danger);
+    color: var(--text-inverse);
+}
+
+/* ========================================
+   Dropdown Theme Styles
+   ======================================== */
+
+.dropdown-menu {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+}
+
+.dropdown-item {
+    color: var(--text-primary);
+}
+
+.dropdown-item:hover {
+    background: var(--bg-hover);
+    color: var(--color-primary);
+}
+
+.dropdown-divider {
+    border-color: var(--border-color);
+}
+
+/* ========================================
+   Pagination Theme Styles
+   ======================================== */
+
+.pagination {
+    --bs-pagination-bg: var(--card-bg);
+    --bs-pagination-border-color: var(--border-color);
+    --bs-pagination-hover-bg: var(--bg-hover);
+    --bs-pagination-hover-border-color: var(--color-primary);
+    --bs-pagination-focus-bg: var(--bg-hover);
+    --bs-pagination-active-bg: var(--color-primary);
+    --bs-pagination-active-border-color: var(--color-primary);
+    --bs-pagination-disabled-bg: var(--bg-secondary);
+}
+
+/* ========================================
+   Loading & Overlay Theme Styles
+   ======================================== */
+
+.page-loader {
+    background: var(--overlay-bg);
+}
+
+.loading-overlay {
+    background: var(--overlay-bg);
+}
+
+.loading-spinner {
+    border-top-color: var(--loader-color);
+}
+
+.loading-text {
+    color: var(--text-primary);
+}
+
+/* ========================================
+   Scrollbar Theme Styles
+   ======================================== */
+
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--gradient-primary);
+    border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--gradient-accent);
+}
+
+/* ========================================
+   Text Colors
+   ======================================== */
+
+.text-primary-theme {
+    color: var(--color-primary) !important;
+}
+
+.text-secondary-theme {
+    color: var(--color-secondary) !important;
+}
+
+.text-accent-theme {
+    color: var(--color-accent) !important;
+}
+
+/* ========================================
+   Background Colors
+   ======================================== */
+
+.bg-primary-theme {
+    background: var(--gradient-primary) !important;
+}
+
+.bg-secondary-theme {
+    background: var(--gradient-secondary) !important;
+}
+
+.bg-accent-theme {
+    background: var(--gradient-accent) !important;
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+
+/* Main Content Wrapper */
+.main-wrapper {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+}
+
+.main-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* Sidebar positioning */
+.sidebar-wrapper {
+    position: fixed;
+    z-index: 1000;
+}
+
+.sidebar {
+    position: relative;
+    z-index: 1001;
+}
+
+/* Enhanced Glass Effect for All Cards */
+.card,
+.sports-card,
+.video-card,
+.stats-card,
+.team-card,
+.feature-card {
+    backdrop-filter: blur(15px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(15px) saturate(180%) !important;
+}
+
+/* Table Glass Effect */
+.table {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Footer Glass Effect */
+.sports-footer {
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+}
+
+@media (max-width: 768px) {
+    .theme-toggle {
+        width: 50px;
+        height: 50px;
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    .theme-toggle i {
+        font-size: 22px;
+    }
+}

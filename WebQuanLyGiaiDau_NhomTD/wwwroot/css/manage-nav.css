@@ -53,7 +53,7 @@
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    background: linear-gradient(135deg, rgba(40, 167, 69, 0.05), rgba(32, 201, 151, 0.05));
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.15), rgba(32, 201, 151, 0.15));
     border-radius: var(--radius-md, 12px);
     border-left: 4px solid var(--success-color, #28a745);
 }

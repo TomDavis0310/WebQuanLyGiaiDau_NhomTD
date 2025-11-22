@@ -15,5 +15,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
         public int PointsCost { get; set; }
 
         public string? Description { get; set; }
+
+        public string? ImageUrl { get; set; }
     }
 }

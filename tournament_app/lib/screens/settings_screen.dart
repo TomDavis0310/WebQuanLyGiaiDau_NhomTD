@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/theme_provider.dart';
+import '../theme/app_theme.dart';
 import 'edit_profile_screen.dart';
 import 'change_password_screen.dart';
 
@@ -17,10 +19,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _newsNotifications = true;
   bool _tournamentNotifications = true;
   String _selectedLanguage = 'vi';
-  String _selectedTheme = 'system';
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Cài Đặt'),
@@ -54,6 +58,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   builder: (context) => const ChangePasswordScreen(),
                 ),
               );
+            },
+          ),
+          const Divider(height: 1),
+
+          // Points & Shop Section
+          _buildSectionHeader('Điểm & Cửa Hàng'),
+          _buildListTile(
+            icon: Icons.shopping_bag_outlined,
+            title: 'Cửa hàng điểm',
+            subtitle: 'Đổi điểm lấy quà tặng',
+            onTap: () {
+              Navigator.pushNamed(context, '/shop');
+            },
+          ),
+          _buildListTile(
+            icon: Icons.card_giftcard_outlined,
+            title: 'Túi quà của tôi',
+            subtitle: 'Xem các quà tặng đã đổi',
+            onTap: () {
+              Navigator.pushNamed(context, '/my-rewards');
+            },
+          ),
+          _buildListTile(
+            icon: Icons.history,
+            title: 'Lịch sử điểm',
+            subtitle: 'Xem lịch sử tích lũy và sử dụng điểm',
+            onTap: () {
+              Navigator.pushNamed(context, '/points-history');
             },
           ),
           const Divider(height: 1),
@@ -128,19 +160,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // Appearance Section
           _buildSectionHeader('Giao Diện'),
+          
+          // Theme Toggle
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: AppTheme.getPrimaryGradient(context),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+              boxShadow: isDark ? AppTheme.darkCardShadow : AppTheme.lightCardShadow,
+            ),
+            child: ListTile(
+              leading: Icon(
+                isDark ? Icons.dark_mode : Icons.light_mode,
+                color: Colors.white,
+              ),
+              title: Text(
+                isDark ? 'Chế độ Tối' : 'Chế độ Sáng',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                isDark 
+                    ? 'Nhấn để chuyển sang chế độ sáng' 
+                    : 'Nhấn để chuyển sang chế độ tối',
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                ),
+              ),
+              trailing: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                ),
+                child: Switch(
+                  value: isDark,
+                  onChanged: (_) => themeProvider.toggleTheme(),
+                  activeColor: AppTheme.lightAccentYellow,
+                  inactiveThumbColor: Colors.white,
+                  inactiveTrackColor: Colors.white.withValues(alpha: 0.3),
+                ),
+              ),
+            ),
+          ),
+          
           _buildListTile(
             icon: Icons.language_outlined,
             title: 'Ngôn ngữ',
             subtitle: _getLanguageName(_selectedLanguage),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _showLanguageDialog(),
-          ),
-          _buildListTile(
-            icon: Icons.palette_outlined,
-            title: 'Giao diện',
-            subtitle: _getThemeName(_selectedTheme),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => _showThemeDialog(),
           ),
           const Divider(height: 1),
 
@@ -258,19 +329,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  String _getThemeName(String theme) {
-    switch (theme) {
-      case 'light':
-        return 'Sáng';
-      case 'dark':
-        return 'Tối';
-      case 'system':
-        return 'Theo hệ thống';
-      default:
-        return 'Theo hệ thống';
-    }
-  }
-
   void _showLanguageDialog() {
     showDialog(
       context: context,
@@ -311,65 +369,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     duration: Duration(seconds: 2),
                   ),
                 );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showThemeDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Chọn giao diện'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<String>(
-              title: const Text('Sáng'),
-              value: 'light',
-              groupValue: _selectedTheme,
-              onChanged: (value) {
-                setState(() {
-                  _selectedTheme = value!;
-                });
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Tính năng đang phát triển'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
-            ),
-            RadioListTile<String>(
-              title: const Text('Tối'),
-              value: 'dark',
-              groupValue: _selectedTheme,
-              onChanged: (value) {
-                setState(() {
-                  _selectedTheme = value!;
-                });
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Tính năng đang phát triển'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
-            ),
-            RadioListTile<String>(
-              title: const Text('Theo hệ thống'),
-              value: 'system',
-              groupValue: _selectedTheme,
-              onChanged: (value) {
-                setState(() {
-                  _selectedTheme = value!;
-                });
-                Navigator.pop(context);
               },
             ),
           ],

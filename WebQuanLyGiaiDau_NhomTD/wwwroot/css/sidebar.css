@@ -1,0 +1,418 @@
+/* Sidebar Layout Styles */
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.sidebar-wrapper {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 70px;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.sidebar-wrapper:hover {
+    width: 280px;
+}
+
+.sidebar {
+    height: 100%;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--sidebar-border);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+    padding: 15px 10px;
+    background: var(--gradient-primary);
+    border-bottom: 1px solid var(--border-color);
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-inverse);
+    text-decoration: none;
+    font-size: 1.2rem;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.sidebar-brand:hover {
+    color: #ffd700;
+}
+
+.sidebar-wrapper:not(:hover) .brand-text,
+.sidebar-wrapper:not(:hover) .live-indicator-mini {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+}
+
+.brand-text,
+.live-indicator-mini {
+    transition: all 0.3s ease;
+}
+
+.sidebar-brand i {
+    font-size: 1.5rem;
+    animation: pulse 2s ease-in-out infinite;
+    min-width: 24px;
+}
+
+.brand-text {
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 1px;
+}
+
+.live-indicator-mini {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255, 0, 0, 0.2);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.65rem;
+    margin-left: auto;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: #ff0000;
+    border-radius: 50%;
+    animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.2);
+    }
+}
+
+/* Sidebar Profile (Moved to top) */
+.sidebar-profile {
+    padding: 15px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.sidebar-wrapper:not(:hover) .sidebar-profile {
+    padding: 10px 5px;
+}
+
+/* Profile Dropdown Styles */
+.sidebar-profile .nav-item.dropdown {
+    position: relative;
+}
+
+.sidebar-profile .dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    color: var(--text-inverse);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    width: 100%;
+}
+
+.sidebar-profile .dropdown-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar-profile .dropdown-toggle::after {
+    margin-left: auto;
+}
+
+.sidebar-wrapper:not(:hover) .sidebar-profile .dropdown-toggle {
+    justify-content: center;
+}
+
+.sidebar-wrapper:not(:hover) .sidebar-profile .dropdown-toggle i:not(.bi-person-circle) {
+    display: none;
+}
+
+/* Dropdown Menu in Sidebar */
+.sidebar-profile .dropdown-menu {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    margin-left: 10px;
+    min-width: 200px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    border-radius: 8px;
+    padding: 8px;
+    z-index: 1060 !important;
+    display: none;
+}
+
+.sidebar-profile .dropdown-menu.show {
+    display: block;
+}
+
+.sidebar-wrapper:hover .sidebar-profile .dropdown-menu {
+    left: 0;
+    top: 100%;
+    margin-left: 0;
+    margin-top: 5px;
+}
+
+.sidebar-profile .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+}
+
+.sidebar-profile .dropdown-item:hover {
+    background: var(--bg-hover);
+    color: var(--color-primary);
+}
+
+.sidebar-profile .dropdown-item i {
+    width: 18px;
+    text-align: center;
+}
+
+.sidebar-profile .dropdown-divider {
+    margin: 8px 0;
+    border-top: 1px solid var(--border-color);
+}
+
+.sidebar-profile #logoutForm {
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar-profile #logout {
+    color: var(--color-danger);
+}
+
+.sidebar-profile #logout:hover {
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--color-danger-hover);
+}
+
+/* Sidebar Navigation */
+.sidebar-nav {
+    flex: 1;
+    padding: 20px 0;
+}
+
+.nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-item {
+    margin: 5px 10px;
+}
+
+.nav-item .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    color: var(--nav-text);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.sidebar-wrapper:not(:hover) .nav-item .nav-link span {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+}
+
+.nav-item .nav-link span {
+    transition: all 0.3s ease;
+}
+
+.nav-item .nav-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background: #e94560;
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.nav-item .nav-link:hover {
+    background: var(--nav-hover);
+    color: var(--color-primary);
+}
+
+.nav-item .nav-link:hover::before {
+    transform: scaleY(1);
+}
+
+.nav-item .nav-link.active {
+    background: var(--sidebar-active);
+    color: var(--text-inverse);
+    font-weight: 600;
+}
+
+.nav-item .nav-link i {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+    min-width: 24px;
+}
+
+/* Nav Divider */
+.nav-divider {
+    padding: 15px 20px 8px;
+    color: #888;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.sidebar-wrapper:not(:hover) .nav-divider {
+    opacity: 0;
+    height: 10px;
+    padding: 5px 0;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+    padding: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Main Wrapper */
+.main-wrapper {
+    margin-left: 70px;
+    min-height: 100vh;
+    transition: margin-left 0.3s ease;
+    /* Removed background to allow body background to show through */
+}
+
+.main-content {
+    padding: 20px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .sidebar-wrapper {
+        transform: translateX(-70px);
+        width: 70px !important;
+    }
+
+    .sidebar-wrapper:hover {
+        transform: translateX(0);
+        width: 280px !important;
+    }
+
+    .main-wrapper {
+        margin-left: 0;
+    }
+
+    /* Show all text on mobile when hovering */
+    .sidebar-wrapper:hover .brand-text,
+    .sidebar-wrapper:hover .live-indicator-mini,
+    .sidebar-wrapper:hover .nav-item .nav-link span,
+    .sidebar-wrapper:hover .nav-divider {
+        opacity: 1;
+        width: auto;
+    }
+}
+
+/* Scrollbar Styling */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(233, 69, 96, 0.5);
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(233, 69, 96, 0.8);
+}
+
+/* Animation */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Footer adjustments for sidebar layout */
+.sports-footer {
+    margin-left: 0;
+    transition: margin-left 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .sports-footer {
+        margin-left: 0;
+    }
+}

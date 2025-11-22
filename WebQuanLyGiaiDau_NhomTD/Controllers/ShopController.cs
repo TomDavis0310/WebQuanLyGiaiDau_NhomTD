@@ -3,16 +3,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using WebQuanLyGiaiDau_NhomTD.Models;
+using WebQuanLyGiaiDau_NhomTD.Models.FileUpload;
+using WebQuanLyGiaiDau_NhomTD.Services.Interfaces;
 
 namespace WebQuanLyGiaiDau_NhomTD.Controllers
 {
     public class ShopController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IFileUploadService _fileUploadService;
 
-        public ShopController(ApplicationDbContext context)
+        public ShopController(ApplicationDbContext context, IFileUploadService fileUploadService)
         {
             _context = context;
+            _fileUploadService = fileUploadService;
         }
 
         // Public shop page - view products and user's points
@@ -32,13 +36,30 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             return View(products);
         }
 
-        // Purchase endpoint - user redeems product
+        // User: Redeem product confirmation page
+        [Authorize]
+        public async Task<IActionResult> RedeemProduct(int? id)
+        {
+            if (id == null) return NotFound();
+            var product = await _context.RewardProducts.FindAsync(id);
+            if (product == null) return NotFound();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return Challenge();
+
+            ViewData["UserPoints"] = user.Points;
+            ViewData["CanAfford"] = user.Points >= product.PointsCost;
+            return View(product);
+        }
+
+        // User: Process redemption with code generation
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Redeem(int productId)
+        public async Task<IActionResult> RedeemProduct(int id)
         {
-            var product = await _context.RewardProducts.FindAsync(productId);
+            var product = await _context.RewardProducts.FindAsync(id);
             if (product == null) return NotFound();
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -51,7 +72,11 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // perform deduction + transaction record atomically
+            // Generate redemption code
+            var random = new Random();
+            var randomCode = random.Next(10000, 99999);
+            var redemptionCode = $"RWD-{DateTime.Now:yyyyMMdd}-{randomCode}";
+
             using (var dbTx = await _context.Database.BeginTransactionAsync())
             {
                 try
@@ -59,32 +84,51 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                     user.Points -= product.PointsCost;
                     _context.Update(user);
 
-                    // Create a redeem transaction record
-                    var tx = new RedeemTransaction
+                    // Create reward transaction with redemption code
+                    var transaction = new RewardTransaction
                     {
                         UserId = userId ?? string.Empty,
-                        ProductId = product.Id,
-                        PointsCost = product.PointsCost,
-                        CreatedAt = DateTime.UtcNow,
-                        Status = "Completed"
+                        RewardProductId = product.Id,
+                        PointsSpent = product.PointsCost,
+                        RedemptionCode = redemptionCode,
+                        Status = RewardTransactionStatus.Pending,
+                        TransactionDate = DateTime.Now,
+                        Notes = $"Đổi {product.Name}"
                     };
-                    _context.RedeemTransactions.Add(tx);
+                    _context.RewardTransactions.Add(transaction);
 
                     await _context.SaveChangesAsync();
                     await dbTx.CommitAsync();
 
-                    TempData["Success"] = "Đổi điểm thành công. Cảm ơn bạn!";
-                    return RedirectToAction(nameof(Index));
+                    TempData["Success"] = $"Đổi quà thành công! Mã quà tặng của bạn: {redemptionCode}";
+                    return RedirectToAction(nameof(MyRewards));
                 }
                 catch (Exception)
                 {
-                    // rollback and report error
                     await dbTx.RollbackAsync();
-                    // log if a logger is available (not injected here) — fallback to TempData message
                     TempData["Error"] = "Có lỗi khi xử lý đổi điểm. Vui lòng thử lại sau.";
                     return RedirectToAction(nameof(Index));
                 }
             }
+        }
+
+        // User: View gift bag (redeemed rewards)
+        [Authorize]
+        public async Task<IActionResult> MyRewards()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Challenge();
+
+            var transactions = await _context.RewardTransactions
+                .Include(t => t.RewardProduct)
+                .Where(t => t.UserId == userId)
+                .OrderByDescending(t => t.TransactionDate)
+                .ToListAsync();
+
+            var user = await _context.Users.FindAsync(userId);
+            ViewData["UserPoints"] = user?.Points ?? 0;
+
+            return View(transactions);
         }
 
         // User: view own transactions
@@ -118,10 +162,25 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [HttpPost]
         [Authorize(Roles = Models.UserModel.SD.Role_Admin)]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateProduct([Bind("Id,Name,PointsCost,Description")] RewardProduct product)
+        public async Task<IActionResult> CreateProduct([Bind("Id,Name,PointsCost,Description")] RewardProduct product, IFormFile? imageFile)
         {
             if (ModelState.IsValid)
             {
+                // Upload image if provided
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    var uploadResult = await _fileUploadService.UploadFileAsync(imageFile, new FileUploadOptions
+                    {
+                        SubFolder = "rewards",
+                        GenerateThumbnail = true,
+                        CompressImage = true
+                    });
+                    if (uploadResult.IsSuccess && uploadResult.FileInfo != null)
+                    {
+                        product.ImageUrl = uploadResult.FileInfo.Url;
+                    }
+                }
+
                 _context.Add(product);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(ManageProducts));
@@ -141,11 +200,31 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         [HttpPost]
         [Authorize(Roles = Models.UserModel.SD.Role_Admin)]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditProduct(int id, [Bind("Id,Name,PointsCost,Description")] RewardProduct product)
+        public async Task<IActionResult> EditProduct(int id, [Bind("Id,Name,PointsCost,Description,ImageUrl")] RewardProduct product, IFormFile? imageFile)
         {
             if (id != product.Id) return NotFound();
             if (ModelState.IsValid)
             {
+                // Upload new image if provided
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    var uploadResult = await _fileUploadService.UploadFileAsync(imageFile, new FileUploadOptions
+                    {
+                        SubFolder = "rewards",
+                        GenerateThumbnail = true,
+                        CompressImage = true
+                    });
+                    if (uploadResult.IsSuccess && uploadResult.FileInfo != null)
+                    {
+                        // Delete old image if exists
+                        if (!string.IsNullOrEmpty(product.ImageUrl))
+                        {
+                            await _fileUploadService.DeleteFileAsync(product.ImageUrl);
+                        }
+                        product.ImageUrl = uploadResult.FileInfo.Url;
+                    }
+                }
+
                 _context.Update(product);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(ManageProducts));
@@ -170,8 +249,14 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
             var product = await _context.RewardProducts.FindAsync(id);
             if (product != null)
             {
+                // Delete image if exists
+                if (!string.IsNullOrEmpty(product.ImageUrl))
+                {
+                    await _fileUploadService.DeleteFileAsync(product.ImageUrl);
+                }
                 _context.RewardProducts.Remove(product);
                 await _context.SaveChangesAsync();
+                TempData["Success"] = "Đã xóa sản phẩm thành công.";
             }
             return RedirectToAction(nameof(ManageProducts));
         }
@@ -214,6 +299,33 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
                 return RedirectToAction(nameof(ManagePoints));
             }
             return View(model);
+        }
+
+        // Admin: Add points to user (for testing/admin purposes)
+        [Authorize(Roles = Models.UserModel.SD.Role_Admin)]
+        public async Task<IActionResult> AddPointsToUser(string email, int points)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return Json(new { success = false, message = "Email không được để trống" });
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+            {
+                return Json(new { success = false, message = $"Không tìm thấy user với email: {email}" });
+            }
+
+            user.Points += points;
+            await _context.SaveChangesAsync();
+
+            return Json(new { 
+                success = true, 
+                message = $"Đã thêm {points:N0} điểm cho {user.Email}", 
+                email = user.Email,
+                fullName = user.FullName,
+                totalPoints = user.Points
+            });
         }
     }
 }

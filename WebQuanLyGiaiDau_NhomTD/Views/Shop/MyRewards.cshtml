@@ -1,0 +1,128 @@
+@model IEnumerable<WebQuanLyGiaiDau_NhomTD.Models.RewardTransaction>
+@{
+    ViewData["Title"] = "Túi quà tặng";
+    var userPoints = ViewData["UserPoints"] as int? ?? 0;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="bi bi-gift-fill"></i> Túi quà tặng của tôi</h2>
+        <div class="d-flex align-items-center gap-3">
+            <div class="user-points text-end">
+                <small>Điểm hiện có</small>
+                <div class="h4 text-success">@userPoints</div>
+            </div>
+            <a asp-action="Index" class="btn btn-primary">
+                <i class="bi bi-shop"></i> Đổi thêm quà
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            <h4><i class="bi bi-info-circle"></i> Túi quà trống</h4>
+            <p>Bạn chưa đổi quà nào. Hãy <a asp-action="Index">khám phá các sản phẩm</a> và đổi điểm nhé!</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var transaction in Model)
+            {
+                var statusClass = transaction.Status switch
+                {
+                    "Pending" => "warning",
+                    "Redeemed" => "success",
+                    "Cancelled" => "danger",
+                    _ => "secondary"
+                };
+
+                var statusText = transaction.Status switch
+                {
+                    "Pending" => "Chờ nhận",
+                    "Redeemed" => "Đã nhận",
+                    "Cancelled" => "Đã hủy",
+                    _ => transaction.Status
+                };
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        @if (!string.IsNullOrEmpty(transaction.RewardProduct?.ImageUrl))
+                        {
+                            <img src="@transaction.RewardProduct.ImageUrl" class="card-img-top" alt="@transaction.RewardProduct.Name" style="height: 200px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="bi bi-gift" style="font-size: 4rem; color: white;"></i>
+                            </div>
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@transaction.RewardProduct?.Name</h5>
+                            <p class="card-text small text-muted">@transaction.RewardProduct?.Description</p>
+                            
+                            <div class="mb-2">
+                                <span class="badge bg-@statusClass">@statusText</span>
+                            </div>
+
+                            <div class="border rounded p-2 bg-light mb-2">
+                                <small class="text-muted d-block">Mã quà tặng:</small>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong class="font-monospace" id="code-@transaction.Id">@transaction.RedemptionCode</strong>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="copyCode('@transaction.RedemptionCode', @transaction.Id)">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="small">
+                                <div><i class="bi bi-calendar"></i> Ngày đổi: @transaction.TransactionDate.ToString("dd/MM/yyyy HH:mm")</div>
+                                <div><i class="bi bi-coin"></i> Điểm đã dùng: @transaction.PointsSpent</div>
+                                @if (transaction.RedeemedDate.HasValue)
+                                {
+                                    <div><i class="bi bi-check-circle"></i> Đã nhận: @transaction.RedeemedDate.Value.ToString("dd/MM/yyyy HH:mm")</div>
+                                }
+                                @if (!string.IsNullOrEmpty(transaction.Notes))
+                                {
+                                    <div class="mt-2"><i class="bi bi-journal-text"></i> @transaction.Notes</div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function copyCode(code, transactionId) {
+            navigator.clipboard.writeText(code).then(function() {
+                // Show success feedback
+                const btn = event.target.closest('button');
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-check"></i>';
+                btn.classList.remove('btn-outline-primary');
+                btn.classList.add('btn-success');
+                
+                setTimeout(function() {
+                    btn.innerHTML = originalContent;
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-primary');
+                }, 2000);
+            }).catch(function(err) {
+                alert('Không thể sao chép mã: ' + err);
+            });
+        }
+    </script>
+}

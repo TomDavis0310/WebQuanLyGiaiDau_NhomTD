@@ -786,6 +786,9 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -796,6 +799,53 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("RewardProducts");
+                });
+
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.RewardTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("PointsSpent")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("RedeemedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RedemptionCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("RewardProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RewardProductId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RewardTransactions");
                 });
 
             modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.SportDetail", b =>
@@ -1511,6 +1561,25 @@ namespace WebQuanLyGiaiDau_NhomTD.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("WebQuanLyGiaiDau_NhomTD.Models.RewardTransaction", b =>
+                {
+                    b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.RewardProduct", "RewardProduct")
+                        .WithMany()
+                        .HasForeignKey("RewardProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RewardProduct");
 
                     b.Navigation("User");
                 });

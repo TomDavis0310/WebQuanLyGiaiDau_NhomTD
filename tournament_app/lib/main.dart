@@ -2,6 +2,7 @@
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/splash_screen.dart';
 import 'theme/app_theme.dart';
 
@@ -28,13 +29,16 @@ import 'screens/create_edit_team_screen.dart';
 import 'screens/add_edit_player_screen.dart';
 import 'screens/tournament_registration_screen.dart';
 import 'screens/video_highlights_screen.dart';
+import 'screens/shop_screen.dart';
+import 'screens/my_rewards_screen.dart';
+import 'screens/points_history_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Thiết lập thanh trạng thái
   SystemChrome.setSystemUIOverlayStyle(
-    SystemUiOverlayStyle(
+    const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
     ),
@@ -44,8 +48,9 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()..initialize()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: MyApp(),
+      child: const MyApp(),
     ),
   );
 }
@@ -55,12 +60,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'TDSports',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      home: const SplashScreen(),
-      onGenerateRoute: _onGenerateRoute,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: 'TDSports',
+          debugShowCheckedModeBanner: false,
+          themeMode: themeProvider.themeMode,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          home: const SplashScreen(),
+          onGenerateRoute: _onGenerateRoute,
+        );
+      },
     );
   }
 
@@ -89,6 +100,9 @@ class MyApp extends StatelessWidget {
   static const String routeEditPlayer = '/edit-player';
   static const String routeTournamentRegistration = '/tournament-registration';
   static const String routeVideoHighlights = '/video-highlights';
+  static const String routeShop = '/shop';
+  static const String routeMyRewards = '/my-rewards';
+  static const String routePointsHistory = '/points-history';
 
   Route<dynamic>? _onGenerateRoute(RouteSettings settings) {
     final args = settings.arguments as Map<String, dynamic>?;
@@ -231,6 +245,15 @@ class MyApp extends StatelessWidget {
             searchQuery: args?['searchQuery'] as String?,
           ),
         );
+      
+      case routeShop:
+        return MaterialPageRoute(builder: (_) => const ShopScreen());
+      
+      case routeMyRewards:
+        return MaterialPageRoute(builder: (_) => const MyRewardsScreen());
+      
+      case routePointsHistory:
+        return MaterialPageRoute(builder: (_) => const PointsHistoryScreen());
 
       default:
         return null;

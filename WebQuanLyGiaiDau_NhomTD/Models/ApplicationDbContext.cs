@@ -59,6 +59,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
         public DbSet<RewardProduct> RewardProducts { get; set; }
         public DbSet<PointsSetting> PointsSettings { get; set; }
         public DbSet<RedeemTransaction> RedeemTransactions { get; set; }
+        public DbSet<RewardTransaction> RewardTransactions { get; set; }
         
         // Hệ thống bình chọn
         public DbSet<MatchVote> MatchVotes { get; set; }

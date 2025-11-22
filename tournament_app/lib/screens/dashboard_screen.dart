@@ -176,6 +176,49 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildQuickAction(
+                      'Cửa Hàng',
+                      Icons.shopping_bag,
+                      Colors.orange,
+                      () {
+                        Navigator.pushNamed(context, '/shop');
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildQuickAction(
+                      'Túi Quà',
+                      Icons.card_giftcard,
+                      Colors.pink,
+                      () {
+                        Navigator.pushNamed(context, '/my-rewards');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildQuickAction(
+                      'Lịch Sử Điểm',
+                      Icons.history,
+                      Colors.indigo,
+                      () {
+                        Navigator.pushNamed(context, '/points-history');
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(child: Container()), // Empty space for alignment
+                ],
+              ),
               const SizedBox(height: 24),
 
               // My Teams Section

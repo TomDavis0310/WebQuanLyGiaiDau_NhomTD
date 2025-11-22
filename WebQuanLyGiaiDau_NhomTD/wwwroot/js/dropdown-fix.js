@@ -1,72 +1,63 @@
-// Dropdown Fix for Admin Menu
+// Dropdown Fix for Admin Menu and Profile
 document.addEventListener('DOMContentLoaded', function() {
-    // Xử lý trung chuyển Bootstrap Dropdowns
-    initializeDropdowns();
-    
-    // Bootstrap 5 Dropdown Popper Initialization (thêm animation tùy chỉnh)
-    initBootstrapDropdownsWithAnimation();
+    // Đợi một chút để Bootstrap khởi tạo xong
+    setTimeout(function() {
+        // Bootstrap 5 Dropdown Initialization
+        initBootstrapDropdowns();
+    }, 100);
 });
 
-function initializeDropdowns() {
-    // Fix for dropdowns not working correctly
-    const dropdowns = document.querySelectorAll('.nav-item-enhanced.dropdown');
+function initBootstrapDropdowns() {
+    // Khởi tạo tất cả các dropdown bằng Bootstrap 5
+    const dropdownElementList = document.querySelectorAll('[data-bs-toggle="dropdown"]');
     
-    if (dropdowns.length === 0) {
-        return; // No dropdowns found, exit gracefully
+    if (typeof bootstrap === 'undefined') {
+        console.error('Bootstrap is not loaded!');
+        return;
     }
     
-    dropdowns.forEach(dropdown => {
-        const toggleBtn = dropdown.querySelector('.dropdown-toggle');
-        const menu = dropdown.querySelector('.dropdown-menu');
-        
-        if (toggleBtn && menu) {
-            // Handle hover event
-            dropdown.addEventListener('mouseenter', function() {
-                menu.classList.add('show');
-            });
-            
-            dropdown.addEventListener('mouseleave', function() {
-                menu.classList.remove('show');
-            });
-            
-            // Handle click event for mobile
-            toggleBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Toggle the 'show' class
-                menu.classList.toggle('show');
-            });
-            
-            // Close when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!dropdown.contains(e.target)) {
-                    menu.classList.remove('show');
-                }
-            });
-        }
-    });
-}
-
-function initBootstrapDropdownsWithAnimation() {
-    // Thêm hiệu ứng mượt mà cho bootstrap dropdowns
-    const dropdownToggle = document.querySelectorAll('.dropdown-toggle');
+    if (dropdownElementList.length === 0) {
+        console.log('No dropdowns found');
+        return;
+    }
     
-    if (typeof bootstrap !== 'undefined' && dropdownToggle.length > 0) {
-        try {
-            dropdownToggle.forEach(toggle => {
-                // Kiểm tra xem dropdown đã được khởi tạo chưa
-                if (!toggle.classList.contains('dropdown-initialized')) {
-                    const dropdown = new bootstrap.Dropdown(toggle, {
-                        // Auto close khi click bên ngoài
-                        autoClose: true
-                    });
-                    // Đánh dấu đã khởi tạo
-                    toggle.classList.add('dropdown-initialized');
-                }
-            });
-        } catch (error) {
-            console.log("Dropdown initialization error:", error);
-        }
+    try {
+        dropdownElementList.forEach(function(dropdownToggleEl) {
+            // Kiểm tra xem đã được khởi tạo chưa
+            if (!dropdownToggleEl.classList.contains('dropdown-initialized')) {
+                // Khởi tạo dropdown
+                const dropdown = new bootstrap.Dropdown(dropdownToggleEl, {
+                    autoClose: true,
+                    boundary: 'viewport',
+                    popperConfig: null
+                });
+                
+                // Đánh dấu đã khởi tạo
+                dropdownToggleEl.classList.add('dropdown-initialized');
+                
+                // Log để debug
+                console.log('Initialized dropdown:', dropdownToggleEl.id || dropdownToggleEl.className);
+                
+                // Thêm event listener để debug
+                dropdownToggleEl.addEventListener('click', function(e) {
+                    console.log('Dropdown clicked:', this.id || this.className);
+                    // Không preventDefault ở đây, để Bootstrap xử lý
+                });
+                
+                // Listen to show event
+                dropdownToggleEl.addEventListener('show.bs.dropdown', function () {
+                    console.log('Dropdown showing');
+                });
+                
+                // Listen to shown event
+                dropdownToggleEl.addEventListener('shown.bs.dropdown', function () {
+                    console.log('Dropdown shown');
+                });
+            }
+        });
+        
+        console.log('All dropdowns initialized successfully');
+    } catch (error) {
+        console.error('Error initializing dropdowns:', error);
     }
 }
