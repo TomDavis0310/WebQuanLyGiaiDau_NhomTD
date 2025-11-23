@@ -153,15 +153,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
   Widget _buildTeamHeader() {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.blue.shade900,
-            Colors.blue.shade700,
-            Colors.blue.shade500,
-          ],
-        ),
+        gradient: AppTheme.primaryGradient,
       ),
       child: SafeArea(
         child: Column(
@@ -215,7 +207,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
     return Icon(
       Icons.groups,
       size: 50,
-      color: Colors.blue.shade700,
+      color: AppTheme.lightPrimary,
     );
   }
 
@@ -224,12 +216,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
       margin: const EdgeInsets.symmetric(horizontal: AppTheme.spaceLarge),
       padding: const EdgeInsets.all(AppTheme.spaceMedium),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withValues(alpha: 0.2),
-            Colors.white.withValues(alpha: 0.1),
-          ],
-        ),
+        color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.3),
@@ -246,13 +233,14 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
                 const Icon(
                   Icons.sports,
                   size: 16,
-                  color: Colors.white70,
+                  color: Colors.white,
                 ),
                 const SizedBox(width: AppTheme.spaceSmall),
                 Text(
                   'HLV: ${_teamDetail!.coach}',
                   style: AppTheme.bodyMedium.copyWith(
-                    color: Colors.white70,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -329,85 +317,85 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
   }
 
   Widget _buildPlayerCard(Player player) {
-    return Card(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          // Navigate to player detail
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PlayerDetailScreen(playerId: player.playerId),
-            ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // Player Avatar
-              _buildPlayerAvatar(player),
-              const SizedBox(width: 16),
-              // Player Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      player.fullName,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    if (player.position != null)
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.sports_handball,
-                            size: 14,
-                            color: Colors.grey[600],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            player.position!,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
+      decoration: AppTheme.cardDecoration(isDark: isDark),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          onTap: () {
+            // Navigate to player detail
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PlayerDetailScreen(playerId: player.playerId),
               ),
-              // Jersey Number
-              if (player.number != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade700,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    '#${player.number}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                // Player Avatar
+                _buildPlayerAvatar(player),
+                const SizedBox(width: 16),
+                // Player Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        player.fullName,
+                        style: AppTheme.titleMedium.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      if (player.position != null)
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.sports_handball,
+                              size: 14,
+                              color: AppTheme.getTextSecondaryColor(context),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              player.position!,
+                              style: AppTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                    ],
                   ),
                 ),
-            ],
+                // Jersey Number
+                if (player.number != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.getPrimaryColor(context).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppTheme.getPrimaryColor(context).withOpacity(0.3),
+                      ),
+                    ),
+                    child: Text(
+                      '#${player.number}',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.getPrimaryColor(context),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -424,7 +412,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
           shape: BoxShape.circle,
           color: Colors.grey[200],
           border: Border.all(
-            color: Colors.blue.shade700,
+            color: AppTheme.lightPrimary,
             width: 2,
           ),
         ),
@@ -505,84 +493,79 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
     final result = match.getResult(_teamDetail!.name);
     final opponent = match.getOpponent(_teamDetail!.name);
     final score = match.getScore(_teamDetail!.name);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MatchDetailScreen(matchId: match.id),
-            ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Tournament & Date
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      match.tournament.name,
+      decoration: AppTheme.cardDecoration(isDark: isDark),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MatchDetailScreen(matchId: match.id),
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Tournament & Date
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        match.tournament.name,
+                        style: AppTheme.bodySmall.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      _formatDate(match.matchDate),
+                      style: AppTheme.bodySmall,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Match Result
+                Row(
+                  children: [
+                    // Result Badge
+                    _buildResultBadge(result),
+                    const SizedBox(width: 12),
+                    // Opponent
+                    Expanded(
+                      child: Text(
+                        'vs $opponent',
+                        style: AppTheme.titleMedium.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    // Score
+                    Text(
+                      score,
                       style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  Text(
-                    _formatDate(match.matchDate),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              // Match Result
-              Row(
-                children: [
-                  // Result Badge
-                  _buildResultBadge(result),
-                  const SizedBox(width: 12),
-                  // Opponent
-                  Expanded(
-                    child: Text(
-                      'vs $opponent',
-                      style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: _getResultColor(result),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  // Score
-                  Text(
-                    score,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: _getResultColor(result),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -595,15 +578,15 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
 
     switch (result) {
       case 'W':
-        color = Colors.green;
+        color = AppTheme.lightAccentGreen;
         text = 'THẮNG';
         break;
       case 'L':
-        color = Colors.red;
+        color = AppTheme.lightAccentCoral;
         text = 'THUA';
         break;
       case 'D':
-        color = Colors.orange;
+        color = AppTheme.lightAccentYellow;
         text = 'HÒA';
         break;
       default:
@@ -611,10 +594,15 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
         text = 'TBD';
     }
 
+    // Use darker shade for text if using pastel background
+    Color textColor = result == 'D' ? Colors.brown : (result == 'TBD' ? Colors.grey[700]! : Colors.white);
+    if (result == 'W') textColor = Colors.green[800]!;
+    if (result == 'L') textColor = Colors.red[800]!;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withOpacity(0.2),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: color, width: 1),
       ),
@@ -623,7 +611,7 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: color,
+          color: textColor,
         ),
       ),
     );
@@ -632,11 +620,11 @@ class _TeamDetailScreenState extends State<TeamDetailScreen>
   Color _getResultColor(String result) {
     switch (result) {
       case 'W':
-        return Colors.green;
+        return Colors.green[700]!;
       case 'L':
-        return Colors.red;
+        return Colors.red[700]!;
       case 'D':
-        return Colors.orange;
+        return Colors.orange[800]!;
       default:
         return Colors.grey;
     }

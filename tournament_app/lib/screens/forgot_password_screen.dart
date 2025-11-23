@@ -3,6 +3,7 @@ import 'dart:async';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/custom_button.dart';
+import '../widgets/animated_wrapper.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -85,9 +86,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           _startResendTimer();
 
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Mã xác nhận đã được gửi đến email'),
-              backgroundColor: Colors.green,
+            SnackBar(
+              content: const Text('Mã xác nhận đã được gửi đến email'),
+              backgroundColor: Theme.of(context).brightness == Brightness.dark 
+                  ? AppTheme.darkAccentGreen 
+                  : AppTheme.lightAccentGreen,
             ),
           );
         } else {
@@ -136,9 +139,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           });
 
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Đặt lại mật khẩu thành công'),
-              backgroundColor: Colors.green,
+            SnackBar(
+              content: const Text('Đặt lại mật khẩu thành công'),
+              backgroundColor: Theme.of(context).brightness == Brightness.dark 
+                  ? AppTheme.darkAccentGreen 
+                  : AppTheme.lightAccentGreen,
             ),
           );
 
@@ -166,74 +171,111 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = isDark ? const Color(0xFF1A1A1A) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    
+    final successColor = isDark ? AppTheme.darkAccentGreen : AppTheme.lightAccentGreen;
+    final errorColor = isDark ? AppTheme.darkAccentCoral : AppTheme.lightAccentCoral;
+
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text('Quên Mật Khẩu'),
+        title: Text(
+          'Quên Mật Khẩu',
+          style: TextStyle(color: textColor),
+        ),
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        iconTheme: IconThemeData(color: textColor),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Progress Indicator
-              _buildProgressIndicator(),
+              AnimatedWrapper(
+                index: 0,
+                child: _buildProgressIndicator(context),
+              ),
               const SizedBox(height: 32),
 
               // Success Message
               if (_successMessage != null)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.green[300]!),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.check_circle_outline, color: Colors.green[700]),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _successMessage!,
-                          style: TextStyle(color: Colors.green[700]),
-                        ),
+                AnimatedWrapper(
+                  index: 1,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: successColor.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: successColor,
                       ),
-                    ],
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle_outline, 
+                          color: isDark ? Colors.green[300] : Colors.green[700]
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _successMessage!,
+                            style: TextStyle(
+                              color: isDark ? Colors.green[300] : Colors.green[700]
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
               // Error Message
               if (_errorMessage != null)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.red[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red[300]!),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.error_outline, color: Colors.red[700]),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _errorMessage!,
-                          style: TextStyle(color: Colors.red[700]),
-                        ),
+                AnimatedWrapper(
+                  index: 1,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: errorColor.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: errorColor,
                       ),
-                    ],
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.error_outline, 
+                          color: isDark ? Colors.red[300] : Colors.red[700]
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _errorMessage!,
+                            style: TextStyle(
+                              color: isDark ? Colors.red[300] : Colors.red[700]
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
               // Step Content
-              if (_currentStep == 0) _buildEmailStep(),
-              if (_currentStep == 1) _buildCodeStep(),
-              if (_currentStep == 2) _buildSuccessStep(),
+              AnimatedWrapper(
+                index: 2,
+                child: _buildCurrentStep(context),
+              ),
             ],
           ),
         ),
@@ -241,29 +283,45 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  Widget _buildProgressIndicator() {
+  Widget _buildCurrentStep(BuildContext context) {
+    if (_currentStep == 0) return _buildEmailStep(context);
+    if (_currentStep == 1) return _buildCodeStep(context);
+    if (_currentStep == 2) return _buildSuccessStep(context);
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildProgressIndicator(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final inactiveColor = isDark ? Colors.grey[700] : Colors.grey[300];
+    final activeColor = AppTheme.getPrimaryColor(context);
+
     return Row(
       children: [
-        _buildProgressStep(1, 'Email', _currentStep >= 0),
+        _buildProgressStep(context, 1, 'Email', _currentStep >= 0),
         Expanded(
           child: Container(
             height: 2,
-            color: _currentStep >= 1 ? Colors.blue : Colors.grey[300],
+            color: _currentStep >= 1 ? activeColor : inactiveColor,
           ),
         ),
-        _buildProgressStep(2, 'Mã xác nhận', _currentStep >= 1),
+        _buildProgressStep(context, 2, 'Mã xác nhận', _currentStep >= 1),
         Expanded(
           child: Container(
             height: 2,
-            color: _currentStep >= 2 ? Colors.blue : Colors.grey[300],
+            color: _currentStep >= 2 ? activeColor : inactiveColor,
           ),
         ),
-        _buildProgressStep(3, 'Hoàn thành', _currentStep >= 2),
+        _buildProgressStep(context, 3, 'Hoàn thành', _currentStep >= 2),
       ],
     );
   }
 
-  Widget _buildProgressStep(int step, String label, bool isActive) {
+  Widget _buildProgressStep(BuildContext context, int step, String label, bool isActive) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeColor = AppTheme.getPrimaryColor(context);
+    final inactiveColor = isDark ? Colors.grey[700] : Colors.grey[300];
+    final secondaryTextColor = AppTheme.getTextSecondaryColor(context);
+
     return Column(
       children: [
         Container(
@@ -271,7 +329,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           height: 40,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isActive ? Colors.blue : Colors.grey[300],
+            color: isActive ? activeColor : inactiveColor,
+            boxShadow: isActive ? [
+              BoxShadow(
+                color: activeColor.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              )
+            ] : null,
           ),
           child: Center(
             child: isActive && _currentStep > step - 1
@@ -279,7 +344,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 : Text(
                     '$step',
                     style: TextStyle(
-                      color: isActive ? Colors.white : Colors.grey[600],
+                      color: isActive ? Colors.white : (isDark ? Colors.grey[400] : Colors.grey[600]),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -290,7 +355,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           label,
           style: TextStyle(
             fontSize: 11,
-            color: isActive ? Colors.blue : Colors.grey[600],
+            color: isActive ? activeColor : secondaryTextColor,
             fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
           ),
           textAlign: TextAlign.center,
@@ -299,15 +364,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  Widget _buildEmailStep() {
+  Widget _buildEmailStep(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final secondaryTextColor = AppTheme.getTextSecondaryColor(context);
+    final inputFillColor = isDark ? const Color(0xFF2C2C2C) : Colors.grey[50];
+    final borderColor = AppTheme.getBorderColor(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
+        Text(
           'Nhập địa chỉ email',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
+            color: textColor,
           ),
         ),
         const SizedBox(height: 8),
@@ -315,7 +387,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           'Chúng tôi sẽ gửi mã xác nhận đến email của bạn',
           style: TextStyle(
             fontSize: 14,
-            color: Colors.grey[600],
+            color: secondaryTextColor,
           ),
         ),
         const SizedBox(height: 32),
@@ -323,15 +395,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         // Email Field
         TextFormField(
           controller: _emailController,
+          style: TextStyle(color: textColor),
           decoration: InputDecoration(
             labelText: 'Email *',
             hintText: 'Nhập email của bạn',
-            prefixIcon: const Icon(Icons.email_outlined),
+            labelStyle: TextStyle(color: secondaryTextColor),
+            hintStyle: TextStyle(color: secondaryTextColor.withOpacity(0.7)),
+            prefixIcon: Icon(Icons.email_outlined, color: secondaryTextColor),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: borderColor),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: borderColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppTheme.getPrimaryColor(context)),
             ),
             filled: true,
-            fillColor: Colors.grey[50],
+            fillColor: inputFillColor,
           ),
           keyboardType: TextInputType.emailAddress,
           validator: (value) {
@@ -350,7 +434,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         // Send Code Button
         CustomButton(
           text: 'Gửi Mã Xác Nhận',
-          gradient: AppTheme.primaryGradient,
+          gradient: AppTheme.getPrimaryGradient(context),
           isLoading: _isLoading,
           onPressed: _sendResetCode,
         ),
@@ -358,15 +442,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  Widget _buildCodeStep() {
+  Widget _buildCodeStep(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final secondaryTextColor = AppTheme.getTextSecondaryColor(context);
+    final inputFillColor = isDark ? const Color(0xFF2C2C2C) : Colors.grey[50];
+    final borderColor = AppTheme.getBorderColor(context);
+    final primaryColor = AppTheme.getPrimaryColor(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
+        Text(
           'Nhập mã xác nhận',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
+            color: textColor,
           ),
         ),
         const SizedBox(height: 8),
@@ -374,7 +466,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           'Mã xác nhận đã được gửi đến ${_emailController.text}',
           style: TextStyle(
             fontSize: 14,
-            color: Colors.grey[600],
+            color: secondaryTextColor,
           ),
         ),
         const SizedBox(height: 32),
@@ -382,15 +474,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         // Verification Code
         TextFormField(
           controller: _codeController,
+          style: TextStyle(color: textColor),
           decoration: InputDecoration(
             labelText: 'Mã xác nhận *',
             hintText: 'Nhập mã xác nhận',
-            prefixIcon: const Icon(Icons.pin_outlined),
+            labelStyle: TextStyle(color: secondaryTextColor),
+            hintStyle: TextStyle(color: secondaryTextColor.withOpacity(0.7)),
+            prefixIcon: Icon(Icons.pin_outlined, color: secondaryTextColor),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: borderColor),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: borderColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: primaryColor),
             ),
             filled: true,
-            fillColor: Colors.grey[50],
+            fillColor: inputFillColor,
           ),
           keyboardType: TextInputType.number,
           maxLength: 6,
@@ -411,15 +515,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         TextFormField(
           controller: _newPasswordController,
           obscureText: _obscurePassword,
+          style: TextStyle(color: textColor),
           decoration: InputDecoration(
             labelText: 'Mật khẩu mới *',
             hintText: 'Nhập mật khẩu mới',
-            prefixIcon: const Icon(Icons.lock_outline),
+            labelStyle: TextStyle(color: secondaryTextColor),
+            hintStyle: TextStyle(color: secondaryTextColor.withOpacity(0.7)),
+            prefixIcon: Icon(Icons.lock_outline, color: secondaryTextColor),
             suffixIcon: IconButton(
               icon: Icon(
                 _obscurePassword
                     ? Icons.visibility_outlined
                     : Icons.visibility_off_outlined,
+                color: secondaryTextColor,
               ),
               onPressed: () {
                 setState(() {
@@ -429,9 +537,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: borderColor),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: borderColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: primaryColor),
             ),
             filled: true,
-            fillColor: Colors.grey[50],
+            fillColor: inputFillColor,
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -450,15 +567,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         TextFormField(
           controller: _confirmPasswordController,
           obscureText: _obscureConfirmPassword,
+          style: TextStyle(color: textColor),
           decoration: InputDecoration(
             labelText: 'Xác nhận mật khẩu *',
             hintText: 'Nhập lại mật khẩu mới',
-            prefixIcon: const Icon(Icons.lock_outline),
+            labelStyle: TextStyle(color: secondaryTextColor),
+            hintStyle: TextStyle(color: secondaryTextColor.withOpacity(0.7)),
+            prefixIcon: Icon(Icons.lock_outline, color: secondaryTextColor),
             suffixIcon: IconButton(
               icon: Icon(
                 _obscureConfirmPassword
                     ? Icons.visibility_outlined
                     : Icons.visibility_off_outlined,
+                color: secondaryTextColor,
               ),
               onPressed: () {
                 setState(() {
@@ -468,9 +589,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: borderColor),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: borderColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: primaryColor),
             ),
             filled: true,
-            fillColor: Colors.grey[50],
+            fillColor: inputFillColor,
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -488,7 +618,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         // Reset Password Button
         CustomButton(
           text: 'Đặt Lại Mật Khẩu',
-          gradient: AppTheme.primaryGradient,
+          gradient: AppTheme.getPrimaryGradient(context),
           isLoading: _isLoading,
           onPressed: _verifyAndResetPassword,
         ),
@@ -504,6 +634,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               _resendCountdown > 0
                   ? 'Gửi lại mã sau ${_resendCountdown}s'
                   : 'Gửi lại mã xác nhận',
+              style: TextStyle(
+                color: _resendCountdown > 0 ? secondaryTextColor : primaryColor,
+              ),
             ),
           ),
         ),
@@ -511,7 +644,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  Widget _buildSuccessStep() {
+  Widget _buildSuccessStep(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final secondaryTextColor = AppTheme.getTextSecondaryColor(context);
+    final successColor = isDark ? AppTheme.darkAccentGreen : AppTheme.lightAccentGreen;
+
     return Column(
       children: [
         const SizedBox(height: 32),
@@ -519,21 +657,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           width: 100,
           height: 100,
           decoration: BoxDecoration(
-            color: Colors.green[100],
+            color: successColor.withOpacity(0.2),
             shape: BoxShape.circle,
           ),
           child: Icon(
             Icons.check_circle,
             size: 60,
-            color: Colors.green[700],
+            color: successColor,
           ),
         ),
         const SizedBox(height: 24),
-        const Text(
+        Text(
           'Thành công!',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
+            color: textColor,
           ),
         ),
         const SizedBox(height: 8),
@@ -541,27 +680,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           'Mật khẩu của bạn đã được đặt lại',
           style: TextStyle(
             fontSize: 16,
-            color: Colors.grey[600],
+            color: secondaryTextColor,
           ),
         ),
         const SizedBox(height: 32),
-        ElevatedButton(
+        CustomButton(
+          text: 'Quay Lại Đăng Nhập',
+          gradient: AppTheme.getPrimaryGradient(context),
           onPressed: () {
             Navigator.pop(context);
           },
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: const Text(
-            'Quay Lại Đăng Nhập',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
         ),
       ],
     );

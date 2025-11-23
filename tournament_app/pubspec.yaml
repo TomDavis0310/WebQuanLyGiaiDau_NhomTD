@@ -1,4 +1,4 @@
-﻿name: tournament_app
+name: tournament_app
 description: "Tournament Management Flutter App - Quản Lý Giải Đấu"
 publish_to: 'none'
 
@@ -51,6 +51,9 @@ dependencies:
   
   # Font Awesome icons (for social login buttons)
   font_awesome_flutter: ^10.7.0
+  flutter_staggered_animations: ^1.1.1
+  google_fonts: ^6.3.2
+  animations: ^2.1.1
 
 dev_dependencies:
   flutter_test:

@@ -11,6 +11,8 @@ import 'match_detail_screen.dart';
 import 'tournament_bracket_screen.dart';
 import 'standings_screen.dart';
 
+import '../theme/app_theme.dart';
+
 class TournamentDetailScreen extends StatefulWidget {
   final int tournamentId;
 
@@ -372,7 +374,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
     return SliverAppBar(
       expandedHeight: 250,
       pinned: true,
-      backgroundColor: Theme.of(context).primaryColor,
+      backgroundColor: AppTheme.lightPrimary,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () => Navigator.of(context).pop(),
@@ -400,22 +402,26 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
+                    ),
                     child: Icon(
                       Icons.sports,
                       size: 80,
-                      color: Theme.of(context).primaryColor,
+                      color: Colors.white.withOpacity(0.5),
                     ),
                   );
                 },
               )
             else
               Container(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                decoration: BoxDecoration(
+                  gradient: AppTheme.primaryGradient,
+                ),
                 child: Icon(
                   Icons.sports,
                   size: 80,
-                  color: Theme.of(context).primaryColor,
+                  color: Colors.white.withOpacity(0.5),
                 ),
               ),
             // Gradient overlay
@@ -713,25 +719,22 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
   }
 
   Widget _buildInfoCard(String title, List<Widget> children) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: AppTheme.cardDecoration(isDark: isDark),
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: AppTheme.titleLarge.copyWith(
+              fontWeight: FontWeight.bold,
             ),
-            SizedBox(height: 16),
-            ...children,
-          ],
-        ),
+          ),
+          SizedBox(height: 16),
+          ...children,
+        ],
       ),
     );
   }
@@ -768,156 +771,153 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
 
   Widget _buildVotingCard() {
     final hasVoted = tournament!.userHasVoted == true;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.how_to_vote, color: Colors.amber[700], size: 24),
-                SizedBox(width: 8),
-                Text(
-                  'Bình Chọn Vô Địch',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            
-            if (hasVoted) ...[
-              // User has already voted
-              Container(
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.check_circle, color: Colors.green),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Bạn đã bình chọn',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green[800],
-                            ),
-                          ),
-                          if (tournament!.userVotedTeamName != null)
-                            Text(
-                              tournament!.userVotedTeamName!,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green[900],
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ] else ...[
-              // User can vote
+    return Container(
+      decoration: AppTheme.cardDecoration(isDark: isDark),
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.how_to_vote, color: Colors.amber[700], size: 24),
+              SizedBox(width: 8),
               Text(
-                'Chọn đội bạn nghĩ sẽ vô địch:',
-                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-              ),
-              SizedBox(height: 12),
-              
-              // Team selection dropdown
-              DropdownButtonFormField<String>(
-                value: selectedTeamForVoting,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  hintText: 'Chọn đội...',
-                ),
-                items: tournament!.registeredTeams.map((team) {
-                  return DropdownMenuItem<String>(
-                    value: team.name,
-                    child: Text(team.name),
-                  );
-                }).toList(),
-                onChanged: isSubmittingVote ? null : (value) {
-                  setState(() {
-                    selectedTeamForVoting = value;
-                  });
-                },
-              ),
-              SizedBox(height: 12),
-              
-              // Vote button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: isSubmittingVote ? null : submitVote,
-                  icon: isSubmittingVote
-                      ? SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : Icon(Icons.how_to_vote),
-                  label: Text(isSubmittingVote ? 'Đang gửi...' : 'Bình Chọn (+5 điểm)'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber[700],
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-            ],
-            
-            // Voting statistics
-            if (votingStatistics != null) ...[
-              SizedBox(height: 16),
-              Divider(),
-              SizedBox(height: 8),
-              Text(
-                'Thống Kê Bình Chọn',
-                style: TextStyle(
+                'Bình Chọn Vô Địch',
+                style: AppTheme.titleLarge.copyWith(
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-              SizedBox(height: 12),
-              ...((votingStatistics!['teamVotes'] as List<dynamic>?) ?? [])
-                  .map((vote) => _buildVoteStatItem(
-                        vote['teamName'] as String,
-                        vote['voteCount'] as int,
-                        vote['percentage'] as double,
-                      ))
-                  .toList(),
-              SizedBox(height: 8),
-              Text(
-                'Tổng số phiếu: ${votingStatistics!['totalVotes']}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
                 ),
               ),
             ],
+          ),
+          SizedBox(height: 16),
+          
+          if (hasVoted) ...[
+            // User has already voted
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.green),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Bạn đã bình chọn',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green[800],
+                          ),
+                        ),
+                        if (tournament!.userVotedTeamName != null)
+                          Text(
+                            tournament!.userVotedTeamName!,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green[900],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            // User can vote
+            Text(
+              'Chọn đội bạn nghĩ sẽ vô địch:',
+              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+            ),
+            SizedBox(height: 12),
+            
+            // Team selection dropdown
+            DropdownButtonFormField<String>(
+              value: selectedTeamForVoting,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                hintText: 'Chọn đội...',
+              ),
+              items: tournament!.registeredTeams.map((team) {
+                return DropdownMenuItem<String>(
+                  value: team.name,
+                  child: Text(team.name),
+                );
+              }).toList(),
+              onChanged: isSubmittingVote ? null : (value) {
+                setState(() {
+                  selectedTeamForVoting = value;
+                });
+              },
+            ),
+            SizedBox(height: 12),
+            
+            // Vote button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: isSubmittingVote ? null : submitVote,
+                icon: isSubmittingVote
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Icon(Icons.how_to_vote),
+                label: Text(isSubmittingVote ? 'Đang gửi...' : 'Bình Chọn (+5 điểm)'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber[700],
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ),
           ],
-        ),
+          
+          // Voting statistics
+          if (votingStatistics != null) ...[
+            SizedBox(height: 16),
+            Divider(),
+            SizedBox(height: 8),
+            Text(
+              'Thống Kê Bình Chọn',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+            SizedBox(height: 12),
+            ...((votingStatistics!['teamVotes'] as List<dynamic>?) ?? [])
+                .map((vote) => _buildVoteStatItem(
+                      vote['teamName'] as String,
+                      vote['voteCount'] as int,
+                      vote['percentage'] as double,
+                    ))
+                .toList(),
+            SizedBox(height: 8),
+            Text(
+              'Tổng số phiếu: ${votingStatistics!['totalVotes']}',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -960,32 +960,31 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
   }
 
   Widget _buildTeamCard(Team team) {
-    return Card(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
       margin: EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      decoration: AppTheme.cardDecoration(isDark: isDark),
       child: ListTile(
         contentPadding: EdgeInsets.all(16),
         leading: CircleAvatar(
           radius: 30,
-          backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+          backgroundColor: AppTheme.lightPrimary.withOpacity(0.1),
           backgroundImage:
               team.logoUrl != null ? NetworkImage(team.logoUrl!) : null,
           child: team.logoUrl == null
-              ? Icon(Icons.sports, color: Theme.of(context).primaryColor)
+              ? Icon(Icons.sports, color: AppTheme.lightPrimary)
               : null,
         ),
         title: Text(
           team.name,
-          style: TextStyle(
+          style: AppTheme.titleMedium.copyWith(
             fontWeight: FontWeight.bold,
-            fontSize: 16,
           ),
         ),
         subtitle: team.coach != null
             ? Text(
                 'HLV: ${team.coach}',
-                style: TextStyle(fontSize: 14),
+                style: AppTheme.bodySmall,
               )
             : null,
         trailing: Icon(Icons.arrow_forward_ios, size: 16),
@@ -1002,148 +1001,151 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
   Widget _buildMatchCard(Match match) {
     final isCompleted = match.status == 'completed';
     final isOngoing = match.status == 'ongoing';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Card(
+    return Container(
       margin: EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          // Navigate to match detail screen
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MatchDetailScreen(matchId: match.id),
-            ),
-          );
-        },
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            children: [
-              // Match Status Badge
-              if (isOngoing)
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.circle, color: Colors.white, size: 8),
-                      SizedBox(width: 4),
-                      Text(
-                        'LIVE',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              if (isOngoing) SizedBox(height: 12),
-
-              // Teams and Score
-              Row(
-                children: [
-                  // Team A
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Icon(Icons.sports, size: 40),
-                        SizedBox(height: 8),
-                        Text(
-                          match.teamA,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Score or VS
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: isCompleted && match.scoreTeamA != null && match.scoreTeamB != null
-                        ? Text(
-                            '${match.scoreTeamA} - ${match.scoreTeamB}',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          )
-                        : Text(
-                            'VS',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                            ),
-                          ),
-                  ),
-
-                  // Team B
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Icon(Icons.sports, size: 40),
-                        SizedBox(height: 8),
-                        Text(
-                          match.teamB,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+      decoration: AppTheme.cardDecoration(isDark: isDark),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          onTap: () {
+            // Navigate to match detail screen
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MatchDetailScreen(matchId: match.id),
               ),
-
-              SizedBox(height: 16),
-              Divider(),
-              SizedBox(height: 8),
-
-              // Match Info
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                      SizedBox(width: 4),
-                      Text(
-                        _formatDateTime(match.matchDate, match.matchTime),
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
-                  if (match.location != null && match.location!.isNotEmpty)
-                    Row(
+            );
+          },
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              children: [
+                // Match Status Badge
+                if (isOngoing)
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.location_on, size: 16, color: Colors.grey),
+                        Icon(Icons.circle, color: Colors.white, size: 8),
                         SizedBox(width: 4),
                         Text(
-                          match.location!,
-                          style:
-                              TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          'LIVE',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
-                ],
-              ),
-            ],
+                  ),
+                if (isOngoing) SizedBox(height: 12),
+
+                // Teams and Score
+                Row(
+                  children: [
+                    // Team A
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Icon(Icons.sports, size: 40, color: AppTheme.lightPrimary),
+                          SizedBox(height: 8),
+                          Text(
+                            match.teamA,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Score or VS
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: isCompleted && match.scoreTeamA != null && match.scoreTeamB != null
+                          ? Text(
+                              '${match.scoreTeamA} - ${match.scoreTeamB}',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.lightPrimary,
+                              ),
+                            )
+                          : Text(
+                              'VS',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              ),
+                            ),
+                    ),
+
+                    // Team B
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Icon(Icons.sports, size: 40, color: AppTheme.lightPrimary),
+                          SizedBox(height: 8),
+                          Text(
+                            match.teamB,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: 16),
+                Divider(),
+                SizedBox(height: 8),
+
+                // Match Info
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                        SizedBox(width: 4),
+                        Text(
+                          _formatDateTime(match.matchDate, match.matchTime),
+                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                    if (match.location != null && match.location!.isNotEmpty)
+                      Row(
+                        children: [
+                          Icon(Icons.location_on, size: 16, color: Colors.grey),
+                          SizedBox(width: 4),
+                          Text(
+                            match.location!,
+                            style:
+                                TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

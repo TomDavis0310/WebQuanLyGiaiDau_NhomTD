@@ -4,6 +4,7 @@ import '../providers/auth_provider.dart';
 import '../widgets/app_logo.dart';
 import '../theme/app_theme.dart';
 import '../widgets/custom_button.dart';
+import '../widgets/animated_wrapper.dart';
 import 'sports_list_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -57,8 +58,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Đăng ký thành công!'),
-            backgroundColor: Colors.green,
+            content: const Text('Đăng ký thành công!'),
+            backgroundColor: AppTheme.getPrimaryColor(context),
           ),
         );
         
@@ -80,10 +81,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppTheme.primaryGradient,
+        decoration: BoxDecoration(
+          gradient: AppTheme.getPrimaryGradient(context),
         ),
         child: SafeArea(
           child: Column(
@@ -99,7 +102,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     Text(
                       'Đăng Ký Tài Khoản',
-                      style: AppTheme.titleLarge.copyWith(
+                      style: AppTheme.lightHeadlineMedium.copyWith(
                         color: Colors.white,
                       ),
                     ),
@@ -114,215 +117,230 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Column(
                     children: [
                       // Logo
-                      AppLogo(height: 80),
+                      AnimatedWrapper(
+                        index: 0,
+                        child: AppLogo(height: 80),
+                      ),
                       const SizedBox(height: 24),
                       
                       // Register Form Card
-                      Card(
-                        elevation: 8,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(AppTheme.spaceLarge),
-                          child: Form(
-                            key: _formKey,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                // Email Field
-                                TextFormField(
-                                  controller: _emailController,
-                                  keyboardType: TextInputType.emailAddress,
-                                  decoration: InputDecoration(
-                                    labelText: 'Email *',
-                                    hintText: 'example@email.com',
-                                    prefixIcon: Icon(Icons.email_outlined),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                      AnimatedWrapper(
+                        index: 1,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
+                            borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                            boxShadow: isDark ? AppTheme.darkCardShadow : AppTheme.lightCardShadow,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(AppTheme.spaceLarge),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  // Email Field
+                                  TextFormField(
+                                    controller: _emailController,
+                                    keyboardType: TextInputType.emailAddress,
+                                    style: TextStyle(color: AppTheme.getTextPrimaryColor(context)),
+                                    decoration: AppTheme.inputDecoration(
+                                      label: 'Email *',
+                                      hint: 'example@email.com',
+                                      prefixIcon: Icons.email_outlined,
+                                    ).copyWith(
+                                      labelStyle: TextStyle(color: AppTheme.getTextSecondaryColor(context)),
+                                      hintStyle: TextStyle(color: AppTheme.getTextSecondaryColor(context).withValues(alpha: 0.5)),
+                                      prefixIconColor: AppTheme.getPrimaryColor(context),
                                     ),
-                                    filled: true,
-                                    fillColor: Colors.grey[50],
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Vui lòng nhập email';
+                                      }
+                                      if (!value.contains('@')) {
+                                        return 'Email không hợp lệ';
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Vui lòng nhập email';
-                                    }
-                                    if (!value.contains('@')) {
-                                      return 'Email không hợp lệ';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                
-                                // Username Field
-                                TextFormField(
-                                  controller: _userNameController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Tên đăng nhập *',
-                                    hintText: 'username',
-                                    prefixIcon: Icon(Icons.person_outlined),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                  const SizedBox(height: 16),
+                                  
+                                  // Username Field
+                                  TextFormField(
+                                    controller: _userNameController,
+                                    style: TextStyle(color: AppTheme.getTextPrimaryColor(context)),
+                                    decoration: AppTheme.inputDecoration(
+                                      label: 'Tên đăng nhập *',
+                                      hint: 'username',
+                                      prefixIcon: Icons.person_outlined,
+                                    ).copyWith(
+                                      labelStyle: TextStyle(color: AppTheme.getTextSecondaryColor(context)),
+                                      hintStyle: TextStyle(color: AppTheme.getTextSecondaryColor(context).withValues(alpha: 0.5)),
+                                      prefixIconColor: AppTheme.getPrimaryColor(context),
                                     ),
-                                    filled: true,
-                                    fillColor: Colors.grey[50],
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Vui lòng nhập tên đăng nhập';
+                                      }
+                                      if (value.length < 3) {
+                                        return 'Tên đăng nhập phải có ít nhất 3 ký tự';
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Vui lòng nhập tên đăng nhập';
-                                    }
-                                    if (value.length < 3) {
-                                      return 'Tên đăng nhập phải có ít nhất 3 ký tự';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                
-                                // Full Name Field (Optional)
-                                TextFormField(
-                                  controller: _fullNameController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Họ và tên',
-                                    hintText: 'Nguyễn Văn A',
-                                    prefixIcon: Icon(Icons.badge_outlined),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                  const SizedBox(height: 16),
+                                  
+                                  // Full Name Field (Optional)
+                                  TextFormField(
+                                    controller: _fullNameController,
+                                    style: TextStyle(color: AppTheme.getTextPrimaryColor(context)),
+                                    decoration: AppTheme.inputDecoration(
+                                      label: 'Họ và tên',
+                                      hint: 'Nguyễn Văn A',
+                                      prefixIcon: Icons.badge_outlined,
+                                    ).copyWith(
+                                      labelStyle: TextStyle(color: AppTheme.getTextSecondaryColor(context)),
+                                      hintStyle: TextStyle(color: AppTheme.getTextSecondaryColor(context).withValues(alpha: 0.5)),
+                                      prefixIconColor: AppTheme.getPrimaryColor(context),
                                     ),
-                                    filled: true,
-                                    fillColor: Colors.grey[50],
                                   ),
-                                ),
-                                const SizedBox(height: 16),
-                                
-                                // Phone Field (Optional)
-                                TextFormField(
-                                  controller: _phoneController,
-                                  keyboardType: TextInputType.phone,
-                                  decoration: InputDecoration(
-                                    labelText: 'Số điện thoại',
-                                    hintText: '0123456789',
-                                    prefixIcon: Icon(Icons.phone_outlined),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                  const SizedBox(height: 16),
+                                  
+                                  // Phone Field (Optional)
+                                  TextFormField(
+                                    controller: _phoneController,
+                                    keyboardType: TextInputType.phone,
+                                    style: TextStyle(color: AppTheme.getTextPrimaryColor(context)),
+                                    decoration: AppTheme.inputDecoration(
+                                      label: 'Số điện thoại',
+                                      hint: '0123456789',
+                                      prefixIcon: Icons.phone_outlined,
+                                    ).copyWith(
+                                      labelStyle: TextStyle(color: AppTheme.getTextSecondaryColor(context)),
+                                      hintStyle: TextStyle(color: AppTheme.getTextSecondaryColor(context).withValues(alpha: 0.5)),
+                                      prefixIconColor: AppTheme.getPrimaryColor(context),
                                     ),
-                                    filled: true,
-                                    fillColor: Colors.grey[50],
                                   ),
-                                ),
-                                const SizedBox(height: 16),
-                                
-                                // Password Field
-                                TextFormField(
-                                  controller: _passwordController,
-                                  obscureText: _obscurePassword,
-                                  decoration: InputDecoration(
-                                    labelText: 'Mật khẩu *',
-                                    hintText: '••••••••',
-                                    prefixIcon: Icon(Icons.lock_outlined),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        _obscurePassword 
-                                            ? Icons.visibility_outlined 
-                                            : Icons.visibility_off_outlined,
+                                  const SizedBox(height: 16),
+                                  
+                                  // Password Field
+                                  TextFormField(
+                                    controller: _passwordController,
+                                    obscureText: _obscurePassword,
+                                    style: TextStyle(color: AppTheme.getTextPrimaryColor(context)),
+                                    decoration: AppTheme.inputDecoration(
+                                      label: 'Mật khẩu *',
+                                      hint: '••••••••',
+                                      prefixIcon: Icons.lock_outlined,
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          _obscurePassword 
+                                              ? Icons.visibility_outlined 
+                                              : Icons.visibility_off_outlined,
+                                          color: AppTheme.getTextSecondaryColor(context),
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _obscurePassword = !_obscurePassword;
+                                          });
+                                        },
                                       ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _obscurePassword = !_obscurePassword;
-                                        });
-                                      },
+                                    ).copyWith(
+                                      labelStyle: TextStyle(color: AppTheme.getTextSecondaryColor(context)),
+                                      hintStyle: TextStyle(color: AppTheme.getTextSecondaryColor(context).withValues(alpha: 0.5)),
+                                      prefixIconColor: AppTheme.getPrimaryColor(context),
                                     ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    filled: true,
-                                    fillColor: Colors.grey[50],
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Vui lòng nhập mật khẩu';
+                                      }
+                                      if (value.length < 6) {
+                                        return 'Mật khẩu phải có ít nhất 6 ký tự';
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Vui lòng nhập mật khẩu';
-                                    }
-                                    if (value.length < 6) {
-                                      return 'Mật khẩu phải có ít nhất 6 ký tự';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                
-                                // Confirm Password Field
-                                TextFormField(
-                                  controller: _confirmPasswordController,
-                                  obscureText: _obscureConfirmPassword,
-                                  decoration: InputDecoration(
-                                    labelText: 'Xác nhận mật khẩu *',
-                                    hintText: '••••••••',
-                                    prefixIcon: Icon(Icons.lock_outlined),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        _obscureConfirmPassword 
-                                            ? Icons.visibility_outlined 
-                                            : Icons.visibility_off_outlined,
+                                  const SizedBox(height: 16),
+                                  
+                                  // Confirm Password Field
+                                  TextFormField(
+                                    controller: _confirmPasswordController,
+                                    obscureText: _obscureConfirmPassword,
+                                    style: TextStyle(color: AppTheme.getTextPrimaryColor(context)),
+                                    decoration: AppTheme.inputDecoration(
+                                      label: 'Xác nhận mật khẩu *',
+                                      hint: '••••••••',
+                                      prefixIcon: Icons.lock_outlined,
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          _obscureConfirmPassword 
+                                              ? Icons.visibility_outlined 
+                                              : Icons.visibility_off_outlined,
+                                          color: AppTheme.getTextSecondaryColor(context),
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _obscureConfirmPassword = 
+                                                !_obscureConfirmPassword;
+                                          });
+                                        },
                                       ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _obscureConfirmPassword = 
-                                              !_obscureConfirmPassword;
-                                        });
-                                      },
+                                    ).copyWith(
+                                      labelStyle: TextStyle(color: AppTheme.getTextSecondaryColor(context)),
+                                      hintStyle: TextStyle(color: AppTheme.getTextSecondaryColor(context).withValues(alpha: 0.5)),
+                                      prefixIconColor: AppTheme.getPrimaryColor(context),
                                     ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    filled: true,
-                                    fillColor: Colors.grey[50],
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Vui lòng xác nhận mật khẩu';
+                                      }
+                                      if (value != _passwordController.text) {
+                                        return 'Mật khẩu xác nhận không khớp';
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Vui lòng xác nhận mật khẩu';
-                                    }
-                                    if (value != _passwordController.text) {
-                                      return 'Mật khẩu xác nhận không khớp';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: AppTheme.spaceLarge),
-                                
-                                // Register Button
-                                Consumer<AuthProvider>(
-                                  builder: (context, authProvider, child) {
-                                    return CustomButton(
-                                      text: 'Đăng Ký',
-                                      gradient: AppTheme.primaryGradient,
-                                      isLoading: authProvider.isLoading,
-                                      onPressed: _handleRegister,
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                
-                                // Already have account
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text('Đã có tài khoản? '),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: Text(
-                                        'Đăng nhập',
+                                  const SizedBox(height: AppTheme.spaceLarge),
+                                  
+                                  // Register Button
+                                  Consumer<AuthProvider>(
+                                    builder: (context, authProvider, child) {
+                                      return CustomButton(
+                                        text: 'Đăng Ký',
+                                        gradient: AppTheme.getPrimaryGradient(context),
+                                        isLoading: authProvider.isLoading,
+                                        onPressed: _handleRegister,
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                  
+                                  // Already have account
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Đã có tài khoản? ',
                                         style: TextStyle(
-                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.getTextSecondaryColor(context),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text(
+                                          'Đăng nhập',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: AppTheme.getPrimaryColor(context),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),

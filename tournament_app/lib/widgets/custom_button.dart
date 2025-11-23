@@ -30,9 +30,9 @@ class CustomButton extends StatelessWidget {
     if (gradient != null) {
       return _buildGradientButton();
     } else if (isOutlined) {
-      return _buildOutlinedButton();
+      return _buildOutlinedButton(context);
     } else {
-      return _buildElevatedButton();
+      return _buildElevatedButton(context);
     }
   }
 
@@ -62,17 +62,17 @@ class CustomButton extends StatelessWidget {
     );
   }
 
-  Widget _buildElevatedButton() {
+  Widget _buildElevatedButton(BuildContext context) {
     return SizedBox(
       width: width,
       height: height ?? 50,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: color ?? AppTheme.primaryBlue,
+          backgroundColor: color ?? AppTheme.getPrimaryColor(context),
           foregroundColor: Colors.white,
           elevation: 0,
-          shadowColor: AppTheme.primaryBlue.withOpacity(0.3),
+          shadowColor: (color ?? AppTheme.getPrimaryColor(context)).withValues(alpha: 0.3),
           padding: const EdgeInsets.symmetric(
             horizontal: AppTheme.spaceLarge,
             vertical: AppTheme.spaceMedium,
@@ -86,16 +86,17 @@ class CustomButton extends StatelessWidget {
     );
   }
 
-  Widget _buildOutlinedButton() {
+  Widget _buildOutlinedButton(BuildContext context) {
+    final primaryColor = color ?? AppTheme.getPrimaryColor(context);
     return SizedBox(
       width: width,
       height: height ?? 50,
       child: OutlinedButton(
         onPressed: isLoading ? null : onPressed,
         style: OutlinedButton.styleFrom(
-          foregroundColor: color ?? AppTheme.primaryBlue,
+          foregroundColor: primaryColor,
           side: BorderSide(
-            color: color ?? AppTheme.primaryBlue,
+            color: primaryColor,
             width: 2,
           ),
           padding: const EdgeInsets.symmetric(
@@ -106,7 +107,7 @@ class CustomButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
           ),
         ),
-        child: _buildButtonContent(color ?? AppTheme.primaryBlue),
+        child: _buildButtonContent(primaryColor),
       ),
     );
   }

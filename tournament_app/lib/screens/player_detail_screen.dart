@@ -233,63 +233,62 @@ class _PlayerDetailScreenState extends State<PlayerDetailScreen>
 
   Widget _buildQuickStats() {
     final stats = _playerDetail!.statistics;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Thống Kê Nhanh',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: AppTheme.cardDecoration(isDark: isDark),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Thống Kê Nhanh',
+            style: AppTheme.titleLarge.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatItem(
+                  'Trận Đấu',
+                  stats.totalMatches.toString(),
+                  Icons.sports_basketball,
+                  AppTheme.lightPrimary,
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildStatItem(
-                    'Trận Đấu',
-                    stats.totalMatches.toString(),
-                    Icons.sports_basketball,
-                    Colors.blue,
-                  ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatItem(
+                  'Tổng Điểm',
+                  stats.totalPoints.toString(),
+                  Icons.star,
+                  Colors.orange,
                 ),
-                Expanded(
-                  child: _buildStatItem(
-                    'Tổng Điểm',
-                    stats.totalPoints.toString(),
-                    Icons.star,
-                    Colors.orange,
-                  ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatItem(
+                  'TB/Trận',
+                  stats.averagePoints.toStringAsFixed(1),
+                  Icons.trending_up,
+                  Colors.green,
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildStatItem(
-                    'TB/Trận',
-                    stats.averagePoints.toStringAsFixed(1),
-                    Icons.trending_up,
-                    Colors.green,
-                  ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatItem(
+                  'Cao Nhất',
+                  stats.highestScore.toString(),
+                  Icons.emoji_events,
+                  Colors.amber,
                 ),
-                Expanded(
-                  child: _buildStatItem(
-                    'Cao Nhất',
-                    stats.highestScore.toString(),
-                    Icons.emoji_events,
-                    Colors.amber,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -328,11 +327,13 @@ class _PlayerDetailScreenState extends State<PlayerDetailScreen>
 
   Widget _buildTeamSection() {
     final team = _playerDetail!.team!;
-    return Card(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: AppTheme.cardDecoration(isDark: isDark),
       child: ListTile(
         leading: team.logo != null
             ? Image.network(team.logo!, width: 50, height: 50)
-            : Icon(Icons.shield, size: 50),
+            : Icon(Icons.shield, size: 50, color: AppTheme.lightPrimary),
         title: Text(
           team.name,
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -364,96 +365,103 @@ class _PlayerDetailScreenState extends State<PlayerDetailScreen>
   }
 
   Widget _buildMatchCard(PlayerMatch match) {
-    return Card(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MatchDetailScreen(matchId: match.matchId),
-            ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    match.formattedDate,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  ),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: match.status == 'Đã kết thúc'
-                          ? Colors.grey[300]
-                          : Colors.green[100],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      match.status,
-                      style: TextStyle(fontSize: 10),
-                    ),
-                  ),
-                ],
+      decoration: AppTheme.cardDecoration(isDark: isDark),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MatchDetailScreen(matchId: match.matchId),
               ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      match.teamA,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      '${match.scoreA ?? '-'} : ${match.scoreB ?? '-'}',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      match.teamB,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.star, color: Colors.orange, size: 16),
-                    const SizedBox(width: 4),
                     Text(
-                      '${match.points} điểm',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue[900],
+                      match.formattedDate,
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: match.status == 'Đã kết thúc'
+                            ? Colors.grey[300]
+                            : Colors.green[100],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        match.status,
+                        style: TextStyle(fontSize: 10),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        match.teamA,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        '${match.scoreA ?? '-'} : ${match.scoreB ?? '-'}',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.lightPrimary,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        match.teamB,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.lightPrimary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.star, color: Colors.orange, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${match.points} điểm',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.lightPrimaryDark,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -487,26 +495,23 @@ class _PlayerDetailScreenState extends State<PlayerDetailScreen>
 
   Widget _buildAdvancedStats() {
     final stats = _statistics!;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Thống Kê Chi Tiết',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildStatRow('Tỷ lệ thắng', '${stats.winRate.toStringAsFixed(1)}%'),
-            _buildStatRow('Chuỗi trận ghi điểm', '${stats.currentStreak} trận'),
-            _buildStatRow('Trung bình điểm', stats.averagePoints.toStringAsFixed(2)),
-            _buildStatRow('Điểm cao nhất', stats.highestScore.toString()),
-          ],
-        ),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: AppTheme.cardDecoration(isDark: isDark),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Thống Kê Chi Tiết',
+            style: AppTheme.titleLarge.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          _buildStatRow('Tỷ lệ thắng', '${stats.winRate.toStringAsFixed(1)}%'),
+          _buildStatRow('Chuỗi trận ghi điểm', '${stats.currentStreak} trận'),
+          _buildStatRow('Trung bình điểm', stats.averagePoints.toStringAsFixed(2)),
+          _buildStatRow('Điểm cao nhất', stats.highestScore.toString()),
+        ],
       ),
     );
   }
@@ -534,89 +539,89 @@ class _PlayerDetailScreenState extends State<PlayerDetailScreen>
     final form = _statistics!.recentForm;
     if (form.isEmpty) return SizedBox.shrink();
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Phong Độ Gần Đây',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: form.map((points) {
-                return Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: points > 0 ? Colors.green : Colors.grey[300],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    points.toString(),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: AppTheme.cardDecoration(isDark: isDark),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Phong Độ Gần Đây',
+            style: AppTheme.titleLarge.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: form.map((points) {
+              return Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: points > 0 ? AppTheme.lightAccentGreen : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
                     ),
+                  ],
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  points.toString(),
+                  style: TextStyle(
+                    color: points > 0 ? Colors.black87 : Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
                   ),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildPerformanceChart() {
     final performance = _playerDetail!.performanceData;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     if (performance.isEmpty) {
-      return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Text('Chưa có dữ liệu biểu đồ'),
-        ),
+      return Container(
+        decoration: AppTheme.cardDecoration(isDark: isDark),
+        padding: const EdgeInsets.all(16),
+        child: Text('Chưa có dữ liệu biểu đồ'),
       );
     }
 
     // Simple bar chart representation
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Biểu Đồ Hiệu Suất',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+    return Container(
+      decoration: AppTheme.cardDecoration(isDark: isDark),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Biểu Đồ Hiệu Suất',
+            style: AppTheme.titleLarge.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          Text('Dữ liệu ${performance.length} trận đấu gần nhất'),
+          const SizedBox(height: 8),
+          // Placeholder for chart
+          Container(
+            height: 200,
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(8),
             ),
-            const SizedBox(height: 16),
-            Text('Dữ liệu ${performance.length} trận đấu gần nhất'),
-            const SizedBox(height: 8),
-            // Placeholder for chart
-            Container(
-              height: 200,
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Center(
-                child: Text('Biểu đồ sẽ hiển thị ở đây'),
-              ),
+            child: Center(
+              child: Text('Biểu đồ sẽ hiển thị ở đây'),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -737,110 +742,117 @@ class _PlayerMatchesListViewState extends State<_PlayerMatchesListView> {
   }
 
   Widget _buildMatchCard(PlayerMatch match) {
-    return Card(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MatchDetailScreen(matchId: match.matchId),
-            ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    match.formattedDate,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  ),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: match.status == 'Đã kết thúc'
-                          ? Colors.grey[300]
-                          : Colors.green[100],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      match.status,
-                      style: TextStyle(fontSize: 10),
-                    ),
-                  ),
-                ],
+      decoration: AppTheme.cardDecoration(isDark: isDark),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MatchDetailScreen(matchId: match.matchId),
               ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      match.teamA,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      match.formattedDate,
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      '${match.scoreA ?? '-'} : ${match.scoreB ?? '-'}',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: match.status == 'Đã kết thúc'
+                            ? Colors.grey[300]
+                            : Colors.green[100],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        match.status,
+                        style: TextStyle(fontSize: 10),
                       ),
                     ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      match.teamB,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-              ),
-              if (match.location != null) ...[
-                const SizedBox(height: 8),
+                  ],
+                ),
+                const SizedBox(height: 12),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.location_on, size: 14, color: Colors.grey),
-                    const SizedBox(width: 4),
-                    Text(
-                      match.location!,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    Expanded(
+                      child: Text(
+                        match.teamA,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        '${match.scoreA ?? '-'} : ${match.scoreB ?? '-'}',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.lightPrimary,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        match.teamB,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ],
+                ),
+                if (match.location != null) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.location_on, size: 14, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Text(
+                        match.location!,
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 12),
+                Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.lightPrimary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.star, color: Colors.orange, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${match.points} điểm (${match.scoringCount} lần ghi)',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.lightPrimaryDark,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
-              const SizedBox(height: 12),
-              Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.star, color: Colors.orange, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${match.points} điểm (${match.scoringCount} lần ghi)',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue[900],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

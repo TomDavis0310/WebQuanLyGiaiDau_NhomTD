@@ -37,6 +37,7 @@ class AuthService {
         );
       }
     } catch (e) {
+      print('Login error: $e');
       // Temporary: Return mock success for development
       // TODO: Remove this when backend Auth API is ready
       return _mockLogin(request);

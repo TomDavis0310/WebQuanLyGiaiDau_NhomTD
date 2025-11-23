@@ -48,7 +48,7 @@ class _MyRewardsScreenState extends State<MyRewardsScreen> {
 
       // Load user points
       final pointsResponse = await http.get(
-        Uri.parse('${ApiService.baseUrl}/Shop/my-points'),
+        Uri.parse('${ApiService.baseUrl}/ShopApi/my-points'),
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
           'Authorization': 'Bearer $_authToken',
@@ -62,7 +62,7 @@ class _MyRewardsScreenState extends State<MyRewardsScreen> {
 
       // Load rewards
       final rewardsResponse = await http.get(
-        Uri.parse('${ApiService.baseUrl}/Shop/my-rewards'),
+        Uri.parse('${ApiService.baseUrl}/ShopApi/my-rewards'),
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
           'Authorization': 'Bearer $_authToken',
@@ -214,7 +214,7 @@ class _MyRewardsScreenState extends State<MyRewardsScreen> {
                     child: transaction.product.imageUrl != null
                         ? Image.network(
                             ApiService.convertImageUrl(
-                                transaction.product.imageUrl!),
+                                transaction.product.imageUrl)!,
                             width: 60,
                             height: 60,
                             fit: BoxFit.cover,
@@ -359,7 +359,7 @@ class _MyRewardsScreenState extends State<MyRewardsScreen> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Image.network(
-                      ApiService.convertImageUrl(transaction.product.imageUrl!),
+                      ApiService.convertImageUrl(transaction.product.imageUrl)!,
                       height: 150,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stack) =>

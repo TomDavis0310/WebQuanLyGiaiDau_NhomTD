@@ -7,18 +7,21 @@ import '../widgets/custom_card.dart';
 import 'login_screen.dart';
 import 'edit_profile_screen.dart';
 import 'change_password_screen.dart';
+import 'settings_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  final bool showAppBar;
+  
+  const ProfileScreen({super.key, this.showAppBar = true});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: showAppBar ? AppBar(
         title: Text('Thông Tin Cá Nhân'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
-      ),
+      ) : null,
       body: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
           if (!authProvider.isAuthenticated) {
@@ -200,6 +203,21 @@ class ProfileScreen extends StatelessWidget {
                               ),
                             );
                           }
+                        },
+                      ),
+                      const SizedBox(height: AppTheme.spaceMedium),
+
+                      CustomButton(
+                        text: 'Cài Đặt',
+                        icon: Icons.settings_outlined,
+                        isOutlined: true,
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SettingsScreen(),
+                            ),
+                          );
                         },
                       ),
                       const SizedBox(height: AppTheme.spaceMedium),

@@ -5,6 +5,7 @@ import '../widgets/app_logo.dart';
 import '../widgets/google_signin_button.dart';
 import '../widgets/custom_button.dart';
 import '../theme/app_theme.dart';
+import '../widgets/animated_wrapper.dart';
 import 'register_screen.dart';
 import 'sports_list_screen.dart';
 import 'forgot_password_screen.dart';
@@ -99,10 +100,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppTheme.primaryGradient,
+        decoration: BoxDecoration(
+          gradient: AppTheme.getPrimaryGradient(context),
         ),
         child: SafeArea(
           child: Center(
@@ -112,238 +115,264 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Logo with animation
-                  Hero(
-                    tag: 'app_logo',
-                    child: AppLogo(height: 120),
+                  AnimatedWrapper(
+                    index: 0,
+                    child: Hero(
+                      tag: 'app_logo',
+                      child: AppLogo(height: 120),
+                    ),
                   ),
                   const SizedBox(height: AppTheme.spaceMedium),
                   
                   // App Name
-                  Text(
-                    'TDSports',
-                    style: AppTheme.displayLarge.copyWith(
-                      color: Colors.white,
-                      fontSize: 36,
-                    ),
-                  ),
-                  const SizedBox(height: AppTheme.spaceSmall),
-                  Text(
-                    'Quản Lý Giải Đấu Thể Thao',
-                    style: AppTheme.bodyLarge.copyWith(
-                      color: Colors.white.withOpacity(0.95),
+                  AnimatedWrapper(
+                    index: 1,
+                    child: Column(
+                      children: [
+                        Text(
+                          'TDSports',
+                          style: AppTheme.lightDisplayLarge.copyWith(
+                            color: Colors.white,
+                            fontSize: 36,
+                          ),
+                        ),
+                        const SizedBox(height: AppTheme.spaceSmall),
+                        Text(
+                          'Quản Lý Giải Đấu Thể Thao',
+                          style: AppTheme.lightBodyLarge.copyWith(
+                            color: Colors.white.withValues(alpha: 0.95),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: AppTheme.spaceXLarge),
                   
                   // Login Form Card
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 24,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppTheme.spaceLarge),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Title
-                            Text(
-                              'Đăng Nhập',
-                              style: AppTheme.headlineLarge.copyWith(
-                                color: AppTheme.primaryBlue,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: AppTheme.spaceLarge),
-                            
-                            // Email Field
-                            TextFormField(
-                              controller: _emailController,
-                              keyboardType: TextInputType.emailAddress,
-                              style: AppTheme.bodyMedium,
-                              decoration: AppTheme.inputDecoration(
-                                label: 'Email',
-                                hint: 'example@email.com',
-                                prefixIcon: Icons.email_outlined,
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Vui lòng nhập email';
-                                }
-                                if (!value.contains('@')) {
-                                  return 'Email không hợp lệ';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: AppTheme.spaceMedium),
-                            
-                            // Password Field
-                            TextFormField(
-                              controller: _passwordController,
-                              obscureText: _obscurePassword,
-                              style: AppTheme.bodyMedium,
-                              decoration: AppTheme.inputDecoration(
-                                label: 'Mật khẩu',
-                                hint: '••••••••',
-                                prefixIcon: Icons.lock_outlined,
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword 
-                                        ? Icons.visibility_outlined 
-                                        : Icons.visibility_off_outlined,
-                                    color: AppTheme.textSecondary,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
+                  AnimatedWrapper(
+                    index: 2,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                        boxShadow: isDark ? AppTheme.darkCardShadow : AppTheme.lightCardShadow,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppTheme.spaceLarge),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Title
+                              Text(
+                                'Đăng Nhập',
+                                style: AppTheme.lightHeadlineLarge.copyWith(
+                                  color: AppTheme.getPrimaryColor(context),
                                 ),
+                                textAlign: TextAlign.center,
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Vui lòng nhập mật khẩu';
-                                }
-                                if (value.length < 6) {
-                                  return 'Mật khẩu phải có ít nhất 6 ký tự';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: AppTheme.spaceSmall),
-                            
-                            // Remember Me & Forgot Password
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    SizedBox(
-                                      height: 24,
-                                      width: 24,
-                                      child: Checkbox(
-                                        value: _rememberMe,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _rememberMe = value ?? false;
-                                          });
-                                        },
+                              const SizedBox(height: AppTheme.spaceLarge),
+                              
+                              // Email Field
+                              TextFormField(
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                style: TextStyle(
+                                  color: AppTheme.getTextPrimaryColor(context),
+                                ),
+                                decoration: AppTheme.inputDecoration(
+                                  label: 'Email',
+                                  hint: 'example@email.com',
+                                  prefixIcon: Icons.email_outlined,
+                                ).copyWith(
+                                  labelStyle: TextStyle(color: AppTheme.getTextSecondaryColor(context)),
+                                  hintStyle: TextStyle(color: AppTheme.getTextSecondaryColor(context).withValues(alpha: 0.5)),
+                                  prefixIconColor: AppTheme.getPrimaryColor(context),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Vui lòng nhập email';
+                                  }
+                                  if (!value.contains('@')) {
+                                    return 'Email không hợp lệ';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: AppTheme.spaceMedium),
+                              
+                              // Password Field
+                              TextFormField(
+                                controller: _passwordController,
+                                obscureText: _obscurePassword,
+                                style: TextStyle(
+                                  color: AppTheme.getTextPrimaryColor(context),
+                                ),
+                                decoration: AppTheme.inputDecoration(
+                                  label: 'Mật khẩu',
+                                  hint: '••••••••',
+                                  prefixIcon: Icons.lock_outlined,
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword 
+                                          ? Icons.visibility_outlined 
+                                          : Icons.visibility_off_outlined,
+                                      color: AppTheme.getTextSecondaryColor(context),
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                  ),
+                                ).copyWith(
+                                  labelStyle: TextStyle(color: AppTheme.getTextSecondaryColor(context)),
+                                  hintStyle: TextStyle(color: AppTheme.getTextSecondaryColor(context).withValues(alpha: 0.5)),
+                                  prefixIconColor: AppTheme.getPrimaryColor(context),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Vui lòng nhập mật khẩu';
+                                  }
+                                  if (value.length < 6) {
+                                    return 'Mật khẩu phải có ít nhất 6 ký tự';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: AppTheme.spaceSmall),
+                              
+                              // Remember Me & Forgot Password
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      SizedBox(
+                                        height: 24,
+                                        width: 24,
+                                        child: Checkbox(
+                                          value: _rememberMe,
+                                          activeColor: AppTheme.getPrimaryColor(context),
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _rememberMe = value ?? false;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: AppTheme.spaceSmall),
+                                      Text(
+                                        'Ghi nhớ',
+                                        style: TextStyle(
+                                          color: AppTheme.getTextPrimaryColor(context),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => const ForgotPasswordScreen(),
+                                        ),
+                                      );
+                                    },
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                    child: Text(
+                                      'Quên mật khẩu?',
+                                      style: TextStyle(
+                                        color: AppTheme.getPrimaryColor(context),
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    const SizedBox(width: AppTheme.spaceSmall),
-                                    Text(
-                                      'Ghi nhớ',
-                                      style: AppTheme.bodyMedium,
-                                    ),
-                                  ],
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => const ForgotPasswordScreen(),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: AppTheme.spaceMedium),
+                              
+                              // Login Button
+                              Consumer<AuthProvider>(
+                                builder: (context, authProvider, child) {
+                                  return CustomButton(
+                                    text: 'Đăng Nhập',
+                                    onPressed: _handleLogin,
+                                    isLoading: authProvider.isLoading,
+                                    gradient: AppTheme.getPrimaryGradient(context),
+                                    width: double.infinity,
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: AppTheme.spaceMedium),
+                              
+                              // Google Sign-In Button
+                              Consumer<AuthProvider>(
+                                builder: (context, authProvider, child) {
+                                  return GoogleSignInButton(
+                                    onPressed: _handleGoogleSignIn,
+                                    isLoading: authProvider.isLoading,
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: AppTheme.spaceMedium),
+                              
+                              // Divider
+                              Row(
+                                children: [
+                                  Expanded(child: Divider(color: AppTheme.getDividerColor(context))),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceMedium),
+                                    child: Text(
+                                      'hoặc',
+                                      style: TextStyle(
+                                        color: AppTheme.getTextSecondaryColor(context),
+                                        fontSize: 12,
                                       ),
-                                    );
-                                  },
-                                  style: TextButton.styleFrom(
-                                    padding: EdgeInsets.zero,
-                                  ),
-                                  child: Text(
-                                    'Quên mật khẩu?',
-                                    style: AppTheme.bodyMedium.copyWith(
-                                      color: AppTheme.primaryBlue,
-                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: AppTheme.spaceMedium),
-                            
-                            // Login Button
-                            Consumer<AuthProvider>(
-                              builder: (context, authProvider, child) {
-                                return CustomButton(
-                                  text: 'Đăng Nhập',
-                                  onPressed: _handleLogin,
-                                  isLoading: authProvider.isLoading,
-                                  gradient: AppTheme.primaryGradient,
-                                  width: double.infinity,
-                                );
-                              },
-                            ),
-                            const SizedBox(height: AppTheme.spaceMedium),
-                            
-                            // Google Sign-In Button
-                            Consumer<AuthProvider>(
-                              builder: (context, authProvider, child) {
-                                return GoogleSignInButton(
-                                  onPressed: _handleGoogleSignIn,
-                                  isLoading: authProvider.isLoading,
-                                );
-                              },
-                            ),
-                            const SizedBox(height: AppTheme.spaceMedium),
-                            
-                            // Divider
-                            Row(
-                              children: [
-                                Expanded(child: Divider(color: AppTheme.divider)),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: AppTheme.spaceMedium),
-                                  child: Text(
-                                    'hoặc',
-                                    style: AppTheme.bodySmall,
+                                  Expanded(child: Divider(color: AppTheme.getDividerColor(context))),
+                                ],
+                              ),
+                              const SizedBox(height: AppTheme.spaceMedium),
+                              
+                              // Register Button
+                              CustomButton(
+                                text: 'Tạo Tài Khoản Mới',
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => const RegisterScreen(),
+                                    ),
+                                  );
+                                },
+                                isOutlined: true,
+                                width: double.infinity,
+                                color: AppTheme.getPrimaryColor(context),
+                              ),
+                              const SizedBox(height: AppTheme.spaceMedium),
+                              
+                              // Skip Login Button
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                      builder: (context) => const SportsListScreen(),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  'Bỏ qua đăng nhập',
+                                  style: TextStyle(
+                                    color: AppTheme.getTextSecondaryColor(context),
                                   ),
-                                ),
-                                Expanded(child: Divider(color: AppTheme.divider)),
-                              ],
-                            ),
-                            const SizedBox(height: AppTheme.spaceMedium),
-                            
-                            // Register Button
-                            CustomButton(
-                              text: 'Tạo Tài Khoản Mới',
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => const RegisterScreen(),
-                                  ),
-                                );
-                              },
-                              isOutlined: true,
-                              width: double.infinity,
-                            ),
-                            const SizedBox(height: AppTheme.spaceMedium),
-                            
-                            // Skip Login Button
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                    builder: (context) => const SportsListScreen(),
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                'Bỏ qua đăng nhập',
-                                style: AppTheme.bodyMedium.copyWith(
-                                  color: AppTheme.textSecondary,
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),

@@ -30,8 +30,11 @@ import 'screens/add_edit_player_screen.dart';
 import 'screens/tournament_registration_screen.dart';
 import 'screens/video_highlights_screen.dart';
 import 'screens/shop_screen.dart';
+// import 'screens/shop_products_screen.dart'; // Removed duplicate
+// import 'screens/product_detail_screen.dart'; // Removed unused
 import 'screens/my_rewards_screen.dart';
 import 'screens/points_history_screen.dart';
+import 'screens/earn_points_guide_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -101,8 +104,11 @@ class MyApp extends StatelessWidget {
   static const String routeTournamentRegistration = '/tournament-registration';
   static const String routeVideoHighlights = '/video-highlights';
   static const String routeShop = '/shop';
+  // static const String routeShopProducts = '/shop-products'; // Removed duplicate
+  static const String routeProductDetail = '/product-detail';
   static const String routeMyRewards = '/my-rewards';
   static const String routePointsHistory = '/points-history';
+  static const String routeEarnPointsGuide = '/earn-points-guide';
 
   Route<dynamic>? _onGenerateRoute(RouteSettings settings) {
     final args = settings.arguments as Map<String, dynamic>?;
@@ -249,11 +255,22 @@ class MyApp extends StatelessWidget {
       case routeShop:
         return MaterialPageRoute(builder: (_) => const ShopScreen());
       
+      // case routeShopProducts:
+      //   return MaterialPageRoute(builder: (_) => const ShopProductsScreen());
+      
+      case routeProductDetail:
+        // This route is usually pushed directly with MaterialPageRoute from ShopScreen
+        // but we keep it here for completeness if needed with arguments
+        return null;
+      
       case routeMyRewards:
         return MaterialPageRoute(builder: (_) => const MyRewardsScreen());
       
       case routePointsHistory:
         return MaterialPageRoute(builder: (_) => const PointsHistoryScreen());
+
+      case routeEarnPointsGuide:
+        return MaterialPageRoute(builder: (_) => const EarnPointsGuideScreen());
 
       default:
         return null;

@@ -5,9 +5,12 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/reward_product.dart';
 import '../services/api_service.dart';
+import 'product_detail_screen.dart';
 
 class ShopScreen extends StatefulWidget {
-  const ShopScreen({super.key});
+  final bool showAppBar;
+  
+  const ShopScreen({super.key, this.showAppBar = true});
 
   @override
   State<ShopScreen> createState() => _ShopScreenState();
@@ -15,15 +18,23 @@ class ShopScreen extends StatefulWidget {
 
 class _ShopScreenState extends State<ShopScreen> {
   List<RewardProduct> _products = [];
+  List<RewardProduct> _filteredProducts = [];
   int _userPoints = 0;
   bool _isLoading = true;
   String? _error;
   String? _authToken;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadAuthToken();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadAuthToken() async {
@@ -32,6 +43,21 @@ class _ShopScreenState extends State<ShopScreen> {
       _authToken = prefs.getString('auth_token');
     });
     _loadData();
+  }
+
+  void _filterProducts(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        _filteredProducts = _products;
+      });
+    } else {
+      setState(() {
+        _filteredProducts = _products
+            .where((product) =>
+                product.name.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      });
+    }
   }
 
   Future<void> _loadData() async {
@@ -43,7 +69,7 @@ class _ShopScreenState extends State<ShopScreen> {
     try {
       // Load products
       final productsResponse = await http.get(
-        Uri.parse('${ApiService.baseUrl}/Shop/products'),
+        Uri.parse('${ApiService.baseUrl}/ShopApi/products'),
         headers: {'Content-Type': 'application/json; charset=utf-8'},
       );
 
@@ -57,7 +83,7 @@ class _ShopScreenState extends State<ShopScreen> {
         if (_authToken != null) {
           try {
             final pointsResponse = await http.get(
-              Uri.parse('${ApiService.baseUrl}/Shop/my-points'),
+              Uri.parse('${ApiService.baseUrl}/ShopApi/my-points'),
               headers: {
                 'Content-Type': 'application/json; charset=utf-8',
                 'Authorization': 'Bearer $_authToken',
@@ -74,6 +100,7 @@ class _ShopScreenState extends State<ShopScreen> {
 
         setState(() {
           _products = products;
+          _filteredProducts = products;
           _isLoading = false;
         });
       } else {
@@ -90,159 +117,51 @@ class _ShopScreenState extends State<ShopScreen> {
     }
   }
 
-  Future<void> _redeemProduct(RewardProduct product) async {
-    if (_userPoints < product.pointsCost) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Bạn không đủ điểm để đổi sản phẩm này!'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-      return;
-    }
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Xác nhận đổi quà'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Bạn có chắc muốn đổi:'),
-            SizedBox(height: 8),
-            Text(
-              product.name,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text('Giá: ${product.pointsCost} điểm'),
-            Text('Điểm còn lại: ${_userPoints - product.pointsCost} điểm'),
-          ],
+  void _navigateToDetail(RewardProduct product) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProductDetailScreen(
+          product: product,
+          userPoints: _userPoints,
+          onPointsUpdated: (newPoints) {
+            setState(() {
+              _userPoints = newPoints;
+            });
+          },
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Hủy'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text('Xác nhận'),
-          ),
-        ],
       ),
     );
-
-    if (confirmed != true) return;
-
-    try {
-      final response = await http.post(
-        Uri.parse('${ApiService.baseUrl}/Shop/redeem/${product.id}'),
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Authorization': 'Bearer $_authToken',
-        },
-      );
-
-      if (response.statusCode == 200 && mounted) {
-        final result = json.decode(response.body);
-        final redemptionCode = result['data']['redemptionCode'] ?? '';
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đổi quà thành công! Mã: $redemptionCode'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 5),
-          ),
-        );
-
-        // Reload data
-        _loadData();
-
-        // Show redemption code dialog
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text('🎉 Đổi quà thành công!'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Mã quà tặng của bạn:'),
-                SizedBox(height: 8),
-                Container(
-                  padding: EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: SelectableText(
-                    redemptionCode,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'monospace',
-                    ),
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Vui lòng lưu lại mã này để sử dụng quà tặng',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/my-rewards');
-                },
-                child: Text('Xem túi quà'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Đóng'),
-              ),
-            ],
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi khi đổi quà: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Cửa hàng điểm'),
+      appBar: widget.showAppBar ? AppBar(
+        title: const Text('Cửa hàng điểm'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: 'Cách kiếm điểm',
+            onPressed: () {
+              Navigator.pushNamed(context, '/earn-points-guide');
+            },
+          ),
           // Points display
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            margin: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
             decoration: BoxDecoration(
               color: Colors.blue.withOpacity(0.2),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
               children: [
-                Icon(Icons.stars, color: Colors.amber, size: 20),
-                SizedBox(width: 4),
+                const Icon(Icons.stars, color: Colors.amber, size: 20),
+                const SizedBox(width: 4),
                 Text(
                   '$_userPoints',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -251,141 +170,172 @@ class _ShopScreenState extends State<ShopScreen> {
             ),
           ),
         ],
-      ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.error_outline, size: 64, color: Colors.red),
-                      SizedBox(height: 16),
-                      Text(_error!),
-                      SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadData,
-                        child: Text('Thử lại'),
-                      ),
-                    ],
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadData,
-                  child: _products.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.shopping_bag_outlined,
-                                  size: 64, color: Colors.grey),
-                              SizedBox(height: 16),
-                              Text('Chưa có sản phẩm nào'),
-                            ],
-                          ),
-                        )
-                      : GridView.builder(
-                          padding: EdgeInsets.all(16),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 0.7,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                          ),
-                          itemCount: _products.length,
-                          itemBuilder: (context, index) {
-                            final product = _products[index];
-                            final canAfford = _userPoints >= product.pointsCost;
-
-                            return Card(
-                              elevation: 3,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: InkWell(
-                                onTap: () => _showProductDetail(product),
-                                borderRadius: BorderRadius.circular(12),
+      ) : null,
+      body: Column(
+        children: [
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Tìm kiếm sản phẩm...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+              ),
+              onChanged: _filterProducts,
+            ),
+          ),
+          
+          // Product Grid
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _error != null
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                            const SizedBox(height: 16),
+                            Text(_error!),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _loadData,
+                              child: const Text('Thử lại'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _loadData,
+                        child: _filteredProducts.isEmpty
+                            ? Center(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    // Product image
-                                    Expanded(
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(12),
-                                        ),
-                                        child: product.imageUrl != null
-                                            ? Image.network(
-                                                ApiService.convertImageUrl(
-                                                    product.imageUrl!),
-                                                fit: BoxFit.cover,
-                                                errorBuilder:
-                                                    (context, error, stack) =>
-                                                        _buildPlaceholder(),
-                                              )
-                                            : _buildPlaceholder(),
-                                      ),
+                                    const Icon(Icons.shopping_bag_outlined,
+                                        size: 64, color: Colors.grey),
+                                    const SizedBox(height: 16),
+                                    Text(_searchController.text.isEmpty 
+                                      ? 'Chưa có sản phẩm nào' 
+                                      : 'Không tìm thấy sản phẩm nào'),
+                                  ],
+                                ),
+                              )
+                            : GridView.builder(
+                                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  childAspectRatio: 0.7,
+                                  crossAxisSpacing: 12,
+                                  mainAxisSpacing: 12,
+                                ),
+                                itemCount: _filteredProducts.length,
+                                itemBuilder: (context, index) {
+                                  final product = _filteredProducts[index];
+                                  final canAfford = _userPoints >= product.pointsCost;
+
+                                  return Card(
+                                    elevation: 3,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
-                                    // Product info
-                                    Padding(
-                                      padding: EdgeInsets.all(12),
+                                    child: InkWell(
+                                      onTap: () => _navigateToDetail(product),
+                                      borderRadius: BorderRadius.circular(12),
                                       child: Column(
                                         crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                            CrossAxisAlignment.stretch,
                                         children: [
-                                          Text(
-                                            product.name,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                            ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          SizedBox(height: 4),
-                                          Row(
-                                            children: [
-                                              Icon(Icons.stars,
-                                                  color: Colors.amber, size: 16),
-                                              SizedBox(width: 4),
-                                              Text(
-                                                '${product.pointsCost}',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.blue,
-                                                  fontSize: 16,
-                                                ),
+                                          // Product image
+                                          Expanded(
+                                            child: ClipRRect(
+                                              borderRadius: const BorderRadius.vertical(
+                                                top: Radius.circular(12),
                                               ),
-                                            ],
-                                          ),
-                                          SizedBox(height: 8),
-                                          ElevatedButton(
-                                            onPressed: canAfford
-                                                ? () => _redeemProduct(product)
-                                                : null,
-                                            style: ElevatedButton.styleFrom(
-                                              minimumSize: Size.fromHeight(36),
-                                              backgroundColor: canAfford
-                                                  ? Colors.blue
-                                                  : Colors.grey,
+                                              child: product.imageUrl != null
+                                                  ? Hero(
+                                                      tag: 'product_${product.id}',
+                                                      child: Image.network(
+                                                        ApiService.convertImageUrl(
+                                                            product.imageUrl)!,
+                                                        fit: BoxFit.cover,
+                                                        errorBuilder:
+                                                            (context, error, stack) =>
+                                                                _buildPlaceholder(),
+                                                      ),
+                                                    )
+                                                  : _buildPlaceholder(),
                                             ),
-                                            child: Text(
-                                              canAfford ? 'Đổi ngay' : 'Không đủ điểm',
-                                              style: TextStyle(fontSize: 12),
+                                          ),
+                                          // Product info
+                                          Padding(
+                                            padding: const EdgeInsets.all(12),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  product.name,
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 14,
+                                                  ),
+                                                  maxLines: 2,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Row(
+                                                  children: [
+                                                    const Icon(Icons.stars,
+                                                        color: Colors.amber, size: 16),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      '${product.pointsCost}',
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Colors.blue,
+                                                        fontSize: 16,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 8),
+                                                Container(
+                                                  width: double.infinity,
+                                                  padding: const EdgeInsets.symmetric(vertical: 6),
+                                                  decoration: BoxDecoration(
+                                                    color: canAfford ? Colors.blue : Colors.grey[300],
+                                                    borderRadius: BorderRadius.circular(4),
+                                                  ),
+                                                  child: Text(
+                                                    canAfford ? 'Đổi ngay' : 'Không đủ điểm',
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: canAfford ? Colors.white : Colors.grey[700],
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  );
+                                },
                               ),
-                            );
-                          },
-                        ),
-                ),
+                      ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -393,109 +343,6 @@ class _ShopScreenState extends State<ShopScreen> {
     return Container(
       color: Colors.grey[200],
       child: Icon(Icons.card_giftcard, size: 64, color: Colors.grey[400]),
-    );
-  }
-
-  void _showProductDetail(RewardProduct product) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (context, scrollController) => SingleChildScrollView(
-          controller: scrollController,
-          padding: EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Product image
-              if (product.imageUrl != null)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    ApiService.convertImageUrl(product.imageUrl!),
-                    height: 200,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stack) => _buildPlaceholder(),
-                  ),
-                ),
-              SizedBox(height: 16),
-              // Product name
-              Text(
-                product.name,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 8),
-              // Price
-              Row(
-                children: [
-                  Icon(Icons.stars, color: Colors.amber, size: 24),
-                  SizedBox(width: 8),
-                  Text(
-                    '${product.pointsCost} điểm',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
-              // Description
-              if (product.description != null && product.description!.isNotEmpty)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Mô tả',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      product.description!,
-                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                    ),
-                    SizedBox(height: 16),
-                  ],
-                ),
-              // Redeem button
-              ElevatedButton(
-                onPressed: _userPoints >= product.pointsCost
-                    ? () {
-                        Navigator.pop(context);
-                        _redeemProduct(product);
-                      }
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: Size.fromHeight(48),
-                  backgroundColor: _userPoints >= product.pointsCost
-                      ? Colors.blue
-                      : Colors.grey,
-                ),
-                child: Text(
-                  _userPoints >= product.pointsCost
-                      ? 'Đổi ngay'
-                      : 'Không đủ điểm (Còn thiếu ${product.pointsCost - _userPoints})',
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

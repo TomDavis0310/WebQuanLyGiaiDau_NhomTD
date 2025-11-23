@@ -4,7 +4,6 @@ import '../models/search_result.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/loading_widget.dart';
-import '../widgets/empty_state_widget.dart';
 import 'team_detail_screen.dart';
 import 'player_detail_screen.dart';
 import 'match_detail_screen.dart';
@@ -12,7 +11,9 @@ import 'news_detail_screen.dart';
 import 'tournament_detail_screen.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  final bool showAppBar;
+  
+  const SearchScreen({super.key, this.showAppBar = true});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -147,10 +148,10 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: widget.showAppBar ? AppBar(
         title: const Text('Tìm Kiếm'),
         elevation: 0,
-      ),
+      ) : null,
       body: Column(
         children: [
           _buildSearchHeader(),

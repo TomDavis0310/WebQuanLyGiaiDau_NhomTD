@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
-import 'login_screen.dart';
-import 'sports_list_screen.dart';
+import 'main_navigation_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -50,17 +47,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   void _navigateToNextScreen() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
-    // Check if user is already logged in
-    final isLoggedIn = await authProvider.isAuthenticated;
-    
     if (mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => isLoggedIn 
-              ? const SportsListScreen()
-              : const LoginScreen(),
+          builder: (context) => const MainNavigationScreen(initialIndex: 0),
         ),
       );
     }

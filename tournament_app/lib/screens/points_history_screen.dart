@@ -57,7 +57,7 @@ class _PointsHistoryScreenState extends State<PointsHistoryScreen>
 
       // Load history
       final historyResponse = await http.get(
-        Uri.parse('${ApiService.baseUrl}/Points/history'),
+        Uri.parse('${ApiService.baseUrl}/PointsApi/history'),
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
           'Authorization': 'Bearer $_authToken',
@@ -78,7 +78,7 @@ class _PointsHistoryScreenState extends State<PointsHistoryScreen>
 
       // Load statistics
       final statsResponse = await http.get(
-        Uri.parse('${ApiService.baseUrl}/Points/statistics'),
+        Uri.parse('${ApiService.baseUrl}/PointsApi/statistics'),
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
           'Authorization': 'Bearer $_authToken',

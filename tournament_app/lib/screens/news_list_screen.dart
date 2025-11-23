@@ -3,14 +3,14 @@ import '../models/news.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/loading_widget.dart';
-import '../widgets/empty_state_widget.dart';
 import '../widgets/error_widget.dart';
-import '../widgets/custom_card.dart';
 import 'news_detail_screen.dart';
 
 /// News List Screen - Danh sách tin tức
 class NewsListScreen extends StatefulWidget {
-  const NewsListScreen({Key? key}) : super(key: key);
+  final bool showAppBar;
+  
+  const NewsListScreen({Key? key, this.showAppBar = true}) : super(key: key);
 
   @override
   State<NewsListScreen> createState() => _NewsListScreenState();
@@ -140,6 +140,42 @@ class _NewsListScreenState extends State<NewsListScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.showAppBar) {
+      // Khi không có AppBar, hiển thị đơn giản hơn
+      return Column(
+        children: [
+          Material(
+            color: Theme.of(context).primaryColor,
+            elevation: 4,
+            child: TabBar(
+              controller: _tabController,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70,
+              indicatorColor: Colors.white,
+              tabs: const [
+                Tab(text: 'Nổi Bật'),
+                Tab(text: 'Tất Cả'),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _isLoading
+                ? _buildLoadingState()
+                : _errorMessage != null
+                    ? _buildErrorState()
+                    : TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _buildFeaturedTab(),
+                          _buildAllNewsTab(),
+                        ],
+                      ),
+          ),
+        ],
+      );
+    }
+    
+    // Với AppBar đầy đủ (SliverAppBar)
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {

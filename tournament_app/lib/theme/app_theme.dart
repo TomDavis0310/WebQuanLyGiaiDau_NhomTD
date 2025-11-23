@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // ============ LIGHT MODE COLORS - Pastel Palette ============
@@ -224,10 +225,10 @@ class AppTheme {
   static const double spaceXXLarge = 48.0;
   
   // ============ TYPOGRAPHY ============
-  static const String fontFamily = 'Roboto';
+  static const String fontFamily = 'Poppins';
   
   // Light Mode Typography
-  static TextStyle get lightDisplayLarge => const TextStyle(
+  static TextStyle get lightDisplayLarge => GoogleFonts.poppins(
     fontSize: 32,
     fontWeight: FontWeight.bold,
     color: lightTextPrimary,
@@ -235,7 +236,7 @@ class AppTheme {
     letterSpacing: -0.5,
   );
   
-  static TextStyle get lightDisplayMedium => const TextStyle(
+  static TextStyle get lightDisplayMedium => GoogleFonts.poppins(
     fontSize: 28,
     fontWeight: FontWeight.bold,
     color: lightTextPrimary,
@@ -243,63 +244,63 @@ class AppTheme {
     letterSpacing: -0.3,
   );
   
-  static TextStyle get lightHeadlineLarge => const TextStyle(
+  static TextStyle get lightHeadlineLarge => GoogleFonts.poppins(
     fontSize: 24,
     fontWeight: FontWeight.bold,
     color: lightTextPrimary,
     height: 1.3,
   );
   
-  static TextStyle get lightHeadlineMedium => const TextStyle(
+  static TextStyle get lightHeadlineMedium => GoogleFonts.poppins(
     fontSize: 20,
     fontWeight: FontWeight.w600,
     color: lightTextPrimary,
     height: 1.3,
   );
   
-  static TextStyle get lightTitleLarge => const TextStyle(
+  static TextStyle get lightTitleLarge => GoogleFonts.poppins(
     fontSize: 18,
     fontWeight: FontWeight.w600,
     color: lightTextPrimary,
     height: 1.4,
   );
   
-  static TextStyle get lightTitleMedium => const TextStyle(
+  static TextStyle get lightTitleMedium => GoogleFonts.poppins(
     fontSize: 16,
     fontWeight: FontWeight.w500,
     color: lightTextPrimary,
     height: 1.4,
   );
   
-  static TextStyle get lightBodyLarge => const TextStyle(
+  static TextStyle get lightBodyLarge => GoogleFonts.inter(
     fontSize: 16,
     fontWeight: FontWeight.normal,
     color: lightTextPrimary,
     height: 1.5,
   );
   
-  static TextStyle get lightBodyMedium => const TextStyle(
+  static TextStyle get lightBodyMedium => GoogleFonts.inter(
     fontSize: 14,
     fontWeight: FontWeight.normal,
     color: lightTextPrimary,
     height: 1.5,
   );
   
-  static TextStyle get lightBodySmall => const TextStyle(
+  static TextStyle get lightBodySmall => GoogleFonts.inter(
     fontSize: 12,
     fontWeight: FontWeight.normal,
     color: lightTextSecondary,
     height: 1.5,
   );
   
-  static TextStyle get lightLabelLarge => const TextStyle(
+  static TextStyle get lightLabelLarge => GoogleFonts.inter(
     fontSize: 14,
     fontWeight: FontWeight.w500,
     color: lightTextSecondary,
     height: 1.2,
   );
   
-  static TextStyle get lightLabelMedium => const TextStyle(
+  static TextStyle get lightLabelMedium => GoogleFonts.inter(
     fontSize: 12,
     fontWeight: FontWeight.w500,
     color: lightTextSecondary,
@@ -307,7 +308,7 @@ class AppTheme {
   );
   
   // Dark Mode Typography
-  static TextStyle get darkDisplayLarge => const TextStyle(
+  static TextStyle get darkDisplayLarge => GoogleFonts.poppins(
     fontSize: 32,
     fontWeight: FontWeight.bold,
     color: darkTextPrimary,
@@ -315,7 +316,7 @@ class AppTheme {
     letterSpacing: -0.5,
   );
   
-  static TextStyle get darkDisplayMedium => const TextStyle(
+  static TextStyle get darkDisplayMedium => GoogleFonts.poppins(
     fontSize: 28,
     fontWeight: FontWeight.bold,
     color: darkTextPrimary,
@@ -323,63 +324,63 @@ class AppTheme {
     letterSpacing: -0.3,
   );
   
-  static TextStyle get darkHeadlineLarge => const TextStyle(
+  static TextStyle get darkHeadlineLarge => GoogleFonts.poppins(
     fontSize: 24,
     fontWeight: FontWeight.bold,
     color: darkTextPrimary,
     height: 1.3,
   );
   
-  static TextStyle get darkHeadlineMedium => const TextStyle(
+  static TextStyle get darkHeadlineMedium => GoogleFonts.poppins(
     fontSize: 20,
     fontWeight: FontWeight.w600,
     color: darkTextPrimary,
     height: 1.3,
   );
   
-  static TextStyle get darkTitleLarge => const TextStyle(
+  static TextStyle get darkTitleLarge => GoogleFonts.poppins(
     fontSize: 18,
     fontWeight: FontWeight.w600,
     color: darkTextPrimary,
     height: 1.4,
   );
   
-  static TextStyle get darkTitleMedium => const TextStyle(
+  static TextStyle get darkTitleMedium => GoogleFonts.poppins(
     fontSize: 16,
     fontWeight: FontWeight.w500,
     color: darkTextPrimary,
     height: 1.4,
   );
   
-  static TextStyle get darkBodyLarge => const TextStyle(
+  static TextStyle get darkBodyLarge => GoogleFonts.inter(
     fontSize: 16,
     fontWeight: FontWeight.normal,
     color: darkTextPrimary,
     height: 1.5,
   );
   
-  static TextStyle get darkBodyMedium => const TextStyle(
+  static TextStyle get darkBodyMedium => GoogleFonts.inter(
     fontSize: 14,
     fontWeight: FontWeight.normal,
     color: darkTextPrimary,
     height: 1.5,
   );
   
-  static TextStyle get darkBodySmall => const TextStyle(
+  static TextStyle get darkBodySmall => GoogleFonts.inter(
     fontSize: 12,
     fontWeight: FontWeight.normal,
     color: darkTextSecondary,
     height: 1.5,
   );
   
-  static TextStyle get darkLabelLarge => const TextStyle(
+  static TextStyle get darkLabelLarge => GoogleFonts.inter(
     fontSize: 14,
     fontWeight: FontWeight.w500,
     color: darkTextSecondary,
     height: 1.2,
   );
   
-  static TextStyle get darkLabelMedium => const TextStyle(
+  static TextStyle get darkLabelMedium => GoogleFonts.inter(
     fontSize: 12,
     fontWeight: FontWeight.w500,
     color: darkTextSecondary,
@@ -916,6 +917,18 @@ class AppTheme {
     return Theme.of(context).brightness == Brightness.dark 
         ? darkTextSecondary 
         : lightTextSecondary;
+  }
+  
+  static Color getDividerColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? darkDivider 
+        : lightDivider;
+  }
+
+  static Color getBorderColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? darkBorder 
+        : lightBorder;
   }
   
   static LinearGradient getPrimaryGradient(BuildContext context) {
