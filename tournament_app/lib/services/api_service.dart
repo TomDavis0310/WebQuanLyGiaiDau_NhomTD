@@ -26,9 +26,13 @@ class ApiService {
   /// Convert relative image URLs to absolute URLs
   static String? convertImageUrl(String? imageUrl) {
     if (imageUrl == null || imageUrl.isEmpty) return null;
-    if (imageUrl.startsWith('http')) return imageUrl;
-    if (imageUrl.startsWith('/')) return '$baseWebUrl$imageUrl';
-    return '$baseWebUrl/$imageUrl';
+    
+    // Normalize path separators
+    String normalizedUrl = imageUrl.replaceAll('\\', '/');
+    
+    if (normalizedUrl.startsWith('http')) return normalizedUrl;
+    if (normalizedUrl.startsWith('/')) return '$baseWebUrl$normalizedUrl';
+    return '$baseWebUrl/$normalizedUrl';
   }
   
   // Sports API

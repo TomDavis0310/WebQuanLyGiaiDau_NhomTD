@@ -132,15 +132,24 @@ class _PlayerDetailScreenState extends State<PlayerDetailScreen>
                 ),
               ],
             ),
-            child: CircleAvatar(
-              radius: 58,
-              backgroundImage: player.imageUrl != null
-                  ? NetworkImage(player.imageUrl!)
-                  : null,
-              backgroundColor: Colors.blue[300],
-              child: player.imageUrl == null
-                  ? const Icon(Icons.person, size: 60, color: Colors.white)
-                  : null,
+            child: Container(
+              width: 116,
+              height: 116,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.blue[300],
+              ),
+              child: ClipOval(
+                child: player.imageUrl != null
+                    ? Image.network(
+                        player.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(Icons.person, size: 60, color: Colors.white);
+                        },
+                      )
+                    : const Icon(Icons.person, size: 60, color: Colors.white),
+              ),
             ),
           ),
           const SizedBox(height: AppTheme.spaceMedium),
@@ -332,7 +341,14 @@ class _PlayerDetailScreenState extends State<PlayerDetailScreen>
       decoration: AppTheme.cardDecoration(isDark: isDark),
       child: ListTile(
         leading: team.logo != null
-            ? Image.network(team.logo!, width: 50, height: 50)
+            ? Image.network(
+                team.logo!,
+                width: 50,
+                height: 50,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(Icons.shield, size: 50, color: AppTheme.lightPrimary);
+                },
+              )
             : Icon(Icons.shield, size: 50, color: AppTheme.lightPrimary),
         title: Text(
           team.name,

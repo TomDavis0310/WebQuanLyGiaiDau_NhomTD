@@ -966,14 +966,24 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
       decoration: AppTheme.cardDecoration(isDark: isDark),
       child: ListTile(
         contentPadding: EdgeInsets.all(16),
-        leading: CircleAvatar(
-          radius: 30,
-          backgroundColor: AppTheme.lightPrimary.withOpacity(0.1),
-          backgroundImage:
-              team.logoUrl != null ? NetworkImage(team.logoUrl!) : null,
-          child: team.logoUrl == null
-              ? Icon(Icons.sports, color: AppTheme.lightPrimary)
-              : null,
+        leading: Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppTheme.lightPrimary.withOpacity(0.1),
+          ),
+          child: ClipOval(
+            child: team.logoUrl != null
+                ? Image.network(
+                    team.logoUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons.sports, color: AppTheme.lightPrimary);
+                    },
+                  )
+                : Icon(Icons.sports, color: AppTheme.lightPrimary),
+          ),
         ),
         title: Text(
           team.name,
