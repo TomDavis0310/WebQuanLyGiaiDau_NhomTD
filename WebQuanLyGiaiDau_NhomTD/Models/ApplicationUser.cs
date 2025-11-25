@@ -15,6 +15,19 @@ namespace WebQuanLyGiaiDau_NhomTD.Models
         // Điểm tích lũy của người dùng. Không được null, mặc định = 0
         [Required]
         public int Points { get; set; } = 0;
+
+        // Two-Factor Authentication Fields
+        public bool IsTwoFactorEnabled { get; set; } = false;
+        public string? TwoFactorCode { get; set; }
+        public DateTime? TwoFactorExpiry { get; set; }
+        public string? PreferredVerificationMethod { get; set; } // "Email", "SMS", "Zalo"
+        
+        // Phone verification for SMS OTP
+        public bool IsPhoneNumberVerified { get; set; } = false;
+        
+        // Zalo ID for Zalo OTP
+        public string? ZaloId { get; set; }
+        public bool IsZaloVerified { get; set; } = false;
     }
 
 }

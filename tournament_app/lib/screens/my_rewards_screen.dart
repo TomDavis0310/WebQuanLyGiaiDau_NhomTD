@@ -57,7 +57,15 @@ class _MyRewardsScreenState extends State<MyRewardsScreen> {
 
       if (pointsResponse.statusCode == 200) {
         final pointsData = json.decode(pointsResponse.body);
-        _userPoints = pointsData['data']['points'] ?? 0;
+        print('DEBUG MyRewards - Points API Response: $pointsData');
+        // Backend trả về trực tiếp object {points, username, fullName}
+        // Handle both lowercase 'points' and uppercase 'Points'
+        _userPoints = (pointsData['points'] ?? pointsData['Points'] ?? 0) as int;
+        print('DEBUG MyRewards - User: ${pointsData['username']} (${pointsData['fullName']})');
+        print('DEBUG MyRewards - User Points: $_userPoints');
+      } else {
+        print('DEBUG MyRewards - Points API Error: ${pointsResponse.statusCode}');
+        print('DEBUG MyRewards - Response body: ${pointsResponse.body}');
       }
 
       // Load rewards
@@ -71,8 +79,9 @@ class _MyRewardsScreenState extends State<MyRewardsScreen> {
 
       if (rewardsResponse.statusCode == 200) {
         final rewardsData = json.decode(rewardsResponse.body);
+        // Backend trả về trực tiếp array of transactions
         setState(() {
-          _transactions = (rewardsData['data'] as List)
+          _transactions = (rewardsData as List)
               .map((json) => RewardTransaction.fromJson(json))
               .toList();
         });

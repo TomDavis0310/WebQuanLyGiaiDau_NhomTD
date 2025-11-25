@@ -124,7 +124,9 @@ class PlayerStatistics {
 @JsonSerializable()
 class PlayerMatch {
   final int matchId;
+  @JsonKey(fromJson: _safeStringFromJson)
   final String teamA;
+  @JsonKey(fromJson: _safeStringFromJson)
   final String teamB;
   final int? scoreA;
   final int? scoreB;
@@ -187,6 +189,12 @@ class PlayerMatch {
     if (value is int) return value;
     if (value is String) return int.tryParse(value);
     return null;
+  }
+
+  static String _safeStringFromJson(dynamic value) {
+    if (value is String) return value;
+    if (value is int) return value.toString();
+    return value?.toString() ?? '';
   }
 }
 

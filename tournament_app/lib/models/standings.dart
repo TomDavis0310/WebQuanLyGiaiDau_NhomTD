@@ -123,8 +123,10 @@ class BracketMatch {
   final int matchId;
   final int? round;
   final String? roundName;
+  @JsonKey(fromJson: _safeStringFromJson)
   final String teamA;
   final int? teamAId;
+  @JsonKey(fromJson: _safeStringFromJson)
   final String teamB;
   final int? teamBId;
   final int? scoreA;
@@ -156,6 +158,12 @@ class BracketMatch {
       _$BracketMatchFromJson(json);
 
   Map<String, dynamic> toJson() => _$BracketMatchToJson(this);
+
+  static String _safeStringFromJson(dynamic value) {
+    if (value is String) return value;
+    if (value is int) return value.toString();
+    return value?.toString() ?? '';
+  }
 
   String get formattedDate {
     return '${matchDate.day.toString().padLeft(2, '0')}/${matchDate.month.toString().padLeft(2, '0')}/${matchDate.year}';
@@ -221,9 +229,11 @@ class TeamHeadToHeadInfo {
 class HeadToHeadMatch {
   final int matchId;
   final DateTime matchDate;
+  @JsonKey(fromJson: _safeStringFromJson)
   final String teamA;
   final int? teamAId;
   final int? scoreA;
+  @JsonKey(fromJson: _safeStringFromJson)
   final String teamB;
   final int? teamBId;
   final int? scoreB;
@@ -247,6 +257,12 @@ class HeadToHeadMatch {
       _$HeadToHeadMatchFromJson(json);
 
   Map<String, dynamic> toJson() => _$HeadToHeadMatchToJson(this);
+
+  static String _safeStringFromJson(dynamic value) {
+    if (value is String) return value;
+    if (value is int) return value.toString();
+    return value?.toString() ?? '';
+  }
 
   String get formattedDate {
     return '${matchDate.day.toString().padLeft(2, '0')}/${matchDate.month.toString().padLeft(2, '0')}/${matchDate.year}';

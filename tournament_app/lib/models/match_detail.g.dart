@@ -8,8 +8,8 @@ part of 'match_detail.dart';
 
 MatchDetail _$MatchDetailFromJson(Map<String, dynamic> json) => MatchDetail(
   id: (json['id'] as num).toInt(),
-  teamA: json['teamA'] as String,
-  teamB: json['teamB'] as String,
+  teamA: MatchDetail._safeStringFromJson(json['teamA']),
+  teamB: MatchDetail._safeStringFromJson(json['teamB']),
   matchDate: DateTime.parse(json['matchDate'] as String),
   matchTime: json['matchTime'] as String?,
   location: json['location'] as String?,

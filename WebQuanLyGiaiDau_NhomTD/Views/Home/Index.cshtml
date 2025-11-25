@@ -50,12 +50,12 @@
                 @if (User.Identity == null || !User.Identity.IsAuthenticated)
                 {
                     <div class="hero-buttons animate-slide-up" data-delay="1.0">
-                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-sports-primary btn-sports-xl hero-btn-primary energy-button">
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-sports-primary btn-sports-xl hero-btn-primary energy-button">
                             <i class="bi bi-rocket-takeoff"></i>
                             <span>🚀 Tham Gia Ngay</span>
                             <div class="btn-shine"></div>
                         </a>
-                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-sports-outline btn-sports-xl hero-btn-secondary energy-button">
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-sports-outline btn-sports-xl hero-btn-secondary energy-button">
                             <i class="bi bi-star-fill"></i>
                             <span>⭐ Đăng Ký VIP</span>
                         </a>
@@ -499,7 +499,7 @@
             @if (User.Identity == null || !User.Identity.IsAuthenticated)
             {
                 <div class="cta-buttons animate-fade-in-up" data-delay="0.4">
-                    <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-sports-primary btn-sports-xl cta-btn-primary">
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-sports-primary btn-sports-xl cta-btn-primary">
                         <i class="bi bi-person-plus"></i>
                         <span>Đăng ký miễn phí ngay</span>
                         <div class="btn-shine"></div>

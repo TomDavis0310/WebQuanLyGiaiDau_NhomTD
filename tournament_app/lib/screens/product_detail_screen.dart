@@ -85,7 +85,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       final token = prefs.getString('auth_token');
 
       final response = await http.post(
-        Uri.parse('${ApiService.baseUrl}/Shop/redeem/${widget.product.id}'),
+        Uri.parse('${ApiService.baseUrl}/ShopApi/redeem/${widget.product.id}'),
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
           'Authorization': 'Bearer $token',
@@ -94,11 +94,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
       if (response.statusCode == 200 && mounted) {
         final result = json.decode(response.body);
-        final redemptionCode = result['data']['redemptionCode'] ?? '';
+        // Backend trả về trực tiếp object {message, redemptionCode, remainingPoints, transaction}
+        final redemptionCode = result['redemptionCode'] ?? '';
+        final remainingPoints = result['remainingPoints'] ?? _currentUserPoints - widget.product.pointsCost;
         
         // Update local points
         setState(() {
-          _currentUserPoints -= widget.product.pointsCost;
+          _currentUserPoints = remainingPoints;
         });
         widget.onPointsUpdated(_currentUserPoints);
 
@@ -152,7 +154,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ),
         );
       } else {
-        throw Exception('Failed to redeem product');
+        final error = json.decode(response.body);
+        throw Exception(error['message'] ?? 'Failed to redeem product');
       }
     } catch (e) {
       if (mounted) {

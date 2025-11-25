@@ -82,7 +82,7 @@ else
 }
 
 // Đăng ký Identity với ApplicationUser (phải đặt sau cấu hình Authentication)
-builder.Services.AddDefaultIdentity<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser>(options =>
+builder.Services.AddIdentity<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUser, IdentityRole>(options =>
 {
     // Sign-in settings
     options.SignIn.RequireConfirmedAccount = false; // Set to true for production
@@ -103,14 +103,24 @@ builder.Services.AddDefaultIdentity<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUs
     // User settings
     options.User.RequireUniqueEmail = true;
 })
-.AddRoles<IdentityRole>() // Add role management
-.AddEntityFrameworkStores<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContext>();
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<WebQuanLyGiaiDau_NhomTD.Models.ApplicationDbContext>()
+.AddDefaultTokenProviders();
+
+// Configure application cookie
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromDays(7);
+    options.SlidingExpiration = true;
+});
 
 Console.WriteLine("✅ Identity với Cookie Authentication đã được cấu hình cho MVC!");
 
-// Đăng ký MVC và Razor Pages (cho Identity)
+// Đăng ký MVC
 builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
 
 // Add API Explorer and Swagger for API documentation
 builder.Services.AddEndpointsApiExplorer();
@@ -185,6 +195,14 @@ builder.Services.AddScoped<IEmailTemplateEngine, EmailTemplateEngine>();
 builder.Services.AddScoped<IEmailService, AdvancedEmailService>();
 builder.Services.AddScoped<ITournamentEmailService, TournamentEmailService>();
 builder.Services.AddScoped<IEmailSender, AdvancedEmailService>(); // For ASP.NET Core Identity
+
+// Đăng ký Two-Factor Authentication Services
+builder.Services.AddHttpClient(); // Required for ZaloOtpService
+builder.Services.AddScoped<ITwoFactorService, TwoFactorService>();
+builder.Services.AddScoped<ISmsService, SmsService>();
+builder.Services.AddScoped<IZaloOtpService, ZaloOtpService>();
+
+Console.WriteLine("✅ Two-Factor Authentication Services đã được cấu hình!");
 
 // Đăng ký File Upload Services
 builder.Services.AddSingleton<FileUploadConfiguration>(provider =>
@@ -389,7 +407,6 @@ app.MapGet("/ping", () => Results.Ok(new {
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-app.MapRazorPages();
 
 // Database structure check
 using (var scope = app.Services.CreateScope())

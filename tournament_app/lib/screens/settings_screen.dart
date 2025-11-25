@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/theme_provider.dart';
 import '../theme/app_theme.dart';
+import '../config/app_config.dart';
 import 'edit_profile_screen.dart';
 import 'change_password_screen.dart';
 
@@ -262,6 +263,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(height: 1),
 
+          // System Configuration Section
+          _buildSectionHeader('Hệ Thống'),
+          _buildListTile(
+            icon: Icons.dns_outlined,
+            title: 'Cấu hình máy chủ',
+            subtitle: 'IP: ${AppConfig.currentIp}',
+            onTap: () => _showServerConfigDialog(),
+          ),
+          const Divider(height: 1),
+
           // Logout Section
           _buildSectionHeader(''),
           _buildListTile(
@@ -423,6 +434,64 @@ class _SettingsScreenState extends State<SettingsScreen> {
           'Theo dõi trận đấu, cập nhật kết quả, xem bảng xếp hạng và nhiều tính năng khác.',
         ),
       ],
+    );
+  }
+
+  void _showServerConfigDialog() {
+    final ipController = TextEditingController(text: AppConfig.currentIp);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cấu hình máy chủ'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Nhập địa chỉ IP của máy chủ API:'),
+            const SizedBox(height: 8),
+            TextField(
+              controller: ipController,
+              decoration: const InputDecoration(
+                hintText: 'Ví dụ: 192.168.1.10',
+                border: OutlineInputBorder(),
+                labelText: 'IP Address',
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Lưu ý: Cần khởi động lại ứng dụng để áp dụng thay đổi hoàn toàn.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final newIp = ipController.text.trim();
+              if (newIp.isNotEmpty) {
+                await AppConfig.updateIp(newIp);
+                if (mounted) {
+                  setState(() {}); // Refresh UI to show new IP
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Đã cập nhật IP thành: $newIp'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Lưu'),
+          ),
+        ],
+      ),
     );
   }
 

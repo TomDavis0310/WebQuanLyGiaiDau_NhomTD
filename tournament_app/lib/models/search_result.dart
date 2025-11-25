@@ -100,7 +100,9 @@ class PlayerSearchResult {
 @JsonSerializable()
 class MatchSearchResult {
   final int id;
+  @JsonKey(fromJson: _safeStringFromJson)
   final String teamA;
+  @JsonKey(fromJson: _safeStringFromJson)
   final String teamB;
   final int? scoreA;
   final int? scoreB;
@@ -127,6 +129,12 @@ class MatchSearchResult {
       _$MatchSearchResultFromJson(json);
 
   Map<String, dynamic> toJson() => _$MatchSearchResultToJson(this);
+
+  static String _safeStringFromJson(dynamic value) {
+    if (value is String) return value;
+    if (value is int) return value.toString();
+    return value?.toString() ?? '';
+  }
 
   String get formattedDate {
     return '${matchDate.day.toString().padLeft(2, '0')}/${matchDate.month.toString().padLeft(2, '0')}/${matchDate.year}';

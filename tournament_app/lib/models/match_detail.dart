@@ -8,7 +8,9 @@ part 'match_detail.g.dart';
 @JsonSerializable()
 class MatchDetail {
   final int id;
+  @JsonKey(fromJson: _safeStringFromJson)
   final String teamA;
+  @JsonKey(fromJson: _safeStringFromJson)
   final String teamB;
   final DateTime matchDate;
   final String? matchTime;
@@ -100,6 +102,13 @@ class MatchDetail {
       _$MatchDetailFromJson(json);
 
   Map<String, dynamic> toJson() => _$MatchDetailToJson(this);
+  
+  /// Safe string converter - handles both int and String
+  static String _safeStringFromJson(dynamic value) {
+    if (value is String) return value;
+    if (value is int) return value.toString();
+    return value?.toString() ?? '';
+  }
 }
 
 /// Tournament Info model (nested in Match Detail)

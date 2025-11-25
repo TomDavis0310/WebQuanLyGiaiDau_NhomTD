@@ -999,9 +999,10 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen>
             : null,
         trailing: Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () {
-          // TODO: Navigate to team detail
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Chi tiết đội: ${team.name}')),
+          Navigator.pushNamed(
+            context,
+            '/team-detail',
+            arguments: {'teamId': team.teamId},
           );
         },
       ),

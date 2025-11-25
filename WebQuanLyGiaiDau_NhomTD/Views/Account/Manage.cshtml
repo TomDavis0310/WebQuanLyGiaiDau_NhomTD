@@ -1,0 +1,524 @@
+@model ManageViewModel
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TDSports</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #48bb78;
+            --danger-color: #f56565;
+            --dark-color: #2d3748;
+            --light-color: #f7fafc;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        .manage-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .page-header h1 {
+            color: var(--dark-color);
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .page-header p {
+            color: #718096;
+            margin: 10px 0 0 0;
+        }
+
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            height: fit-content;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: #4a5568;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-menu a:hover {
+            background-color: #f7fafc;
+            color: var(--primary-color);
+        }
+
+        .sidebar-menu a.active {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+        }
+
+        .sidebar-menu a i {
+            margin-right: 10px;
+            width: 20px;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            color: var(--dark-color);
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            color: var(--dark-color);
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-control {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-control:disabled {
+            background-color: #f7fafc;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger:hover {
+            background-color: #e53e3e;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(245, 101, 101, 0.3);
+        }
+
+        .alert {
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            border: none;
+        }
+
+        .alert-success {
+            background-color: #c6f6d5;
+            color: #22543d;
+        }
+
+        .alert-danger {
+            background-color: #fed7d7;
+            color: #c53030;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            margin: 0 auto 20px;
+        }
+
+        .info-card {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-card h3 {
+            color: var(--dark-color);
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: var(--dark-color);
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background-color: #c6f6d5;
+            color: #22543d;
+        }
+
+        .badge-warning {
+            background-color: #feebc8;
+            color: #7c2d12;
+        }
+
+        @@media (max-width: 992px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="@Url.Action("Index", "Home")">
+                <i class="fas fa-trophy"></i> TDSports
+            </a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="@Url.Action("Index", "Home")">
+                        <i class="fas fa-home"></i> Trang chủ
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <form asp-action="Logout" asp-controller="Account" method="post" style="display: inline;">
+                        <button type="submit" class="btn nav-link" style="border: none; background: none;">
+                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="manage-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1><i class="fas fa-user-circle"></i> Quản lý tài khoản</h1>
+            <p>Cập nhật thông tin cá nhân và cài đặt bảo mật</p>
+        </div>
+
+        @if (TempData["StatusMessage"] != null)
+        {
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> @TempData["StatusMessage"]
+            </div>
+        }
+
+        <div class="content-wrapper">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="#profile" class="tab-link active" data-tab="profile">
+                            <i class="fas fa-user"></i>
+                            <span>Thông tin cá nhân</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#password" class="tab-link" data-tab="password">
+                            <i class="fas fa-lock"></i>
+                            <span>Đổi mật khẩu</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#security" class="tab-link" data-tab="security">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Bảo mật</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Profile Tab -->
+                <div id="profile" class="tab-content active">
+                    <h2 class="section-title">Thông tin cá nhân</h2>
+                    
+                    <div class="profile-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+
+                    <form asp-action="Manage" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="form-group">
+                            <label asp-for="Email" class="form-label">Email</label>
+                            <input asp-for="Email" class="form-control" disabled />
+                            @if (Model.IsEmailConfirmed)
+                            {
+                                <small class="text-success">
+                                    <i class="fas fa-check-circle"></i> Email đã được xác nhận
+                                </small>
+                            }
+                            else
+                            {
+                                <small class="text-warning">
+                                    <i class="fas fa-exclamation-circle"></i> Email chưa được xác nhận
+                                </small>
+                            }
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="FullName" class="form-label">Họ và tên</label>
+                            <input asp-for="FullName" class="form-control" placeholder="Nhập họ và tên" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="PhoneNumber" class="form-label">Số điện thoại</label>
+                            <input asp-for="PhoneNumber" class="form-control" placeholder="Nhập số điện thoại" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Cập nhật thông tin
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Password Tab -->
+                <div id="password" class="tab-content">
+                    <h2 class="section-title">Đổi mật khẩu</h2>
+                    
+                    <div class="info-card">
+                        <h3><i class="fas fa-info-circle"></i> Lưu ý khi đổi mật khẩu</h3>
+                        <ul style="margin: 0; padding-left: 20px;">
+                            <li>Mật khẩu phải có ít nhất 6 ký tự</li>
+                            <li>Nên sử dụng kết hợp chữ hoa, chữ thường, số và ký tự đặc biệt</li>
+                            <li>Không sử dụng mật khẩu quá đơn giản</li>
+                        </ul>
+                    </div>
+
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="@Url.Action("ChangePassword", "Account")" class="btn-primary">
+                            <i class="fas fa-key"></i> Đổi mật khẩu
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Security Tab -->
+                <div id="security" class="tab-content">
+                    <h2 class="section-title">Bảo mật tài khoản</h2>
+                    
+                    <div class="info-card">
+                        <h3><i class="fas fa-shield-alt"></i> Trạng thái bảo mật</h3>
+                        <div class="info-item">
+                            <span class="info-label">Xác thực email</span>
+                            <span class="info-value">
+                                @if (Model.IsEmailConfirmed)
+                                {
+                                    <span class="badge badge-success">Đã kích hoạt</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-warning">Chưa kích hoạt</span>
+                                }
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Đăng nhập bằng mật khẩu</span>
+                            <span class="info-value">
+                                <span class="badge badge-success">Đã kích hoạt</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="info-card" style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);">
+                        <h3><i class="fas fa-shield-alt" style="color: var(--primary-color);"></i> Xác thực 2 bước (2FA)</h3>
+                        <p style="color: #718096; margin-bottom: 15px;">
+                            Tăng cường bảo mật tài khoản với xác thực 2 bước. Bạn sẽ cần nhập mã xác thực được gửi qua Email, SMS hoặc Zalo mỗi khi đăng nhập.
+                        </p>
+                        <a href="@Url.Action("TwoFactorSettings", "Account")" class="btn-primary">
+                            <i class="fas fa-cog"></i> Cài đặt xác thực 2 bước
+                        </a>
+                    </div>
+
+                    <div class="info-card" style="border: 2px solid #fed7d7;">
+                        <h3><i class="fas fa-exclamation-triangle" style="color: var(--danger-color);"></i> Vùng nguy hiểm</h3>
+                        <p style="color: #718096; margin-bottom: 15px;">
+                            Xóa tài khoản sẽ xóa vĩnh viễn tất cả dữ liệu của bạn. Hành động này không thể hoàn tác.
+                        </p>
+                        <button type="button" class="btn-danger" onclick="alert('Tính năng đang được phát triển')">
+                            <i class="fas fa-trash-alt"></i> Xóa tài khoản
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all links and tabs
+                document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                
+                // Add active class to clicked link and corresponding tab
+                this.classList.add('active');
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

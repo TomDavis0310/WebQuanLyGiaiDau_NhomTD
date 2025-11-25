@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'config/app_config.dart';
 import 'providers/auth_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/splash_screen.dart';
@@ -10,6 +11,8 @@ import 'theme/app_theme.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/forgot_password_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/explore_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/sports_list_screen.dart';
 import 'screens/profile_screen.dart';
@@ -29,15 +32,18 @@ import 'screens/create_edit_team_screen.dart';
 import 'screens/add_edit_player_screen.dart';
 import 'screens/tournament_registration_screen.dart';
 import 'screens/video_highlights_screen.dart';
+import 'screens/live_streaming_screen.dart';
+import 'screens/chat_screen.dart';
 import 'screens/shop_screen.dart';
-// import 'screens/shop_products_screen.dart'; // Removed duplicate
-// import 'screens/product_detail_screen.dart'; // Removed unused
 import 'screens/my_rewards_screen.dart';
 import 'screens/points_history_screen.dart';
 import 'screens/earn_points_guide_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Load App Configuration (IP Address)
+  await AppConfig.loadConfig();
   
   // Thiết lập thanh trạng thái
   SystemChrome.setSystemUIOverlayStyle(
@@ -82,6 +88,8 @@ class MyApp extends StatelessWidget {
   static const String routeLogin = '/login';
   static const String routeRegister = '/register';
   static const String routeForgotPassword = '/forgot-password';
+  static const String routeHome = '/home';
+  static const String routeExplore = '/explore';
   static const String routeDashboard = '/dashboard';
   static const String routeSportsList = '/sports-list';
   static const String routeProfile = '/profile';
@@ -103,8 +111,9 @@ class MyApp extends StatelessWidget {
   static const String routeEditPlayer = '/edit-player';
   static const String routeTournamentRegistration = '/tournament-registration';
   static const String routeVideoHighlights = '/video-highlights';
+  static const String routeLiveStreaming = '/live-streaming';
+  static const String routeChat = '/chat';
   static const String routeShop = '/shop';
-  // static const String routeShopProducts = '/shop-products'; // Removed duplicate
   static const String routeProductDetail = '/product-detail';
   static const String routeMyRewards = '/my-rewards';
   static const String routePointsHistory = '/points-history';
@@ -122,6 +131,12 @@ class MyApp extends StatelessWidget {
       
       case routeForgotPassword:
         return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
+      
+      case routeHome:
+        return MaterialPageRoute(builder: (_) => const HomeScreen());
+      
+      case routeExplore:
+        return MaterialPageRoute(builder: (_) => const ExploreScreen());
       
       case routeDashboard:
         return MaterialPageRoute(builder: (_) => const DashboardScreen());
@@ -251,6 +266,12 @@ class MyApp extends StatelessWidget {
             searchQuery: args?['searchQuery'] as String?,
           ),
         );
+      
+      case routeLiveStreaming:
+        return MaterialPageRoute(builder: (_) => const LiveStreamingScreen());
+      
+      case routeChat:
+        return MaterialPageRoute(builder: (_) => const ChatScreen());
       
       case routeShop:
         return MaterialPageRoute(builder: (_) => const ShopScreen());

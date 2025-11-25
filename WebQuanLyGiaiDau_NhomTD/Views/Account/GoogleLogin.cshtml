@@ -1,0 +1,182 @@
+@{
+    ViewData["Title"] = "Google Login";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TDSports</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .google-login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .google-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #2d3748;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .description {
+            color: #718096;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-label {
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-control {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-google {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-google:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-back {
+            background: white;
+            color: #2d3748;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .btn-back:hover {
+            background: #f7fafc;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .alert-danger {
+            background-color: #fed7d7;
+            color: #c53030;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="google-login-container">
+        <i class="fab fa-google google-icon" style="color: #4285f4;"></i>
+        <h2>Đăng nhập với Google</h2>
+        <p class="description">Nhập thông tin Google của bạn để đăng nhập</p>
+
+        <form method="post" asp-action="GoogleLogin">
+            @Html.AntiForgeryToken()
+            
+            @if (ViewData.ModelState.ErrorCount > 0)
+            {
+                <div class="alert-danger">
+                    @Html.ValidationSummary()
+                </div>
+            }
+
+            <div class="form-group">
+                <label for="email" class="form-label">Email Google</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="example@gmail.com" required />
+            </div>
+
+            <div class="form-group">
+                <label for="name" class="form-label">Họ và tên</label>
+                <input type="text" class="form-control" id="name" name="name" placeholder="Nguyễn Văn A" required />
+            </div>
+
+            <button type="submit" class="btn-google">
+                <i class="fab fa-google"></i> Đăng nhập
+            </button>
+
+            <a href="@Url.Action("Login", "Account")" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </form>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

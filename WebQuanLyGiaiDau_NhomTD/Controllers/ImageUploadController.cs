@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebQuanLyGiaiDau_NhomTD.Services;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace WebQuanLyGiaiDau_NhomTD.Controllers
 {
@@ -26,6 +28,8 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers
         /// <param name="file">Image file</param>
         /// <param name="uploadType">Type: ProfileImage, TeamLogo, PlayerPhoto, TournamentImage</param>
         [HttpPost("upload")]
+        [Consumes("multipart/form-data")]
+        [ApiExplorerSettings(IgnoreApi = true)] // Hide from Swagger due to IFormFile issue
         public async Task<IActionResult> UploadImage([FromForm] IFormFile file, [FromForm] string uploadType)
         {
             try

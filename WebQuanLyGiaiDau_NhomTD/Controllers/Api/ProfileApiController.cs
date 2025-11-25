@@ -9,7 +9,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
 {
     [Route("api/profile")]
     [ApiController]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class ProfileApiController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -160,6 +160,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
 
         // PUT: api/profile/avatar
         [HttpPut("avatar")]
+        [ApiExplorerSettings(IgnoreApi = true)] // Hide from Swagger - IFormFile with FromForm not supported
         public async Task<ActionResult<ApiResponse<string>>> UpdateAvatar([FromForm] IFormFile profilePicture)
         {
             try

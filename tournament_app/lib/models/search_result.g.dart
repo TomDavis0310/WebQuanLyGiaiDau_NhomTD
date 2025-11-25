@@ -97,8 +97,8 @@ Map<String, dynamic> _$PlayerSearchResultToJson(PlayerSearchResult instance) =>
 MatchSearchResult _$MatchSearchResultFromJson(Map<String, dynamic> json) =>
     MatchSearchResult(
       id: (json['id'] as num).toInt(),
-      teamA: json['teamA'] as String,
-      teamB: json['teamB'] as String,
+      teamA: MatchSearchResult._safeStringFromJson(json['teamA']),
+      teamB: MatchSearchResult._safeStringFromJson(json['teamB']),
       scoreA: (json['scoreA'] as num?)?.toInt(),
       scoreB: (json['scoreB'] as num?)?.toInt(),
       matchDate: DateTime.parse(json['matchDate'] as String),

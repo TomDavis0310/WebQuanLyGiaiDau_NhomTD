@@ -75,7 +75,8 @@ class _ShopScreenState extends State<ShopScreen> {
 
       if (productsResponse.statusCode == 200) {
         final productsData = json.decode(productsResponse.body);
-        final products = (productsData['data'] as List)
+        // Backend trả về trực tiếp array, không có wrapper
+        final products = (productsData as List)
             .map((json) => RewardProduct.fromJson(json))
             .toList();
 
@@ -91,9 +92,18 @@ class _ShopScreenState extends State<ShopScreen> {
             );
             if (pointsResponse.statusCode == 200) {
               final pointsData = json.decode(pointsResponse.body);
-              _userPoints = pointsData['data']['points'] ?? 0;
+              print('DEBUG ShopScreen - Points API Response: $pointsData');
+              // Backend trả về trực tiếp object {points, username, fullName}
+              // Handle both lowercase 'points' and uppercase 'Points'
+              _userPoints = (pointsData['points'] ?? pointsData['Points'] ?? 0) as int;
+              print('DEBUG ShopScreen - User: ${pointsData['username']} (${pointsData['fullName']})');
+              print('DEBUG ShopScreen - User Points: $_userPoints');
+            } else {
+              print('DEBUG ShopScreen - Points API Error: ${pointsResponse.statusCode}');
+              print('DEBUG ShopScreen - Response body: ${pointsResponse.body}');
             }
           } catch (e) {
+            print('Error loading user points: $e');
             _userPoints = 0;
           }
         }
@@ -107,6 +117,7 @@ class _ShopScreenState extends State<ShopScreen> {
         throw Exception('Failed to load products');
       }
     } catch (e) {
+      print('Error loading shop data: $e');
       setState(() {
         _error = 'Không thể tải danh sách sản phẩm: $e';
       });
@@ -173,6 +184,114 @@ class _ShopScreenState extends State<ShopScreen> {
       ) : null,
       body: Column(
         children: [
+          // Points Badge (when no AppBar)
+          if (!widget.showAppBar)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).primaryColor,
+                    Theme.of(context).primaryColor.withOpacity(0.8),
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Cửa Hàng Điểm',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Text(
+                              'Đổi điểm lấy quà',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.pushNamed(context, '/earn-points-guide');
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.help_outline,
+                                      color: Colors.white,
+                                      size: 12,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Cách kiếm',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.stars, color: Colors.amber, size: 20),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$_userPoints',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           // Search Bar
           Padding(
             padding: const EdgeInsets.all(16.0),

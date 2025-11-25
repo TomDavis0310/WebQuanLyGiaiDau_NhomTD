@@ -124,7 +124,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     // Với AppBar bình thường
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dashboard', 
+        title: Text('Hoạt Động', 
           style: AppTheme.lightHeadlineMedium.copyWith(color: Colors.white)),
         centerTitle: true,
         elevation: 0,
