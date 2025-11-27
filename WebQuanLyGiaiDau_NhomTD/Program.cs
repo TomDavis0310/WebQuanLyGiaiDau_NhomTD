@@ -314,7 +314,8 @@ else
     app.UseMiddleware<GlobalExceptionMiddleware>();
 }
 
-app.UseHttpsRedirection();
+// Commented out for development on HTTP - Use only in production with HTTPS
+// app.UseHttpsRedirection();
 
 // Configure static files with custom file provider for uploads
 app.UseStaticFiles();

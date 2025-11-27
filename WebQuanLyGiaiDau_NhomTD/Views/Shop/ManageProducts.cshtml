@@ -23,7 +23,7 @@
                     <td>
                         @if (!string.IsNullOrEmpty(p.ImageUrl))
                         {
-                            <img src="@p.ImageUrl" alt="@p.Name" class="img-thumbnail" style="max-width: 80px; max-height: 80px; object-fit: cover;" />
+                            <img src="@ImageUrlHelper.NormalizeImageUrl(p.ImageUrl)" alt="@p.Name" class="img-thumbnail" style="max-width: 80px; max-height: 80px; object-fit: cover;" />
                         }
                         else
                         {

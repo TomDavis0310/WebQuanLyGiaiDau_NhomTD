@@ -32,7 +32,7 @@
                         @if (!string.IsNullOrEmpty(Model.ImageUrl))
                         {
                             <div class="col-md-4 text-center mb-3">
-                                <img src="@Model.ImageUrl" alt="Ảnh Giải Đấu" class="img-fluid rounded border" style="max-height: 200px;" />
+                                <img src="@ImageUrlHelper.NormalizeImageUrl(Model.ImageUrl)" alt="Ảnh Giải Đấu" class="img-fluid rounded border" style="max-height: 200px;" />
                             </div>
                             <div class="col-md-8">
                                 <dl class="row">

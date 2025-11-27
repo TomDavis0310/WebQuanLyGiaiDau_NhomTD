@@ -46,7 +46,7 @@
                             <div class="card h-100 shadow-sm tournament-card">
                                 @if (!string.IsNullOrEmpty(tournament.ImageUrl))
                                 {
-                                    <img src="@tournament.ImageUrl" class="card-img-top tournament-image" alt="@tournament.Name">
+                                    <img src="@ImageUrlHelper.NormalizeImageUrl(tournament.ImageUrl)" class="card-img-top tournament-image" alt="@tournament.Name">
                                 }
                                 else
                                 {

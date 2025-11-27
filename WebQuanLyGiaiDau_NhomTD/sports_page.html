@@ -1,0 +1,495 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>&#x110;&#x103;ng nh&#x1EAD;p - Thể Thao 24/7</title>
+    <meta name="description" content="Đăng nhập hoặc đăng ký tài khoản Thể Thao 24/7 để tham gia các giải đấu thể thao hấp dẫn" />
+
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Roboto:wght@300;400;500;700;900&family=Orbitron:wght@400;700;900&display=swap">
+    <link rel="stylesheet" href="/css/sports-theme.css?v=c_9hXN51ObocURZzdMr0BTPNUsbNwvTCe114zuErrlU" />
+    <link rel="stylesheet" href="/css/identity-auth.css?v=ujY_hCJ_i9Wz-Sii9tnFOXqSPPuV8I-RYlm0RUB2Kjk" />
+    <link rel="stylesheet" href="/css/form-fixes.css?v=BLUsKVMxlBDPSTNr5Ff8O1JB21ASg8NjxY_Q3lyTwvs" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-header {
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .auth-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.3)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.2)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.4)"/></svg>');
+            animation: sparkle 3s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .brand-logo {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .brand-tagline {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+
+        .auth-body {
+            padding: 2.5rem;
+        }
+
+        .form-floating {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #4ecdc4;
+            box-shadow: 0 0 0 0.2rem rgba(78, 205, 196, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .btn-auth {
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: white;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-auth::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-auth:hover::before {
+            left: 100%;
+        }
+
+        .btn-auth:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .auth-links {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .auth-links a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .auth-links a:hover {
+            color: #4ecdc4;
+            text-decoration: underline;
+        }
+
+        .external-auth {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .external-auth h3 {
+            color: #6c757d;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .home-link {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            color: white;
+            font-size: 1.5rem;
+            text-decoration: none;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .home-link:hover {
+            color: #4ecdc4;
+            transform: scale(1.1);
+        }
+
+        .floating-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .floating-element {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float-random 15s infinite linear;
+        }
+
+        .floating-element:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-element:nth-child(2) {
+            width: 60px;
+            height: 60px;
+            top: 60%;
+            right: 15%;
+            animation-delay: 5s;
+        }
+
+        .floating-element:nth-child(3) {
+            width: 40px;
+            height: 40px;
+            top: 80%;
+            left: 20%;
+            animation-delay: 10s;
+        }
+
+        @keyframes float-random {
+            0% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-30px) rotate(120deg); }
+            66% { transform: translateY(20px) rotate(240deg); }
+            100% { transform: translateY(0px) rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .auth-card {
+                margin: 1rem;
+                border-radius: 15px;
+            }
+
+            .auth-header {
+                padding: 1.5rem;
+            }
+
+            .auth-body {
+                padding: 1.5rem;
+            }
+
+            .brand-logo {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <a href="/" class="home-link" title="Về trang chủ">
+            <i class="bi bi-house-fill"></i>
+        </a>
+
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
+
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-5 col-md-7 col-sm-9">
+                    <div class="auth-card">
+                        <div class="auth-header">
+                            <div class="brand-logo">
+                                <i class="bi bi-lightning-charge-fill"></i>
+                                Thể Thao 24/7
+                            </div>
+                            <div class="brand-tagline">Nền tảng giải đấu hàng đầu</div>
+                        </div>
+                        <div class="auth-body">
+                            
+
+
+<div class="text-center mb-4">
+    <h1 class="h3 mb-3 fw-bold text-primary">
+        <i class="bi bi-box-arrow-in-right me-2"></i>
+        Đăng nhập tài khoản
+    </h1>
+    <p class="text-muted">Chào mừng trở lại! Hãy đăng nhập để tiếp tục hành trình thể thao của bạn.</p>
+</div>
+
+<form id="account" method="post">
+    
+
+    <div class="form-floating mb-3">
+        <input class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" type="email" data-val="true" data-val-email="The Email field is not a valid e-mail address." data-val-required="The Email field is required." id="Input_Email" name="Input.Email" value="" />
+        <label class="form-label" for="Input_Email">
+            <i class="bi bi-envelope me-2"></i>Email
+        </label>
+        <span class="text-danger field-validation-valid" data-valmsg-for="Input.Email" data-valmsg-replace="true"></span>
+    </div>
+
+    <div class="form-floating mb-3">
+        <input class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" type="password" data-val="true" data-val-required="The Password field is required." id="Input_Password" name="Input.Password" />
+        <label class="form-label" for="Input_Password">
+            <i class="bi bi-lock me-2"></i>Mật khẩu
+        </label>
+        <span class="text-danger field-validation-valid" data-valmsg-for="Input.Password" data-valmsg-replace="true"></span>
+    </div>
+
+    <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" data-val="true" data-val-required="The Remember me? field is required." id="Input_RememberMe" name="Input.RememberMe" value="true" />
+        <label class="form-check-label" for="Input_RememberMe">
+            Ghi nhớ đăng nhập
+        </label>
+    </div>
+
+    <div class="d-grid mb-3">
+        <button id="login-submit" type="submit" class="btn btn-auth btn-lg">
+            <i class="bi bi-box-arrow-in-right me-2"></i>
+            Đăng nhập
+        </button>
+    </div>
+
+    <div class="auth-links">
+        <div class="row text-center">
+            <div class="col-12 mb-2">
+                <a id="forgot-password" href="/Identity/Account/ForgotPassword">
+                    <i class="bi bi-question-circle me-1"></i>
+                    Quên mật khẩu?
+                </a>
+            </div>
+            <div class="col-12 mb-2">
+                <a href="/Identity/Account/Register?returnUrl=%2FSports">
+                    <i class="bi bi-person-plus me-1"></i>
+                    Đăng ký tài khoản mới
+                </a>
+            </div>
+            <div class="col-12">
+                <a id="resend-confirmation" href="/Identity/Account/ResendEmailConfirmation">
+                    <i class="bi bi-envelope-check me-1"></i>
+                    Gửi lại email xác nhận
+                </a>
+            </div>
+        </div>
+    </div>
+<input name="__RequestVerificationToken" type="hidden" value="CfDJ8AXUfIQMalJMg1w1D9UjBTQZPNOjwa6827cksQkwcFnjA6HOxVxC0zNcbx5eogQaAcxkHQzLD2MxPQRZturQ-vqHkBavRpWIp7G3ROKXXHO-5ZZyx2rS7brRan93er533Nwg60jOyNPcMhIG0sR-8LQ" /><input name="Input.RememberMe" type="hidden" value="false" /></form>
+
+<!-- Phần Google OAuth - Hiển thị luôn để demo UI -->
+<div class="external-auth">
+    <div class="text-center mb-3">
+        <hr class="my-4">
+        <span class="text-muted bg-white px-3">HOẶC</span>
+    </div>
+    
+    <div class="d-grid gap-2">
+        <!-- Nút Google - Demo UI (sẽ hoạt động khi cấu hình OAuth) -->
+        <button type="button" class="btn btn-google btn-lg" onclick="handleGoogleLogin()" title="Đăng nhập bằng Google">
+            <svg class="google-icon" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Đăng nhập bằng Google
+        </button>
+    </div>
+</div>
+
+<!-- Phần External Logins thực tế (ẩn nếu chưa cấu hình) -->
+    <div class="external-auth-real" style="display: none;">
+        <h3 class="text-center">
+            <i class="bi bi-globe me-2"></i>
+            Đăng nhập bằng dịch vụ khác
+        </h3>
+        <form id="external-account" method="post" action="/Identity/Account/ExternalLogin?returnUrl=%2FSports">
+            <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-google btn-lg" name="provider" value="Google" title="Đăng nhập bằng Google">
+                            <svg class="google-icon" viewBox="0 0 24 24">
+                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                            Đăng nhập bằng Google
+                        </button>
+            </div>
+        <input name="__RequestVerificationToken" type="hidden" value="CfDJ8AXUfIQMalJMg1w1D9UjBTQZPNOjwa6827cksQkwcFnjA6HOxVxC0zNcbx5eogQaAcxkHQzLD2MxPQRZturQ-vqHkBavRpWIp7G3ROKXXHO-5ZZyx2rS7brRan93er533Nwg60jOyNPcMhIG0sR-8LQ" /></form>
+    </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script src="/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
+
+    
+    <script>
+        function handleGoogleLogin() {
+            // Redirect đến mock Google login để demo
+            window.location.href = '/Identity/Account/MockGoogleLogin';
+        }
+
+        function showGoogleConfigModal() {
+            // Tạo modal thông báo
+            const modal = document.createElement('div');
+            modal.innerHTML = `
+                <div class="modal fade" id="googleConfigModal" tabindex="-1" aria-labelledby="googleConfigModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-warning text-dark">
+                                <h5 class="modal-title" id="googleConfigModalLabel">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    Google OAuth chưa được cấu hình
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>Đăng nhập bằng Google hiện chưa khả dụng</strong>
+                                </div>
+                                
+                                <p>Để kích hoạt tính năng đăng nhập bằng Google, vui lòng:</p>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card border-primary">
+                                            <div class="card-header bg-primary text-white">
+                                                <i class="bi bi-book me-2"></i>Hướng dẫn chi tiết
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="small">Hướng dẫn từng bước để cấu hình Google Cloud Console và OAuth 2.0</p>
+                                                <button class="btn btn-outline-primary btn-sm" onclick="window.open('/docs/GOOGLE_OAUTH_HOÀN_THIỆN.md', '_blank')">
+                                                    <i class="bi bi-arrow-right me-1"></i>Xem hướng dẫn
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card border-success">
+                                            <div class="card-header bg-success text-white">
+                                                <i class="bi bi-lightning me-2"></i>Hướng dẫn nhanh
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="small">Setup nhanh trong 5 phút</p>
+                                                <button class="btn btn-outline-success btn-sm" onclick="window.open('/docs/GOOGLE_OAUTH_QUICK_START.md', '_blank')">
+                                                    <i class="bi bi-arrow-right me-1"></i>Setup nhanh
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <hr class="my-3">
+                                
+                                <div class="alert alert-success">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <strong>Trong thời gian này, bạn vẫn có thể đăng nhập bằng email và mật khẩu ở trên!</strong>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="bi bi-x-lg me-2"></i>Đóng
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="document.getElementById('Input_Email').focus(); bootstrap.Modal.getInstance(document.getElementById('googleConfigModal')).hide();">
+                                    <i class="bi bi-envelope me-2"></i>Đăng nhập bằng Email
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const googleModal = new bootstrap.Modal(document.getElementById('googleConfigModal'));
+            googleModal.show();
+            
+            // Xóa modal sau khi đóng
+            document.getElementById('googleConfigModal').addEventListener('hidden.bs.modal', function () {
+                document.body.removeChild(modal);
+            });
+        }
+    </script>
+
+</body>
+</html>
+

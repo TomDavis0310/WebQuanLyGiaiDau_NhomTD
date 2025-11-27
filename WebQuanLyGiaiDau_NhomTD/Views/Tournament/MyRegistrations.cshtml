@@ -51,7 +51,7 @@
                         <div class="card-body">
                             @if (!string.IsNullOrEmpty(registration.Tournament.ImageUrl))
                             {
-                                <img src="@registration.Tournament.ImageUrl" class="card-img-top mb-3" alt="@registration.Tournament.Name" style="height: 150px; object-fit: cover;">
+                                <img src="@ImageUrlHelper.NormalizeImageUrl(registration.Tournament.ImageUrl)" class="card-img-top mb-3" alt="@registration.Tournament.Name" style="height: 150px; object-fit: cover;">
                             }
 
                             <p class="card-text">@registration.Tournament.Description</p>

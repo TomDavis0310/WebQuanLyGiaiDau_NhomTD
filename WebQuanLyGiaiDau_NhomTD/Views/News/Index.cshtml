@@ -23,7 +23,7 @@
                 <div class="col-md-10">
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" name="searchString" value="@ViewData["CurrentFilter"]" placeholder="Tìm kiếm tin tức...">
+                        <input type="text" class="form-control news-search-input" name="searchString" value="@ViewData["CurrentFilter"]" placeholder="Tìm kiếm tin tức...">
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -212,5 +212,27 @@
         border-radius: 20px;
         font-size: 0.8rem;
         font-weight: 600;
+    }
+
+    /* News page - nicer placeholder in dark theme */
+    .news-search-input::placeholder {
+        color: rgba(255,255,255,0.85);
+        opacity: 1; /* make sure it's fully visible on dark backgrounds */
+    }
+
+    /* Only force pale-white placeholder in dark mode (theme system uses data-theme attribute) */
+    [data-theme="dark"] .news-search-input::placeholder {
+        color: rgba(255,255,255,0.85) !important;
+        opacity: 1 !important;
+    }
+
+    /* Typed input text should be white in dark mode */
+    [data-theme="dark"] .news-search-input {
+        color: #ffffff !important;
+    }
+
+    /* Make the Add News button text black in dark mode (only for this page) */
+    [data-theme="dark"] .news-add-btn {
+        color: #000000 !important;
     }
 </style>

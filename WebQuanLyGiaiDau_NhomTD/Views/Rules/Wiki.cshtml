@@ -28,7 +28,8 @@
                         {
                             @foreach (var category in basketballRules)
                             {
-                                <a href="#category-@category.Id" class="list-group-item list-group-item-action ps-4">
+                                var is3x3 = category.Name?.Trim().Equals("Luật Bóng Rổ 3x3", StringComparison.OrdinalIgnoreCase) == true;
+                                <a href="#category-@category.Id" class="list-group-item list-group-item-action ps-4 @(is3x3 ? "category-3x3-link" : "")">
                                     <i class="bi bi-dot me-2"></i>@category.Name
                                 </a>
                             }
@@ -87,8 +88,8 @@
                 <div class="card-header bg-primary text-white">
                     <h2 class="h3 mb-0"><i class="bi bi-dribbble me-2"></i>Luật Bóng Rổ</h2>
                 </div>
-                <div class="card-body">
-                    <p class="lead">Luật bóng rổ chính thức theo tiêu chuẩn FIBA</p>
+                    <div class="card-body">
+                    <p class="lead basketball-lead">Luật bóng rổ chính thức theo tiêu chuẩn FIBA</p>
                     <div class="alert alert-light border">
                         <p class="mb-0">Bóng rổ là môn thể thao đồng đội trong nhà, được chơi giữa hai đội với mỗi đội có năm cầu thủ (bóng rổ 5x5) hoặc ba cầu thủ (bóng rổ 3x3). Mục tiêu là ghi điểm bằng cách ném bóng vào rổ của đối phương và ngăn đội đối phương ghi điểm.</p>
                     </div>
@@ -100,10 +101,11 @@
             {
                 @foreach (var category in basketballRules)
                 {
+                    var is3x3 = category.Name?.Trim().Equals("Luật Bóng Rổ 3x3", StringComparison.OrdinalIgnoreCase) == true;
                     <div id="category-@category.Id" class="rule-section">
                         <div class="card shadow-sm mb-4">
-                            <div class="card-header bg-light">
-                                <h3 class="h5 mb-0">@category.Name</h3>
+                                <div class="card-header bg-light">
+                                <h3 class="h5 mb-0 @(is3x3 ? "category-3x3-header" : "")">@category.Name</h3>
                             </div>
                             <div class="card-body">
                                 <p class="lead">@category.Description</p>
@@ -164,7 +166,7 @@
                             </table>
                         </div>
 
-                        <div class="alert alert-warning mt-3">
+                        <div class="alert alert-warning mt-3 differences-note">
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
                             <strong>Lưu ý:</strong> Bóng rổ 3x3 là môn thể thao Olympic chính thức từ năm 2021 và có bộ luật riêng được FIBA ban hành.
                         </div>
@@ -214,6 +216,32 @@
         </div>
     </div>
 </div>
+
+    <style>
+        /* RULES PAGE - DARK MODE ADJUSTMENTS */
+        [data-theme="dark"] #overview .alert.alert-info,
+        [data-theme="dark"] #overview .alert.alert-info .alert-heading,
+        [data-theme="dark"] #overview .alert.alert-info p {
+            color: #000000 !important; /* overview box text -> black */
+        }
+
+        [data-theme="dark"] .basketball-lead {
+            color: #ffffff !important; /* Basketball main lead text -> white in dark mode */
+        }
+
+        [data-theme="dark"] .category-3x3-link,
+        [data-theme="dark"] .category-3x3-header {
+            color: #000000 !important; /* 'Luật Bóng Rổ 3x3' -> black */
+        }
+
+        [data-theme="dark"] .table-differences tbody td {
+            color: #ffffff !important; /* table content -> white */
+        }
+
+        [data-theme="dark"] .differences-note {
+            color: #000000 !important; /* differences alert note -> black */
+        }
+    </style>
 
 @section Scripts {
     <script>

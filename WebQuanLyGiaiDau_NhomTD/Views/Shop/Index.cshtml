@@ -49,7 +49,7 @@
                 <div class="card product-card" data-id="@item.Id" data-cost="@item.PointsCost" style="cursor:pointer;">
                     @if (!string.IsNullOrEmpty(item.ImageUrl))
                     {
-                        <img src="@item.ImageUrl" class="card-img-top" alt="@item.Name" style="height: 200px; object-fit: cover;" />
+                        <img src="@ImageUrlHelper.NormalizeImageUrl(item.ImageUrl)" class="card-img-top" alt="@item.Name" style="height: 200px; object-fit: cover;" />
                     }
                     else
                     {

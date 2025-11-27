@@ -58,7 +58,7 @@
                     <div class="card h-100 shadow-sm">
                         @if (!string.IsNullOrEmpty(transaction.RewardProduct?.ImageUrl))
                         {
-                            <img src="@transaction.RewardProduct.ImageUrl" class="card-img-top" alt="@transaction.RewardProduct.Name" style="height: 200px; object-fit: cover;">
+                            <img src="@ImageUrlHelper.NormalizeImageUrl(transaction.RewardProduct.ImageUrl)" class="card-img-top" alt="@transaction.RewardProduct.Name" style="height: 200px; object-fit: cover;">
                         }
                         else
                         {
