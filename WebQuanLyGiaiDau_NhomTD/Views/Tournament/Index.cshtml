@@ -306,6 +306,53 @@
                     <div class="stat-label">Giải đấu</div>
                 </div>
             </div>
+
+                <style>
+                    /* Tournament page - dark mode styles */
+                    [data-theme="dark"] .tournament-search-input::placeholder {
+                        color: rgba(255,255,255,0.85) !important;
+                        opacity: 1 !important;
+                    }
+                    [data-theme="dark"] .tournament-search-input {
+                        color: #ffffff !important; /* typed text white */
+                    }
+
+                    /* Tournament card: change white card area to background #393A4D in dark mode */
+                    [data-theme="dark"] .tournament-card {
+                        background: #393A4D !important;
+                        color: inherit !important;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.35) !important;
+                    }
+
+                    /* Title should remain white */
+                    [data-theme="dark"] .tournament-card .tournament-title {
+                        color: #ffffff !important;
+                    }
+
+                    /* Description becomes light gray */
+                    [data-theme="dark"] .tournament-card .tournament-description {
+                        color: #919196 !important;
+                    }
+
+                    /* Ensure meta blocks match the dark card background */
+                    [data-theme="dark"] .tournament-card .tournament-meta {
+                        background: #393A4D !important;
+                    }
+
+                    /* Meta label/value colors for readability */
+                    [data-theme="dark"] .tournament-card .meta-label {
+                        color: #919196 !important;
+                    }
+
+                    [data-theme="dark"] .tournament-card .meta-value {
+                        color: #ffffff !important;
+                    }
+
+                    /* Edit button text black in dark mode */
+                    [data-theme="dark"] .tournament-actions .btn-warning {
+                        color: #000000 !important;
+                    }
+                </style>
         </div>
     </div>
 </div>
@@ -325,8 +372,8 @@
             <div class="col-lg-6">
                 <form asp-action="Index" method="get" class="d-flex">
                     <div class="input-group">
-                        <input type="text" name="searchString" value="@ViewData["CurrentFilter"]"
-                               class="form-control search-input" placeholder="🔍 Tìm kiếm giải đấu..." />
+                           <input type="text" name="searchString" value="@ViewData["CurrentFilter"]"
+                               class="form-control search-input tournament-search-input" placeholder="🔍 Tìm kiếm giải đấu..." />
                         <button type="submit" class="btn btn-search">
                             <i class="bi bi-search"></i> Tìm kiếm
                         </button>
@@ -367,9 +414,9 @@
                     <div class="tournament-card">
                         <!-- Tournament Image -->
                         <div class="tournament-image">
-                            @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                @if (!string.IsNullOrEmpty(item.ImageUrl))
                             {
-                                <img src="@item.ImageUrl" alt="@item.Name" />
+                                <img src="@ImageUrlHelper.NormalizeImageUrl(item.ImageUrl)" alt="@item.Name" />
                             }
                             else
                             {
@@ -405,7 +452,7 @@
 
                         <!-- Tournament Content -->
                         <div class="tournament-content">
-                            <h3 class="tournament-title">@item.Name</h3>
+                                    <h3 class="tournament-title">@item.Name</h3>
 
                             @if (!string.IsNullOrEmpty(item.Description))
                             {

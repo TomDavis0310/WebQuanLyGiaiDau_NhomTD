@@ -14,6 +14,22 @@
                     </h4>
                 </div>
                 <div class="card-body">
+                    <style>
+                        /* Dark-mode only: make file helper text and typed input text white on dark backgrounds */
+                        [data-theme="dark"] .card-body .form-text {
+                            color: #fff !important;
+                        }
+
+                        /* Ensure input text is readable in dark-mode */
+                        [data-theme="dark"] .card-body .form-control {
+                            color: #fff !important;
+                        }
+
+                        /* Also color the placeholder text in dark-mode */
+                        [data-theme="dark"] .card-body .form-control::placeholder {
+                            color: rgba(255,255,255,0.7) !important;
+                        }
+                    </style>
                     <form asp-action="Edit" method="post" enctype="multipart/form-data">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         <input type="hidden" asp-for="Id" />
