@@ -42,16 +42,14 @@ class Environment {
     }
 
     // Default development URLs
-    // Uncomment the one you need:
+    // For Physical Device on same network (update with your PC's IP):
+    return 'http://192.168.1.142:8080/api';
 
-    // For Android Emulator:
-    return 'http://10.0.2.2:8080/api';
+    // For Android Emulator (uncomment if needed):
+    // return 'http://10.0.2.2:8080/api';
 
-    // For iOS Simulator or Physical Device on same network:
+    // For iOS Simulator (uncomment if needed):
     // return 'http://localhost:8080/api';
-
-    // For Physical Device (update with your PC's IP):
-    // return 'http://192.168.1.X:8080/api';
   }
 
   /// Get environment display name

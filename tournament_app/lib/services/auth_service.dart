@@ -18,6 +18,9 @@ class AuthService {
         body: json.encode(request.toJson()),
       );
 
+      print('Login response status: ${response.statusCode}');
+      print('Login response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final authResponse = AuthResponse.fromJson(json.decode(response.body));
         
@@ -25,6 +28,7 @@ class AuthService {
           // Save token and user data
           await saveToken(authResponse.token!);
           if (authResponse.user != null) {
+            print('User role from API: ${authResponse.user!.role}');
             await saveUser(authResponse.user!);
           }
         }
@@ -38,9 +42,10 @@ class AuthService {
       }
     } catch (e) {
       print('Login error: $e');
-      // Temporary: Return mock success for development
-      // TODO: Remove this when backend Auth API is ready
-      return _mockLogin(request);
+      return AuthResponse(
+        success: false,
+        message: 'Lỗi kết nối: $e. Vui lòng kiểm tra backend và thử lại.',
+      );
     }
   }
 
@@ -53,8 +58,22 @@ class AuthService {
         body: json.encode(request.toJson()),
       );
 
+      print('Register response status: ${response.statusCode}');
+      print('Register response body: ${response.body}');
+
       if (response.statusCode == 200) {
-        return AuthResponse.fromJson(json.decode(response.body));
+        final authResponse = AuthResponse.fromJson(json.decode(response.body));
+        
+        if (authResponse.success && authResponse.token != null) {
+          // Save token and user data
+          await saveToken(authResponse.token!);
+          if (authResponse.user != null) {
+            print('User role from API: ${authResponse.user!.role}');
+            await saveUser(authResponse.user!);
+          }
+        }
+        
+        return authResponse;
       } else {
         return AuthResponse(
           success: false,
@@ -62,9 +81,11 @@ class AuthService {
         );
       }
     } catch (e) {
-      // Temporary: Return mock success for development
-      // TODO: Remove this when backend Auth API is ready
-      return _mockRegister(request);
+      print('Register error: $e');
+      return AuthResponse(
+        success: false,
+        message: 'Lỗi kết nối: $e. Vui lòng kiểm tra backend và thử lại.',
+      );
     }
   }
 
@@ -127,108 +148,5 @@ class AuthService {
     } catch (e) {
       return await isLoggedIn(); // Fallback for development
     }
-  }
-
-  // Mock Login - Temporary for development
-  static Future<AuthResponse> _mockLogin(LoginRequest request) async {
-    await Future.delayed(Duration(seconds: 1)); // Simulate network delay
-
-    if (request.email.isEmpty || request.password.isEmpty) {
-      return AuthResponse(
-        success: false,
-        message: 'Email và mật khẩu không được để trống.',
-      );
-    }
-
-    // Simple validation
-    if (request.password.length < 6) {
-      return AuthResponse(
-        success: false,
-        message: 'Mật khẩu phải có ít nhất 6 ký tự.',
-      );
-    }
-
-    // Mock successful login
-    final user = User(
-      id: 'mock-user-id-${DateTime.now().millisecondsSinceEpoch}',
-      email: request.email,
-      userName: request.email.split('@')[0],
-      fullName: 'User Demo',
-      phoneNumber: '0123456789',
-      role: 'User',
-      createdAt: DateTime.now(),
-    );
-
-    final token = 'mock-token-${DateTime.now().millisecondsSinceEpoch}';
-
-    // Save token and user
-    await saveToken(token);
-    await saveUser(user);
-
-    return AuthResponse(
-      success: true,
-      message: 'Đăng nhập thành công!',
-      token: token,
-      user: user,
-    );
-  }
-
-  // Mock Register - Temporary for development
-  static Future<AuthResponse> _mockRegister(RegisterRequest request) async {
-    await Future.delayed(Duration(seconds: 1)); // Simulate network delay
-
-    // Validation
-    if (request.email.isEmpty || request.userName.isEmpty || 
-        request.password.isEmpty || request.confirmPassword.isEmpty) {
-      return AuthResponse(
-        success: false,
-        message: 'Vui lòng điền đầy đủ thông tin.',
-      );
-    }
-
-    if (!request.email.contains('@')) {
-      return AuthResponse(
-        success: false,
-        message: 'Email không hợp lệ.',
-      );
-    }
-
-    if (request.password.length < 6) {
-      return AuthResponse(
-        success: false,
-        message: 'Mật khẩu phải có ít nhất 6 ký tự.',
-      );
-    }
-
-    if (request.password != request.confirmPassword) {
-      return AuthResponse(
-        success: false,
-        message: 'Mật khẩu xác nhận không khớp.',
-      );
-    }
-
-    // Mock successful registration
-    final user = User(
-      id: 'mock-user-id-${DateTime.now().millisecondsSinceEpoch}',
-      email: request.email,
-      userName: request.userName,
-      fullName: request.fullName,
-      phoneNumber: request.phoneNumber,
-      role: 'User',
-      createdAt: DateTime.now(),
-    );
-
-    final token = 'mock-token-${DateTime.now().millisecondsSinceEpoch}';
-
-    // Save token and user
-    await saveToken(token);
-    await saveUser(user);
-
-    return AuthResponse(
-      success: true,
-      message: 'Đăng ký thành công!',
-      token: token,
-      user: user,
-    );
   }
 }

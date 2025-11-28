@@ -37,7 +37,7 @@ class Player {
   final int playerId;
   final String fullName;
   final String? position;
-  final String? number;
+  final int? number;
   final String? imageUrl;
 
   Player({

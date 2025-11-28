@@ -292,12 +292,12 @@ class _TeamPlayersScreenState extends State<TeamPlayersScreen> {
         leading: CircleAvatar(
           radius: 28,
           backgroundColor: Colors.blue[100],
-          backgroundImage: player.photoUrl != null 
-              ? NetworkImage(player.photoUrl!)
+          backgroundImage: player.imageUrl != null 
+              ? NetworkImage(player.imageUrl!)
               : null,
-          child: player.photoUrl == null
+          child: player.imageUrl == null
               ? Text(
-                  player.jerseyNumber?.toString() ?? '?',
+                  player.number?.toString() ?? '?',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -307,7 +307,7 @@ class _TeamPlayersScreenState extends State<TeamPlayersScreen> {
               : null,
         ),
         title: Text(
-          player.name,
+          player.fullName,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16,
@@ -319,10 +319,10 @@ class _TeamPlayersScreenState extends State<TeamPlayersScreen> {
             const SizedBox(height: 4),
             Row(
               children: [
-                if (player.jerseyNumber != null) ...[
+                if (player.number != null) ...[
                   Icon(Icons.tag, size: 14, color: Colors.grey[600]),
                   const SizedBox(width: 4),
-                  Text('Số ${player.jerseyNumber}'),
+                  Text('Số ${player.number}'),
                   const SizedBox(width: 12),
                 ],
                 if (player.position != null) ...[
@@ -332,15 +332,6 @@ class _TeamPlayersScreenState extends State<TeamPlayersScreen> {
                 ],
               ],
             ),
-            if (player.height != null || player.weight != null) ...[
-              const SizedBox(height: 2),
-              Text(
-                '${player.height != null ? "${player.height}cm" : ""}'
-                '${player.height != null && player.weight != null ? " • " : ""}'
-                '${player.weight != null ? "${player.weight}kg" : ""}',
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-              ),
-            ],
           ],
         ),
         trailing: PopupMenuButton<String>(
@@ -360,7 +351,7 @@ class _TeamPlayersScreenState extends State<TeamPlayersScreen> {
                 }
               });
             } else if (value == 'delete') {
-              _deletePlayer(player.id, player.name);
+              _deletePlayer(player.playerId, player.fullName);
             }
           },
           itemBuilder: (context) => [

@@ -75,7 +75,8 @@ class _ShopScreenState extends State<ShopScreen> {
 
       if (productsResponse.statusCode == 200) {
         final productsData = json.decode(productsResponse.body);
-        final products = (productsData['data'] as List)
+        // Backend trả về trực tiếp array, không có wrapper
+        final products = (productsData as List)
             .map((json) => RewardProduct.fromJson(json))
             .toList();
 
@@ -91,9 +92,15 @@ class _ShopScreenState extends State<ShopScreen> {
             );
             if (pointsResponse.statusCode == 200) {
               final pointsData = json.decode(pointsResponse.body);
-              _userPoints = pointsData['data']['points'] ?? 0;
+              // Backend trả về trực tiếp object {points, username, fullName}
+              // Convert to int to handle both int and double from JSON
+              final points = pointsData['points'];
+              print('Shop Screen - Points received from API: $points (type: ${points.runtimeType})');
+              _userPoints = points is int ? points : (points is double ? points.toInt() : (points is String ? int.tryParse(points) ?? 0 : 0));
+              print('Shop Screen - Parsed userPoints: $_userPoints');
             }
           } catch (e) {
+            print('Error loading user points: $e');
             _userPoints = 0;
           }
         }
@@ -107,6 +114,7 @@ class _ShopScreenState extends State<ShopScreen> {
         throw Exception('Failed to load products');
       }
     } catch (e) {
+      print('Error loading shop data: $e');
       setState(() {
         _error = 'Không thể tải danh sách sản phẩm: $e';
       });
@@ -134,12 +142,92 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
 
+  void _showDebugInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    
+    // Try to get user info from API
+    String userInfo = 'Đang tải...';
+    if (token != null) {
+      try {
+        final response = await http.get(
+          Uri.parse('${ApiService.baseUrl}/ShopApi/my-points'),
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Authorization': 'Bearer $token',
+          },
+        );
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          userInfo = 'Username: ${data['username']}\nFullName: ${data['fullName']}\nPoints: ${data['points']}';
+        } else {
+          userInfo = 'Lỗi: ${response.statusCode}\n${response.body}';
+        }
+      } catch (e) {
+        userInfo = 'Lỗi: $e';
+      }
+    } else {
+      userInfo = 'Chưa đăng nhập (không có token)';
+    }
+
+    if (!mounted) return;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Thông tin tài khoản'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Điểm hiện tại trên app: $_userPoints'),
+              const SizedBox(height: 12),
+              const Divider(),
+              const SizedBox(height: 12),
+              const Text('Thông tin từ server:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Text(userInfo),
+              const SizedBox(height: 12),
+              const Divider(),
+              const SizedBox(height: 12),
+              Text('Token: ${token != null ? '${token.substring(0, 20)}...' : 'Không có'}'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Đóng'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _loadData();
+            },
+            child: const Text('Làm mới'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: widget.showAppBar ? AppBar(
         title: const Text('Cửa hàng điểm'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            tooltip: 'Thông tin tài khoản',
+            onPressed: _showDebugInfo,
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Làm mới',
+            onPressed: _loadData,
+          ),
           IconButton(
             icon: const Icon(Icons.help_outline),
             tooltip: 'Cách kiếm điểm',
@@ -173,6 +261,114 @@ class _ShopScreenState extends State<ShopScreen> {
       ) : null,
       body: Column(
         children: [
+          // Points Badge (when no AppBar)
+          if (!widget.showAppBar)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).primaryColor,
+                    Theme.of(context).primaryColor.withOpacity(0.8),
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Cửa Hàng Điểm',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Text(
+                              'Đổi điểm lấy quà',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.pushNamed(context, '/earn-points-guide');
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.help_outline,
+                                      color: Colors.white,
+                                      size: 12,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Cách kiếm',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.stars, color: Colors.amber, size: 20),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$_userPoints',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           // Search Bar
           Padding(
             padding: const EdgeInsets.all(16.0),

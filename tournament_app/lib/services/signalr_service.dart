@@ -3,7 +3,7 @@ import 'dart:async';
 
 /// SignalR Service for real-time match updates
 class SignalRService {
-  static const String hubUrl = 'http://192.168.1.201:8080/matchHub';
+  static const String hubUrl = 'http://192.168.1.142:8080/matchHub';
   
   HubConnection? _hubConnection;
   bool _isConnected = false;
@@ -65,7 +65,7 @@ class SignalRService {
   }
 
   /// Join a match group to receive updates for specific match
-  Future<void> joinMatchGroup(String matchId) async {
+  Future<void> joinMatchGroup(int matchId) async {
     if (!_isConnected || _hubConnection == null) {
       print('SignalR: Not connected, connecting...');
       await connect();
@@ -81,7 +81,7 @@ class SignalRService {
   }
 
   /// Leave a match group
-  Future<void> leaveMatchGroup(String matchId) async {
+  Future<void> leaveMatchGroup(int matchId) async {
     if (!_isConnected || _hubConnection == null) {
       return;
     }
@@ -101,7 +101,7 @@ class SignalRService {
     try {
       final data = arguments[0] as Map<String, dynamic>;
       final update = ScoreUpdate(
-        matchId: data['matchId'].toString(),
+        matchId: data['matchId'] as int,
         teamA: data['teamA'] as String,
         teamB: data['teamB'] as String,
         scoreA: data['scoreA'] as int,
@@ -123,7 +123,7 @@ class SignalRService {
     try {
       final data = arguments[0] as Map<String, dynamic>;
       final update = StatusUpdate(
-        matchId: data['matchId'].toString(),
+        matchId: data['matchId'] as int,
         status: data['status'] as String,
         timestamp: DateTime.parse(data['timestamp'] as String),
       );
@@ -156,7 +156,7 @@ class SignalRService {
 
 /// Score update model from SignalR
 class ScoreUpdate {
-  final String matchId;
+  final int matchId;
   final String teamA;
   final String teamB;
   final int scoreA;
@@ -175,7 +175,7 @@ class ScoreUpdate {
 
 /// Match status update model from SignalR
 class StatusUpdate {
-  final String matchId;
+  final int matchId;
   final String status;
   final DateTime timestamp;
 

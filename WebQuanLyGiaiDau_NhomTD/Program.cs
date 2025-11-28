@@ -109,7 +109,12 @@ builder.Services.AddDefaultIdentity<WebQuanLyGiaiDau_NhomTD.Models.ApplicationUs
 Console.WriteLine("✅ Identity với Cookie Authentication đã được cấu hình cho MVC!");
 
 // Đăng ký MVC và Razor Pages (cho Identity)
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+        // Configure JSON serialization to use camelCase for API responses
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 builder.Services.AddRazorPages();
 
 // Add API Explorer and Swagger for API documentation

@@ -19,9 +19,9 @@ import '../models/notification.dart';
 class ApiService {
   // Sử dụng địa chỉ IP thực của máy tính để điện thoại có thể kết nối
   // Backend API đang chạy trên port 8080
-  // IP address updated: 192.168.1.201 (check with ipconfig command)
-  static const String baseUrl = 'http://192.168.1.201:8080/api';
-  static const String baseWebUrl = 'http://192.168.1.201:8080';
+  // IP address updated: 192.168.1.142 (check with ipconfig command)
+  static const String baseUrl = 'http://192.168.1.142:8080/api';
+  static const String baseWebUrl = 'http://192.168.1.142:8080';
   
   /// Convert relative image URLs to absolute URLs
   static String? convertImageUrl(String? imageUrl) {
@@ -1662,8 +1662,9 @@ class ApiService {
   // ==================== PLAYER MANAGEMENT APIs ====================
 
   /// Add new player to team
+  /// Add player to team  
   static Future<ApiResponse<Map<String, dynamic>>> addPlayer(
-      Map<String, dynamic> playerData) async {
+      int teamId, Map<String, dynamic> playerData) async {
     try {
       final token = await _getToken();
       if (token == null) {
@@ -1681,7 +1682,7 @@ class ApiService {
       final body = json.encode(playerData);
 
       final response = await http.post(
-        Uri.parse('$baseUrl/PlayersApi'),
+        Uri.parse('$baseUrl/tournament-management/teams/$teamId/players'),
         headers: headers,
         body: body,
       );
@@ -1689,9 +1690,9 @@ class ApiService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         return ApiResponse<Map<String, dynamic>>(
-          success: true,
+          success: jsonData['success'] ?? true,
           message: jsonData['message'] ?? 'Player added successfully',
-          data: jsonData,
+          data: jsonData['data'],
         );
       } else {
         final Map<String, dynamic>? errorData =
@@ -1729,7 +1730,7 @@ class ApiService {
       final body = json.encode(playerData);
 
       final response = await http.put(
-        Uri.parse('$baseUrl/PlayersApi/$playerId'),
+        Uri.parse('$baseUrl/tournament-management/players/$playerId'),
         headers: headers,
         body: body,
       );
@@ -1737,9 +1738,9 @@ class ApiService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(response.body);
         return ApiResponse<Map<String, dynamic>>(
-          success: true,
+          success: jsonData['success'] ?? true,
           message: jsonData['message'] ?? 'Player updated successfully',
-          data: jsonData,
+          data: jsonData['data'],
         );
       } else {
         final Map<String, dynamic>? errorData =

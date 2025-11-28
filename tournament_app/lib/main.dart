@@ -26,9 +26,10 @@ import 'screens/settings_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/my_teams_list_screen.dart';
 import 'screens/create_edit_team_screen.dart';
-import 'screens/add_edit_player_screen.dart';
+import 'screens/player_form_screen.dart';
 import 'screens/tournament_registration_screen.dart';
 import 'screens/video_highlights_screen.dart';
+import 'models/player_model.dart';
 import 'screens/shop_screen.dart';
 // import 'screens/shop_products_screen.dart'; // Removed duplicate
 // import 'screens/product_detail_screen.dart'; // Removed unused
@@ -209,25 +210,21 @@ class MyApp extends StatelessWidget {
         break;
       
       case routeAddPlayer:
-        if (args?['teamId'] != null && args?['teamName'] != null) {
+        if (args?['teamId'] != null) {
           return MaterialPageRoute(
-            builder: (_) => AddEditPlayerScreen(
+            builder: (_) => PlayerFormScreen(
               teamId: args!['teamId'] as int,
-              teamName: args['teamName'] as String,
             ),
           );
         }
         break;
       
       case routeEditPlayer:
-        if (args?['teamId'] != null && 
-            args?['teamName'] != null && 
-            args?['player'] != null) {
+        if (args?['teamId'] != null && args?['player'] != null) {
           return MaterialPageRoute(
-            builder: (_) => AddEditPlayerScreen(
+            builder: (_) => PlayerFormScreen(
               teamId: args!['teamId'] as int,
-              teamName: args['teamName'] as String,
-              player: args['player'] as Map<String, dynamic>,
+              player: args['player'] as PlayerModel,
             ),
           );
         }

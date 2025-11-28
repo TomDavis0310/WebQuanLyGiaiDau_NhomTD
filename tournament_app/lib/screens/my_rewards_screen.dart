@@ -57,7 +57,12 @@ class _MyRewardsScreenState extends State<MyRewardsScreen> {
 
       if (pointsResponse.statusCode == 200) {
         final pointsData = json.decode(pointsResponse.body);
-        _userPoints = pointsData['data']['points'] ?? 0;
+        // Backend trả về trực tiếp object {points, username, fullName}
+        // Convert to int to handle both int and double from JSON
+        final points = pointsData['points'];
+        print('My Rewards - Points received from API: $points (type: ${points.runtimeType})');
+        _userPoints = points is int ? points : (points is double ? points.toInt() : (points is String ? int.tryParse(points) ?? 0 : 0));
+        print('My Rewards - Parsed userPoints: $_userPoints');
       }
 
       // Load rewards
@@ -71,8 +76,9 @@ class _MyRewardsScreenState extends State<MyRewardsScreen> {
 
       if (rewardsResponse.statusCode == 200) {
         final rewardsData = json.decode(rewardsResponse.body);
+        // Backend trả về trực tiếp array of transactions
         setState(() {
-          _transactions = (rewardsData['data'] as List)
+          _transactions = (rewardsData as List)
               .map((json) => RewardTransaction.fromJson(json))
               .toList();
         });
@@ -94,6 +100,11 @@ class _MyRewardsScreenState extends State<MyRewardsScreen> {
       appBar: AppBar(
         title: Text('Túi quà của tôi'),
         actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            tooltip: 'Làm mới',
+            onPressed: _loadData,
+          ),
           // Points display
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),

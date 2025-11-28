@@ -66,7 +66,8 @@ class _PointsHistoryScreenState extends State<PointsHistoryScreen>
 
       if (historyResponse.statusCode == 200) {
         final historyData = json.decode(historyResponse.body);
-        final historyList = historyData['data'] as List?;
+        // API trả về có thể có wrapper 'data' hoặc trực tiếp là object với field 'history'
+        final historyList = (historyData['history'] ?? historyData['data']) as List?;
         if (historyList != null) {
           setState(() {
             _history = historyList
@@ -87,8 +88,9 @@ class _PointsHistoryScreenState extends State<PointsHistoryScreen>
 
       if (statsResponse.statusCode == 200) {
         final statsData = json.decode(statsResponse.body);
+        // API trả về trực tiếp object, không có wrapper 'data'
         setState(() {
-          _statistics = PointsStatistics.fromJson(statsData['data']);
+          _statistics = PointsStatistics.fromJson(statsData);
         });
       }
     } catch (e) {

@@ -1,89 +1,63 @@
 class PlayerModel {
-  final int id;
-  final String name;
-  final int? jerseyNumber;
+  final int playerId;
+  final String fullName;
+  final int? number;
   final String? position;
-  final DateTime? dateOfBirth;
-  final String? nationality;
-  final double? height;
-  final double? weight;
-  final String? photoUrl;
+  final String? imageUrl;
   final int teamId;
-  final String? teamName;
+  final String? userId;
 
   PlayerModel({
-    required this.id,
-    required this.name,
-    this.jerseyNumber,
+    required this.playerId,
+    required this.fullName,
+    this.number,
     this.position,
-    this.dateOfBirth,
-    this.nationality,
-    this.height,
-    this.weight,
-    this.photoUrl,
+    this.imageUrl,
     required this.teamId,
-    this.teamName,
+    this.userId,
   });
 
   factory PlayerModel.fromJson(Map<String, dynamic> json) {
     return PlayerModel(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      jerseyNumber: json['jerseyNumber'] as int?,
+      playerId: json['playerId'] as int,
+      fullName: json['fullName'] as String,
+      number: json['number'] as int?,
       position: json['position'] as String?,
-      dateOfBirth: json['dateOfBirth'] != null 
-          ? DateTime.parse(json['dateOfBirth'] as String)
-          : null,
-      nationality: json['nationality'] as String?,
-      height: json['height'] != null ? (json['height'] as num).toDouble() : null,
-      weight: json['weight'] != null ? (json['weight'] as num).toDouble() : null,
-      photoUrl: json['photoUrl'] as String?,
+      imageUrl: json['imageUrl'] as String?,
       teamId: json['teamId'] as int,
-      teamName: json['teamName'] as String?,
+      userId: json['userId'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'name': name,
-      'jerseyNumber': jerseyNumber,
+      'playerId': playerId,
+      'fullName': fullName,
+      'number': number,
       'position': position,
-      'dateOfBirth': dateOfBirth?.toIso8601String(),
-      'nationality': nationality,
-      'height': height,
-      'weight': weight,
-      'photoUrl': photoUrl,
+      'imageUrl': imageUrl,
       'teamId': teamId,
-      'teamName': teamName,
+      'userId': userId,
     };
   }
 
   PlayerModel copyWith({
-    int? id,
-    String? name,
-    int? jerseyNumber,
+    int? playerId,
+    String? fullName,
+    int? number,
     String? position,
-    DateTime? dateOfBirth,
-    String? nationality,
-    double? height,
-    double? weight,
-    String? photoUrl,
+    String? imageUrl,
     int? teamId,
-    String? teamName,
+    String? userId,
   }) {
     return PlayerModel(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      jerseyNumber: jerseyNumber ?? this.jerseyNumber,
+      playerId: playerId ?? this.playerId,
+      fullName: fullName ?? this.fullName,
+      number: number ?? this.number,
       position: position ?? this.position,
-      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
-      nationality: nationality ?? this.nationality,
-      height: height ?? this.height,
-      weight: weight ?? this.weight,
-      photoUrl: photoUrl ?? this.photoUrl,
+      imageUrl: imageUrl ?? this.imageUrl,
       teamId: teamId ?? this.teamId,
-      teamName: teamName ?? this.teamName,
+      userId: userId ?? this.userId,
     );
   }
 }

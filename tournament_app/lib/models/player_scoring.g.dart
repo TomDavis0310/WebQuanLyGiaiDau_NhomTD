@@ -28,7 +28,7 @@ Player _$PlayerFromJson(Map<String, dynamic> json) => Player(
   playerId: (json['playerId'] as num).toInt(),
   fullName: json['fullName'] as String,
   position: json['position'] as String?,
-  number: json['number'] as String?,
+  number: (json['number'] as num?)?.toInt(),
   imageUrl: json['imageUrl'] as String?,
 );
 

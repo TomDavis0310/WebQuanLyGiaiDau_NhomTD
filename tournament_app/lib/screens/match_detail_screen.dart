@@ -47,7 +47,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> with SingleTicker
 
   @override
   void dispose() {
-    _signalRService.leaveMatchGroup(widget.matchId.toString());
+    _signalRService.leaveMatchGroup(widget.matchId);
     _signalRService.dispose();
     _tabController.dispose();
     super.dispose();
@@ -56,11 +56,11 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> with SingleTicker
   Future<void> _initializeSignalR() async {
     try {
       await _signalRService.connect();
-      await _signalRService.joinMatchGroup(widget.matchId.toString());
+      await _signalRService.joinMatchGroup(widget.matchId);
       
       // Listen to score updates
       _signalRService.scoreUpdates.listen((update) {
-        if (update.matchId == widget.matchId.toString()) {
+        if (update.matchId == widget.matchId) {
           setState(() {
             if (_matchDetail != null) {
               // Update scores in real-time
@@ -102,7 +102,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> with SingleTicker
 
       // Listen to status updates
       _signalRService.statusUpdates.listen((update) {
-        if (update.matchId == widget.matchId.toString()) {
+        if (update.matchId == widget.matchId) {
           setState(() {
             if (_matchDetail != null) {
               _matchDetail = MatchDetail(

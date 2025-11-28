@@ -26,12 +26,8 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
   final _nameController = TextEditingController();
   final _jerseyNumberController = TextEditingController();
   final _positionController = TextEditingController();
-  final _nationalityController = TextEditingController();
-  final _heightController = TextEditingController();
-  final _weightController = TextEditingController();
   final _photoUrlController = TextEditingController();
   
-  DateTime? _dateOfBirth;
   bool _isLoading = false;
   bool get _isEditMode => widget.player != null;
   File? _selectedPhotoFile;
@@ -50,14 +46,10 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
     super.initState();
     if (_isEditMode) {
       final player = widget.player!;
-      _nameController.text = player.name;
-      _jerseyNumberController.text = player.jerseyNumber?.toString() ?? '';
+      _nameController.text = player.fullName;
+      _jerseyNumberController.text = player.number?.toString() ?? '';
       _positionController.text = player.position ?? '';
-      _nationalityController.text = player.nationality ?? '';
-      _heightController.text = player.height?.toString() ?? '';
-      _weightController.text = player.weight?.toString() ?? '';
-      _photoUrlController.text = player.photoUrl ?? '';
-      _dateOfBirth = player.dateOfBirth;
+      _photoUrlController.text = player.imageUrl ?? '';
     }
   }
 
@@ -66,27 +58,8 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
     _nameController.dispose();
     _jerseyNumberController.dispose();
     _positionController.dispose();
-    _nationalityController.dispose();
-    _heightController.dispose();
-    _weightController.dispose();
     _photoUrlController.dispose();
     super.dispose();
-  }
-
-  Future<void> _selectDateOfBirth() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _dateOfBirth ?? DateTime(2000),
-      firstDate: DateTime(1950),
-      lastDate: DateTime.now(),
-      helpText: 'Chọn ngày sinh',
-      cancelText: 'Hủy',
-      confirmText: 'Chọn',
-    );
-
-    if (picked != null) {
-      setState(() => _dateOfBirth = picked);
-    }
   }
 
   Future<void> _pickPhoto() async {
@@ -230,32 +203,21 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
       }
 
       final playerData = {
-        'name': _nameController.text.trim(),
-        'jerseyNumber': _jerseyNumberController.text.trim().isEmpty
+        'fullName': _nameController.text.trim(),
+        'number': _jerseyNumberController.text.trim().isEmpty
             ? null
             : int.tryParse(_jerseyNumberController.text.trim()),
         'position': _positionController.text.trim().isEmpty
             ? null
             : _positionController.text.trim(),
-        'dateOfBirth': _dateOfBirth?.toIso8601String(),
-        'nationality': _nationalityController.text.trim().isEmpty
-            ? null
-            : _nationalityController.text.trim(),
-        'height': _heightController.text.trim().isEmpty
-            ? null
-            : double.tryParse(_heightController.text.trim()),
-        'weight': _weightController.text.trim().isEmpty
-            ? null
-            : double.tryParse(_weightController.text.trim()),
-        'photoUrl': _photoUrlController.text.trim().isEmpty
+        'imageUrl': _photoUrlController.text.trim().isEmpty
             ? null
             : _photoUrlController.text.trim(),
-        if (!_isEditMode) 'teamId': widget.teamId,
       };
 
       final response = _isEditMode
-          ? await ApiService.updatePlayer(widget.player!.id, playerData)
-          : await ApiService.addPlayer(playerData);
+          ? await ApiService.updatePlayer(widget.player!.playerId, playerData)
+          : await ApiService.addPlayer(widget.teamId, playerData);
 
       setState(() => _isLoading = false);
 
@@ -449,95 +411,6 @@ class _PlayerFormScreenState extends State<PlayerFormScreen> {
                         _positionController.text = value ?? '';
                       });
                     },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Date of Birth
-            InkWell(
-              onTap: _selectDateOfBirth,
-              borderRadius: BorderRadius.circular(12),
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: 'Ngày sinh',
-                  prefixIcon: const Icon(Icons.calendar_today),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey[50],
-                ),
-                child: Text(
-                  _dateOfBirth != null
-                      ? '${_dateOfBirth!.day}/${_dateOfBirth!.month}/${_dateOfBirth!.year}'
-                      : 'Chọn ngày sinh',
-                  style: TextStyle(
-                    color: _dateOfBirth != null ? Colors.black : Colors.grey[600],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Nationality
-            TextFormField(
-              controller: _nationalityController,
-              decoration: InputDecoration(
-                labelText: 'Quốc tịch',
-                hintText: 'VD: Việt Nam',
-                prefixIcon: const Icon(Icons.flag),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                filled: true,
-                fillColor: Colors.grey[50],
-              ),
-              textCapitalization: TextCapitalization.words,
-            ),
-            const SizedBox(height: 16),
-
-            // Height and Weight
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _heightController,
-                    decoration: InputDecoration(
-                      labelText: 'Chiều cao',
-                      hintText: 'cm',
-                      prefixIcon: const Icon(Icons.height),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[50],
-                    ),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: TextFormField(
-                    controller: _weightController,
-                    decoration: InputDecoration(
-                      labelText: 'Cân nặng',
-                      hintText: 'kg',
-                      prefixIcon: const Icon(Icons.monitor_weight),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[50],
-                    ),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
-                    ],
                   ),
                 ),
               ],

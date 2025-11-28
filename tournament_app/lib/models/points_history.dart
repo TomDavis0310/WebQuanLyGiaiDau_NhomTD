@@ -14,10 +14,13 @@ class PointsHistory {
   });
 
   factory PointsHistory.fromJson(Map<String, dynamic> json) {
+    final points = json['points'];
+    final pointsInt = points is int ? points : (points is double ? points.toInt() : (points is String ? int.tryParse(points) ?? 0 : 0));
+    
     return PointsHistory(
       type: json['type'] ?? 'earn',
       date: DateTime.parse(json['date'] ?? DateTime.now().toIso8601String()),
-      points: json['points'] ?? 0,
+      points: pointsInt,
       description: json['description'] ?? '',
       details: json['details'],
     );
@@ -45,13 +48,20 @@ class PointsStatistics {
   });
 
   factory PointsStatistics.fromJson(Map<String, dynamic> json) {
+    int _parseToInt(dynamic value) {
+      if (value is int) return value;
+      if (value is double) return value.toInt();
+      if (value is String) return int.tryParse(value) ?? 0;
+      return 0;
+    }
+
     return PointsStatistics(
-      currentPoints: json['currentPoints'] ?? 0,
-      totalEarned: json['totalEarned'] ?? 0,
-      totalSpent: json['totalSpent'] ?? 0,
-      totalRewards: json['totalRewards'] ?? 0,
-      totalVotes: json['totalVotes'] ?? 0,
-      userRank: json['userRank'] ?? 0,
+      currentPoints: _parseToInt(json['currentPoints']),
+      totalEarned: _parseToInt(json['totalEarned']),
+      totalSpent: _parseToInt(json['totalSpent']),
+      totalRewards: _parseToInt(json['totalRewards']),
+      totalVotes: _parseToInt(json['totalVotes']),
+      userRank: _parseToInt(json['userRank']),
     );
   }
 }
