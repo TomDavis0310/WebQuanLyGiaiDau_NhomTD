@@ -95,9 +95,10 @@ class _ShopScreenState extends State<ShopScreen> {
               // Backend trả về trực tiếp object {points, username, fullName}
               // Convert to int to handle both int and double from JSON
               final points = pointsData['points'];
-              print('Shop Screen - Points received from API: $points (type: ${points.runtimeType})');
               _userPoints = points is int ? points : (points is double ? points.toInt() : (points is String ? int.tryParse(points) ?? 0 : 0));
-              print('Shop Screen - Parsed userPoints: $_userPoints');
+            } else {
+              print('Points API Error: ${pointsResponse.statusCode}');
+              print('Response body: ${pointsResponse.body}');
             }
           } catch (e) {
             print('Error loading user points: $e');
@@ -459,7 +460,7 @@ class _ShopScreenState extends State<ShopScreen> {
                                                       tag: 'product_${product.id}',
                                                       child: Image.network(
                                                         ApiService.convertImageUrl(
-                                                            product.imageUrl)!,
+                                                            product.imageUrl!)!,
                                                         fit: BoxFit.cover,
                                                         errorBuilder:
                                                             (context, error, stack) =>

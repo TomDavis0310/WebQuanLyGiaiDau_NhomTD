@@ -28,10 +28,13 @@
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="9.0.10" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.5" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="9.0.5" />
     <PackageReference Include="MailKit" Version="4.9.0" />
     <PackageReference Include="MimeKit" Version="4.9.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.8" />
     <PackageReference Include="SixLabors.ImageSharp.Web" Version="3.1.5" />
+    <PackageReference Include="Twilio" Version="7.7.0" />
+    <PackageReference Include="QRCoder" Version="1.6.0" />
   </ItemGroup>
 
 </Project>

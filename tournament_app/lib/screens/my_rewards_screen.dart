@@ -60,9 +60,10 @@ class _MyRewardsScreenState extends State<MyRewardsScreen> {
         // Backend trả về trực tiếp object {points, username, fullName}
         // Convert to int to handle both int and double from JSON
         final points = pointsData['points'];
-        print('My Rewards - Points received from API: $points (type: ${points.runtimeType})');
         _userPoints = points is int ? points : (points is double ? points.toInt() : (points is String ? int.tryParse(points) ?? 0 : 0));
-        print('My Rewards - Parsed userPoints: $_userPoints');
+      } else {
+        print('Points API Error: ${pointsResponse.statusCode}');
+        print('Response body: ${pointsResponse.body}');
       }
 
       // Load rewards

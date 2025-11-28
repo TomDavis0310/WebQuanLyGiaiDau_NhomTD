@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import '../models/user.dart';
-import '../config/environment.dart';
+import '../config/app_config.dart';
 import 'auth_service.dart';
 
 class GoogleAuthService {
@@ -16,7 +16,7 @@ class GoogleAuthService {
     serverClientId: null, // Sẽ sử dụng default configuration
   );
 
-  static String get baseUrl => Environment.apiBaseUrl;
+  static String get baseUrl => AppConfig.baseUrl;
 
   /// Đăng nhập bằng Google
   static Future<AuthResponse> signInWithGoogle() async {

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '../models/news.dart';
 import '../services/api_service.dart';
-import '../theme/app_theme.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 

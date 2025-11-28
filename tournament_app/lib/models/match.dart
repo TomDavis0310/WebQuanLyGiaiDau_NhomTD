@@ -6,7 +6,9 @@ part 'match.g.dart';
 class Match {
   @JsonKey(fromJson: _safeIntFromJson)
   final int id;
+  @JsonKey(fromJson: _safeStringFromJson)
   final String teamA;
+  @JsonKey(fromJson: _safeStringFromJson)
   final String teamB;
   final DateTime matchDate;
   final String? matchTime;
@@ -46,6 +48,12 @@ class Match {
     if (value is double) return value.toInt();
     if (value is String) return int.tryParse(value);
     return null;
+  }
+
+  static String _safeStringFromJson(dynamic value) {
+    if (value is String) return value;
+    if (value is int) return value.toString();
+    return value?.toString() ?? '';
   }
 
   factory Match.fromJson(Map<String, dynamic> json) => _$MatchFromJson(json);

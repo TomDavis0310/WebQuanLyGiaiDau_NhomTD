@@ -1,0 +1,179 @@
+@model TwoFactorSettingsViewModel
+@{
+    ViewData["Title"] = "Cài đặt Xác thực 2 bước";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-shield-alt"></i> Cài đặt Xác thực 2 bước (2FA)
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    @if (TempData["StatusMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle"></i> @TempData["StatusMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <!-- Current Status -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">Trạng thái hiện tại</h5>
+                        <div class="alert @(Model.IsTwoFactorEnabled ? "alert-success" : "alert-warning")" role="alert">
+                            @if (Model.IsTwoFactorEnabled)
+                            {
+                                <i class="fas fa-check-circle"></i>
+                                <strong>Xác thực 2 bước đang BẬT</strong>
+                                <p class="mb-0 mt-2">Phương thức: <strong>@Model.PreferredVerificationMethod</strong></p>
+                            }
+                            else
+                            {
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>Xác thực 2 bước đang TẮT</strong>
+                                <p class="mb-0 mt-2">Tài khoản của bạn chưa được bảo vệ bằng xác thực 2 bước.</p>
+                            }
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    @if (!Model.IsTwoFactorEnabled)
+                    {
+                        <!-- Enable 2FA Section -->
+                        <div class="mb-4">
+                            <h5 class="mb-3">Chọn phương thức xác thực</h5>
+                            <p class="text-muted">Chọn phương thức bạn muốn nhận mã xác thực khi đăng nhập:</p>
+
+                            <!-- Email Option -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">
+                                                <i class="fas fa-envelope text-primary"></i> Email
+                                            </h6>
+                                            <p class="text-muted mb-0 small">Nhận mã xác thực qua email</p>
+                                        </div>
+                                        <form asp-action="EnableTwoFactor" method="post" class="d-inline">
+                                            <input type="hidden" name="verificationMethod" value="Email" />
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-plus-circle"></i> Bật
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SMS Option -->
+                            <div class="card mb-3 @(!Model.HasPhoneNumber ? "opacity-50" : "")">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">
+                                                <i class="fas fa-sms text-success"></i> SMS
+                                            </h6>
+                                            <p class="text-muted mb-0 small">
+                                                Nhận mã xác thực qua tin nhắn SMS
+                                                @if (!Model.HasPhoneNumber)
+                                                {
+                                                    <br><span class="text-danger">⚠️ Bạn cần thêm số điện thoại trước</span>
+                                                }
+                                            </p>
+                                        </div>
+                                        <form asp-action="EnableTwoFactor" method="post" class="d-inline">
+                                            <input type="hidden" name="verificationMethod" value="SMS" />
+                                            <button type="submit" class="btn btn-success" @(!Model.HasPhoneNumber ? "disabled" : "")>
+                                                <i class="fas fa-plus-circle"></i> Bật
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Zalo Option -->
+                            <div class="card mb-3 @(!Model.HasZaloId ? "opacity-50" : "")">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">
+                                                <i class="fas fa-comments text-info"></i> Zalo OTP
+                                            </h6>
+                                            <p class="text-muted mb-0 small">
+                                                Nhận mã xác thực qua Zalo
+                                                @if (!Model.HasZaloId)
+                                                {
+                                                    <br><span class="text-danger">⚠️ Bạn cần liên kết tài khoản Zalo trước</span>
+                                                }
+                                            </p>
+                                        </div>
+                                        <form asp-action="EnableTwoFactor" method="post" class="d-inline">
+                                            <input type="hidden" name="verificationMethod" value="Zalo" />
+                                            <button type="submit" class="btn btn-info" @(!Model.HasZaloId ? "disabled" : "")>
+                                                <i class="fas fa-plus-circle"></i> Bật
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Disable 2FA Section -->
+                        <div class="mb-4">
+                            <h5 class="mb-3">Tắt xác thực 2 bước</h5>
+                            <p class="text-muted">Việc tắt xác thực 2 bước sẽ làm giảm mức độ bảo mật tài khoản của bạn.</p>
+                            
+                            <form asp-action="DisableTwoFactor" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn tắt xác thực 2 bước?');">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-times-circle"></i> Tắt xác thực 2 bước
+                                </button>
+                            </form>
+                        </div>
+                    }
+
+                    <hr>
+
+                    <!-- Info Section -->
+                    <div class="alert alert-info" role="alert">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-info-circle"></i> Về xác thực 2 bước
+                        </h6>
+                        <p class="mb-0">
+                            Xác thực 2 bước giúp bảo vệ tài khoản của bạn khỏi việc truy cập trái phép. 
+                            Ngay cả khi ai đó biết được mật khẩu của bạn, họ vẫn cần mã xác thực để đăng nhập.
+                        </p>
+                    </div>
+
+                    <div class="mt-3">
+                        <a asp-action="Manage" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại quản lý tài khoản
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert-dismissible').fadeOut('slow');
+        }, 5000);
+    </script>
+}

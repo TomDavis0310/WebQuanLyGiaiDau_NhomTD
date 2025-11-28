@@ -1,9 +1,11 @@
 import 'package:signalr_netcore/signalr_client.dart';
 import 'dart:async';
+import '../config/app_config.dart';
 
 /// SignalR Service for real-time match updates
 class SignalRService {
-  static const String hubUrl = 'http://192.168.1.142:8080/matchHub';
+  // Use the hubUrl from AppConfig instead of hardcoded string
+  String get hubUrl => AppConfig.hubUrl;
   
   HubConnection? _hubConnection;
   bool _isConnected = false;
@@ -100,10 +102,14 @@ class SignalRService {
 
     try {
       final data = arguments[0] as Map<String, dynamic>;
+      final teamAValue = data['teamA'];
+      final teamBValue = data['teamB'];
+      final matchIdValue = data['matchId'];
+      
       final update = ScoreUpdate(
-        matchId: data['matchId'] as int,
-        teamA: data['teamA'] as String,
-        teamB: data['teamB'] as String,
+        matchId: matchIdValue is int ? matchIdValue : int.parse(matchIdValue.toString()),
+        teamA: teamAValue is String ? teamAValue : teamAValue.toString(),
+        teamB: teamBValue is String ? teamBValue : teamBValue.toString(),
         scoreA: data['scoreA'] as int,
         scoreB: data['scoreB'] as int,
         timestamp: DateTime.parse(data['timestamp'] as String),

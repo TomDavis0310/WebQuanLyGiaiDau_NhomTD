@@ -10,7 +10,6 @@ import '../services/api_service.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 import 'tournament_list_screen.dart';
-import 'news_detail_screen.dart';
 import 'tournament_detail_screen.dart';
 
 class SportsListScreen extends StatefulWidget {
@@ -74,11 +73,31 @@ class _SportsListScreenState extends State<SportsListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: unused_local_variable
     final authProvider = Provider.of<AuthProvider>(context);
-    final user = authProvider.user;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: widget.showAppBar
+          ? AppBar(
+              title: const Text(
+                'TDSports',
+                style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Montserrat'),
+              ),
+              centerTitle: true,
+              flexibleSpace: Container(
+                decoration: BoxDecoration(
+                  gradient: AppTheme.getPrimaryGradient(context),
+                ),
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () => Navigator.pushNamed(context, '/search'),
+                ),
+              ],
+            )
+          : null,
       body: isLoading
           ? Center(child: CircularProgressIndicator(color: AppTheme.getPrimaryColor(context)))
           : errorMessage != null
@@ -98,195 +117,61 @@ class _SportsListScreenState extends State<SportsListScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Custom Header
-                        Container(
-                          padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
-                            borderRadius: const BorderRadius.only(
-                              bottomLeft: Radius.circular(30),
-                              bottomRight: Radius.circular(30),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Xin chào,',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
-                                        ),
-                                      ),
-                                      Text(
-                                        user?.fullName ?? 'Khách',
-                                        style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).textTheme.bodyLarge?.color,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.getPrimaryColor(context).withOpacity(0.1),
-                                      shape: BoxShape.circle,
+                        // Search Bar (Only show if no AppBar, or as a secondary search)
+                        // If we have AppBar with search icon, maybe we don't need this big search bar?
+                        // But the big search bar is nice for "Explore".
+                        // Let's keep it but maybe make it look like a filter or "Quick Search".
+                        
+                        if (!widget.showAppBar)
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: GestureDetector(
+                              onTap: () => Navigator.pushNamed(context, '/search'),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).cardColor,
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 5,
+                                      offset: const Offset(0, 2),
                                     ),
-                                    child: IconButton(
-                                      icon: Icon(Icons.notifications_outlined, color: AppTheme.getPrimaryColor(context)),
-                                      onPressed: () => Navigator.pushNamed(context, '/notifications'),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.search, color: Colors.grey[500]),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      'Tìm kiếm giải đấu, đội bóng...',
+                                      style: TextStyle(color: Colors.grey[500]),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-                              // Search Bar
-                              GestureDetector(
-                                onTap: () => Navigator.pushNamed(context, '/search'),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).scaffoldBackgroundColor,
-                                    borderRadius: BorderRadius.circular(15),
-                                    border: Border.all(color: Colors.grey.withOpacity(0.2)),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.search, color: Colors.grey[500]),
-                                      const SizedBox(width: 10),
-                                      Text(
-                                        'Tìm kiếm giải đấu, đội bóng...',
-                                        style: TextStyle(color: Colors.grey[500]),
-                                      ),
-                                    ],
-                                  ),
+                                  ],
                                 ),
                               ),
+                            ),
+                          ),
+
+                        // Quick Menu (New Feature)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _buildQuickMenuItem(context, 'Trực Tiếp', Icons.live_tv_rounded, const Color(0xFFFF6B6B), '/live-streaming'),
+                              _buildQuickMenuItem(context, 'Highlights', Icons.play_circle_fill_rounded, const Color(0xFF9C27B0), '/video-highlights'),
+                              _buildQuickMenuItem(context, 'Tin Nhắn', Icons.chat_bubble_rounded, const Color(0xFF4FC3F7), '/chat'),
+                              _buildQuickMenuItem(context, 'Cửa Hàng', Icons.shopping_bag_rounded, const Color(0xFFFFB74D), '/shop'),
                             ],
                           ),
                         ),
 
-                        const SizedBox(height: 20),
-
-                        // Featured News Slider
-                        if (featuredNews.isNotEmpty) ...[
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Text(
-                              'Tin Nổi Bật',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).textTheme.titleLarge?.color,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-                          SizedBox(
-                            height: 200,
-                            child: ListView.builder(
-                              padding: const EdgeInsets.symmetric(horizontal: 15),
-                              scrollDirection: Axis.horizontal,
-                              physics: const BouncingScrollPhysics(),
-                              itemCount: featuredNews.length,
-                              itemBuilder: (context, index) {
-                                final news = featuredNews[index];
-                                return GestureDetector(
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (_) => NewsDetailScreen(newsId: news.newsId)),
-                                  ),
-                                  child: Container(
-                                    width: 300,
-                                    margin: const EdgeInsets.symmetric(horizontal: 5),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Stack(
-                                      children: [
-                                        Positioned.fill(
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(20),
-                                            child: CachedNetworkImage(
-                                              imageUrl: news.imageUrl,
-                                              fit: BoxFit.cover,
-                                              placeholder: (context, url) => Container(color: Colors.grey[300]),
-                                              errorWidget: (context, url, error) => Image.asset(
-                                                'assets/images/LOGO.jpg',
-                                                fit: BoxFit.cover,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(20),
-                                            gradient: LinearGradient(
-                                              begin: Alignment.topCenter,
-                                              end: Alignment.bottomCenter,
-                                              colors: [
-                                                Colors.transparent,
-                                                Colors.black.withOpacity(0.8),
-                                              ],
-                                            ),
-                                          ),
-                                          padding: const EdgeInsets.all(15),
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.end,
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                decoration: BoxDecoration(
-                                                  color: AppTheme.getPrimaryColor(context),
-                                                  borderRadius: BorderRadius.circular(8),
-                                                ),
-                                                child: Text(
-                                                  news.category,
-                                                  style: const TextStyle(color: Colors.white, fontSize: 10),
-                                                ),
-                                              ),
-                                              const SizedBox(height: 8),
-                                              Text(
-                                                news.title,
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 16,
-                                                ),
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-
-                        const SizedBox(height: 25),
-
                         // Sports Categories
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -509,6 +394,34 @@ class _SportsListScreenState extends State<SportsListScreen> {
                     ),
                   ),
                 ),
+    );
+  }
+
+  Widget _buildQuickMenuItem(BuildContext context, String label, IconData icon, Color color, String route) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, route),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(color: color.withOpacity(0.2), width: 1),
+            ),
+            child: Icon(icon, color: color, size: 28),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

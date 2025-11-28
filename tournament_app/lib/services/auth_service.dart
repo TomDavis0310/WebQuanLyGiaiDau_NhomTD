@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
-import '../config/environment.dart';
+import '../config/app_config.dart';
 
 class AuthService {
-  static String get baseUrl => Environment.apiBaseUrl;
+  static String get baseUrl => AppConfig.baseUrl;
   static const String _tokenKey = 'auth_token';
   static const String _userKey = 'user_data';
 

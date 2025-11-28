@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../providers/theme_provider.dart';
-import '../widgets/magnifying_nav_bar.dart';
-import 'sports_list_screen.dart';
-import 'news_list_screen.dart';
-import 'dashboard_screen.dart';
+import '../theme/app_theme.dart';
+import 'home_screen.dart';
+import 'explore_screen.dart';
+import 'video_highlights_screen.dart';
+import 'shop_screen.dart';
 import 'profile_screen.dart';
 import 'login_screen.dart';
-import 'search_screen.dart';
-import 'shop_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   final int initialIndex;
@@ -25,7 +23,6 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   late int _selectedIndex;
-  bool _isExtended = false;
 
   @override
   void initState() {
@@ -33,95 +30,47 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     _selectedIndex = widget.initialIndex;
   }
 
-  List<CustomNavigationDestination> _getNavigationItems(bool isAuthenticated) {
-    final List<CustomNavigationDestination> items = [
-      const CustomNavigationDestination(
-        icon: Icon(Icons.sports_basketball_outlined),
-        selectedIcon: Icon(Icons.sports_basketball),
-        iconData: Icons.sports_basketball_rounded,
+  List<NavigationItem> _getNavigationItems(bool isAuthenticated) {
+    // New tab structure: Home | Explore | Videos | Shop | Profile/Login
+    return [
+      // Tab 0: Home (For everyone)
+      NavigationItem(
+        icon: Icons.home_outlined,
+        selectedIcon: Icons.home_rounded,
         label: 'Trang Chủ',
+        screen: const HomeScreen(),
       ),
-      const CustomNavigationDestination(
-        icon: Icon(Icons.newspaper_outlined),
-        selectedIcon: Icon(Icons.newspaper),
-        iconData: Icons.newspaper_rounded,
-        label: 'Tin Tức',
+      // Tab 1: Explore (For everyone)
+      NavigationItem(
+        icon: Icons.explore_outlined,
+        selectedIcon: Icons.explore_rounded,
+        label: 'Khám Phá',
+        screen: const ExploreScreen(),
       ),
-      const CustomNavigationDestination(
-        icon: Icon(Icons.search_outlined),
-        selectedIcon: Icon(Icons.search),
-        iconData: Icons.search_rounded,
-        label: 'Tìm Kiếm',
+      // Tab 2: Videos (For everyone)
+      NavigationItem(
+        icon: Icons.play_circle_outline_rounded,
+        selectedIcon: Icons.play_circle_rounded,
+        label: 'Video',
+        screen: const VideoHighlightsScreen(),
+      ),
+      // Tab 3: Shop (For everyone)
+      NavigationItem(
+        icon: Icons.shopping_bag_outlined,
+        selectedIcon: Icons.shopping_bag_rounded,
+        label: 'Cửa Hàng',
+        screen: const ShopScreen(showAppBar: false),
+      ),
+      // Tab 4: Profile or Login
+      NavigationItem(
+        icon: isAuthenticated ? Icons.person_outline : Icons.login_outlined,
+        selectedIcon: isAuthenticated ? Icons.person_rounded : Icons.login_rounded,
+        label: isAuthenticated ? 'Cá Nhân' : 'Đăng Nhập',
+        screen: isAuthenticated 
+          ? const ProfileScreen(showAppBar: false) 
+          : const LoginScreen(),
       ),
     ];
-
-    if (isAuthenticated) {
-      items.addAll([
-        const CustomNavigationDestination(
-          icon: Icon(Icons.dashboard_outlined),
-          selectedIcon: Icon(Icons.dashboard),
-          iconData: Icons.dashboard_rounded,
-          label: 'Dashboard',
-        ),
-        const CustomNavigationDestination(
-          icon: Icon(Icons.shopping_bag_outlined),
-          selectedIcon: Icon(Icons.shopping_bag),
-          iconData: Icons.shopping_bag_rounded,
-          label: 'Cửa Hàng',
-        ),
-        const CustomNavigationDestination(
-          icon: Icon(Icons.person_outline),
-          selectedIcon: Icon(Icons.person),
-          iconData: Icons.person_rounded,
-          label: 'Cá Nhân',
-        ),
-      ]);
-    } else {
-      items.add(
-        const CustomNavigationDestination(
-          icon: Icon(Icons.login_outlined),
-          selectedIcon: Icon(Icons.login),
-          iconData: Icons.login_rounded,
-          label: 'Đăng Nhập',
-        ),
-      );
-    }
-
-    return items;
-  }
-
-  Widget _getScreen(int index, bool isAuthenticated, {bool showAppBar = false}) {
-    if (isAuthenticated) {
-      switch (index) {
-        case 0:
-          return SportsListScreen(showAppBar: showAppBar);
-        case 1:
-          return NewsListScreen(showAppBar: showAppBar);
-        case 2:
-          return SearchScreen(showAppBar: showAppBar);
-        case 3:
-          return DashboardScreen(showAppBar: showAppBar);
-        case 4:
-          return ShopScreen(showAppBar: showAppBar);
-        case 5:
-          return ProfileScreen(showAppBar: showAppBar);
-        default:
-          return SportsListScreen(showAppBar: showAppBar);
-      }
-    } else {
-      switch (index) {
-        case 0:
-          return SportsListScreen(showAppBar: showAppBar);
-        case 1:
-          return NewsListScreen(showAppBar: showAppBar);
-        case 2:
-          return SearchScreen(showAppBar: showAppBar);
-        case 3:
-          return const LoginScreen();
-        default:
-          return SportsListScreen(showAppBar: showAppBar);
-      }
-    }
   }
 
   @override
@@ -131,173 +80,63 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         final isAuthenticated = authProvider.isAuthenticated;
         final navigationItems = _getNavigationItems(isAuthenticated);
         
-        // Đảm bảo selectedIndex không vượt quá số lượng items
+        // Ensure selected index is within bounds
         if (_selectedIndex >= navigationItems.length) {
           _selectedIndex = 0;
         }
 
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            if (constraints.maxWidth < 640) {
-              // Mobile layout with MagnifyingNavBar
-              return Scaffold(
-                body: _getScreen(_selectedIndex, isAuthenticated, showAppBar: true),
-                bottomNavigationBar: MagnifyingNavBar(
-                  selectedIndex: _selectedIndex,
-                  onItemSelected: (int index) {
-                    setState(() {
-                      _selectedIndex = index;
-                    });
-                  },
-                  icons: navigationItems.map((item) => item.iconData).toList(),
-                  selectedItemColor: Theme.of(context).primaryColor,
-                  unselectedItemColor: Colors.grey,
-                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        return Scaffold(
+          body: IndexedStack(
+            index: _selectedIndex,
+            children: navigationItems.map((item) => item.screen).toList(),
+          ),
+          bottomNavigationBar: Container(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, -5),
                 ),
-              );
-            } else {
-              // Desktop/Tablet layout with NavigationRail
-              return Scaffold(
-                body: Row(
-                  children: [
-                    // Navigation Rail ở bên trái
-                    NavigationRail(
-                      selectedIndex: _selectedIndex,
-                      onDestinationSelected: (int index) {
-                        setState(() {
-                          _selectedIndex = index;
-                        });
-                      },
-                      extended: _isExtended,
-                      labelType: _isExtended 
-                          ? NavigationRailLabelType.none 
-                          : NavigationRailLabelType.selected,
-                      leading: Column(
-                        children: [
-                          const SizedBox(height: 8),
-                          // Logo
-                          Container(
-                            width: 56,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: Text(
-                                'TD',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-                      ),
-                      trailing: Expanded(
-                        child: Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 16.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Theme Toggle Button
-                                Consumer<ThemeProvider>(
-                                  builder: (context, themeProvider, child) {
-                                    return IconButton(
-                                      icon: Icon(
-                                        themeProvider.isDarkMode 
-                                            ? Icons.light_mode 
-                                            : Icons.dark_mode,
-                                      ),
-                                      onPressed: () => themeProvider.toggleTheme(),
-                                      tooltip: themeProvider.isDarkMode 
-                                          ? 'Chế độ Sáng' 
-                                          : 'Chế độ Tối',
-                                      color: Theme.of(context).primaryColor,
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 8),
-                                const Divider(height: 1),
-                                const SizedBox(height: 8),
-                                // Toggle button để mở rộng/thu nhỏ
-                                IconButton(
-                                  icon: Icon(_isExtended 
-                                      ? Icons.arrow_back_ios 
-                                      : Icons.arrow_forward_ios),
-                                  onPressed: () {
-                                    setState(() {
-                                      _isExtended = !_isExtended;
-                                    });
-                                  },
-                                  tooltip: _isExtended ? 'Thu nhỏ' : 'Mở rộng',
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      destinations: navigationItems.map((item) {
-                        return NavigationRailDestination(
-                          icon: item.icon,
-                          selectedIcon: item.selectedIcon,
-                          label: Text(item.label),
-                        );
-                      }).toList(),
-                      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                      selectedIconTheme: IconThemeData(
-                        color: Theme.of(context).primaryColor,
-                        size: 28,
-                      ),
-                      unselectedIconTheme: IconThemeData(
-                        color: Colors.grey[600],
-                        size: 24,
-                      ),
-                      selectedLabelTextStyle: TextStyle(
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                      unselectedLabelTextStyle: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                      ),
-                    ),
-                    
-                    // Vertical divider
-                    const VerticalDivider(thickness: 1, width: 1),
-                    
-                    // Main content area
-                    Expanded(
-                      child: _getScreen(_selectedIndex, isAuthenticated, showAppBar: false),
-                    ),
-                  ],
-                ),
-              );
-            }
-          },
+              ],
+            ),
+            child: NavigationBar(
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: (int index) {
+                setState(() {
+                  _selectedIndex = index;
+                });
+              },
+              destinations: navigationItems.map((item) {
+                return NavigationDestination(
+                  icon: Icon(item.icon),
+                  selectedIcon: Icon(item.selectedIcon),
+                  label: item.label,
+                );
+              }).toList(),
+              backgroundColor: AppTheme.getSurfaceColor(context),
+              indicatorColor: AppTheme.getPrimaryColor(context).withOpacity(0.2),
+              elevation: 0,
+              height: 65,
+              labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+            ),
+          ),
         );
       },
     );
   }
 }
 
-// Helper class cho NavigationDestination
-class CustomNavigationDestination {
-  final Widget icon;
-  final Widget selectedIcon;
-  final IconData iconData;
+class NavigationItem {
+  final IconData icon;
+  final IconData selectedIcon;
   final String label;
+  final Widget screen;
 
-  const CustomNavigationDestination({
+  NavigationItem({
     required this.icon,
     required this.selectedIcon,
-    required this.iconData,
     required this.label,
+    required this.screen,
   });
 }

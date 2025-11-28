@@ -1,6 +1,7 @@
 ﻿import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import '../config/app_config.dart';
 import '../models/api_response.dart';
 import '../models/sport.dart';
 import '../models/tournament.dart';
@@ -17,11 +18,9 @@ import '../models/tournament_rules.dart';
 import '../models/notification.dart';
 
 class ApiService {
-  // Sử dụng địa chỉ IP thực của máy tính để điện thoại có thể kết nối
-  // Backend API đang chạy trên port 8080
-  // IP address updated: 192.168.1.142 (check with ipconfig command)
-  static const String baseUrl = 'http://192.168.1.142:8080/api';
-  static const String baseWebUrl = 'http://192.168.1.142:8080';
+  // Sử dụng địa chỉ IP từ AppConfig
+  static String get baseUrl => AppConfig.baseUrl;
+  static String get baseWebUrl => AppConfig.baseWebUrl;
   
   /// Convert relative image URLs to absolute URLs
   static String? convertImageUrl(String? imageUrl) {
@@ -2416,7 +2415,8 @@ class ApiService {
   /// Mark all notifications as read
   static Future<ApiResponse<int>> markAllNotificationsAsRead() async {
     try {
-      final response = await http.put(
+      final response =
+ await http.put(
         Uri.parse('$baseUrl/notifications/read-all'),
         headers: {'Content-Type': 'application/json'},
       );

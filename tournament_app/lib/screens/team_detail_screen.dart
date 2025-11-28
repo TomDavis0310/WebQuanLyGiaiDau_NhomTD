@@ -5,7 +5,6 @@ import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
-import '../widgets/custom_card.dart';
 import 'match_detail_screen.dart';
 import 'player_detail_screen.dart';
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
-import '../theme/app_theme.dart';
 import '../widgets/theme_showcase_widget.dart';
 
 class ThemePreviewScreen extends StatelessWidget {

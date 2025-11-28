@@ -6,10 +6,8 @@ import '../models/match_detail.dart';
 import '../services/api_service.dart';
 import '../services/signalr_service.dart';
 import '../providers/auth_provider.dart';
-import '../theme/app_theme.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
-import '../widgets/custom_button.dart';
 import 'team_detail_screen.dart';
 import 'login_screen.dart';
 

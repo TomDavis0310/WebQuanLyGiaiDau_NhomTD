@@ -112,7 +112,7 @@ namespace WebQuanLyGiaiDau_NhomTD.Controllers.Api
                     .Include(tt => tt.Team)
                     .Select(tt => new
                     {
-                        Id = tt.Team.TeamId,
+                        TeamId = tt.Team.TeamId,
                         Name = tt.Team.Name,
                         Coach = tt.Team.Coach,
                         LogoUrl = tt.Team.LogoUrl

@@ -127,7 +127,7 @@ flutter run --dart-define=API_URL=http://192.168.1.100:8080/api
 
 ```dart
 // Before:
-static const String baseUrl = 'http://192.168.1.2:8080/api';
+static const String baseUrl = 'http://10.15.10.42:8080/api';
 
 // After:
 static String get baseUrl => Environment.apiBaseUrl;
