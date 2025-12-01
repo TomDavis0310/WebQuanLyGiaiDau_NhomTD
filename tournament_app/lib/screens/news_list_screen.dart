@@ -55,6 +55,7 @@ class _NewsListScreenState extends State<NewsListScreen>
   }
 
   Future<void> _loadInitialData() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -68,10 +69,12 @@ class _NewsListScreenState extends State<NewsListScreen>
         _loadNews(page: 1),
       ]);
 
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'Lỗi: $e';
         _isLoading = false;
@@ -81,6 +84,7 @@ class _NewsListScreenState extends State<NewsListScreen>
 
   Future<void> _loadFeaturedNews() async {
     final response = await ApiService.getFeaturedNews(count: 5);
+    if (!mounted) return;
     if (response.success && response.data != null) {
       setState(() {
         _featuredNews = response.data!;
@@ -90,6 +94,7 @@ class _NewsListScreenState extends State<NewsListScreen>
 
   Future<void> _loadCategories() async {
     final response = await ApiService.getNewsCategories();
+    if (!mounted) return;
     if (response.success && response.data != null) {
       setState(() {
         _categories = response.data!;
@@ -103,6 +108,8 @@ class _NewsListScreenState extends State<NewsListScreen>
       pageSize: 10,
       category: category,
     );
+
+    if (!mounted) return;
 
     if (response['success'] == true) {
       setState(() {

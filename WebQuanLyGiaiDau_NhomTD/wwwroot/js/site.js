@@ -316,6 +316,15 @@ function initializeLoadingStates() {
             $('body').addClass('loaded');
         });
     });
+
+    // Fallback: Force remove loader after 3 seconds if window.load doesn't fire
+    setTimeout(function() {
+        if ($('.page-loader').is(':visible')) {
+            $('.page-loader').fadeOut(500, function() {
+                $('body').addClass('loaded');
+            });
+        }
+    }, 3000);
 }
 
 // ===== UTILITY FUNCTIONS =====
